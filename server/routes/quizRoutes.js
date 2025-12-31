@@ -1,29 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const Quiz = require('../models/Quiz'); // ודאי שהקובץ Models/Quiz.js קיים
+const quizController = require('../controllers/quizController');
 
-// 1. קבלת כל החידונים (עבור דף הרשימה)
-router.get('/', async (req, res) => {
-    try {
-        const quizzes = await Quiz.find();
-        res.json(quizzes);
-    } catch (err) {
-        res.status(500).json({ message: "שגיאה בקבלת רשימת החידונים: " + err.message });
-    }
-});
+// ייבוא ה-Middlewares להגנה
+const { verifyToken, isAdmin } = require('../middlewares/auth');
 
-// 2. קבלת חידון בודד לפי ה-ID שלו (עבור דף פתרון החידון)
-router.get('/:id', async (req, res) => {
-    try {
-        const quiz = await Quiz.findById(req.params.id);
-        if (!quiz) {
-            return res.status(404).json({ message: "החידון המבוקש לא נמצא" });
-        }
-        res.json(quiz);
-    } catch (err) {
-        // שגיאה בפורמט של ה-ID או שגיאת שרת אחרת
-        res.status(500).json({ message: "שגיאה בטעינת החידון הספציפי: " + err.message });
-    }
-});
+// ניתובים פתוחים (צפייה בלבד)
+router.get('/', quizController.getQuizzes);
+router.get('/:id', quizController.getQuizById);
+
+// ניתובים מוגנים למשתמשים רשומים בלבד (verifyToken)
+router.post('/add', verifyToken, quizController.createQuiz);
+router.put('/:id', verifyToken, quizController.updateQuiz);
+
+// ניתוב מוגן למנהלים בלבד (isAdmin דורש קודם verifyToken)
+router.delete('/:id', verifyToken, isAdmin, quizController.deleteQuiz);
 
 module.exports = router;

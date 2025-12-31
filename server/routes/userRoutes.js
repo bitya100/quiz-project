@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-// ייבוא ישיר של הפונקציות בתוך סוגריים מסולסלים
-const { register, login } = require('../controllers/userController'); 
+const { register, login } = require('../controllers/userController');
 
-// עכשיו הראוטר משתמש ישירות בפונקציה
+// הנתיב המלא יהיה /api/users/register
 router.post('/register', register);
+
+// הנתיב המלא יהיה /api/users/login
 router.post('/login', login);
 
 module.exports = router;

@@ -3,45 +3,60 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const token = localStorage.getItem('token'); // בדיקת התחברות
+    const token = localStorage.getItem('token');
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // מחיקת הטוקן
+        localStorage.removeItem('token');
         navigate('/login');
+    };
+
+    const linkStyle = { 
+        color: '#fff', 
+        marginRight: '20px', 
+        textDecoration: 'none',
+        fontSize: '16px'
     };
 
     return (
         <nav style={{ 
-            padding: '15px', 
-            backgroundColor: '#333', 
+            padding: '15px 30px', 
+            backgroundColor: '#2c3e50', 
             color: '#fff', 
             display: 'flex', 
             justifyContent: 'space-between',
-            alignItems: 'center' 
+            alignItems: 'center',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
         }}>
             <div>
-                <Link to="/" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none', fontWeight: 'bold' }}>דף הבית</Link>
-                <Link to="/quizzes" style={{ color: '#fff', textDecoration: 'none' }}>חידונים</Link>
+                <Link to="/" style={{ ...linkStyle, fontWeight: 'bold', fontSize: '18px' }}>QuizApp</Link>
+                <Link to="/quizzes" style={linkStyle}>חידונים</Link>
+                {/* קישור לדף המנהל החדש */}
+                <Link to="/create-quiz" style={{ ...linkStyle, color: '#f1c40f' }}>➕ צור חידון</Link>
             </div>
             
             <div>
                 {!token ? (
                     <>
-                        <Link to="/login" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>התחברות</Link>
-                        <Link to="/register" style={{ color: '#fff', textDecoration: 'none', border: '1px solid #fff', padding: '5px 10px', borderRadius: '4px' }}>הרשמה</Link>
+                        <Link to="/login" style={linkStyle}>התחברות</Link>
+                        <Link to="/register" style={{ 
+                            ...linkStyle, 
+                            backgroundColor: '#3498db', 
+                            padding: '8px 15px', 
+                            borderRadius: '5px' 
+                        }}>הרשמה</Link>
                     </>
                 ) : (
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ marginRight: '15px' }}>שלום משתמש!</span>
+                        <span style={{ marginLeft: '15px' }}>שלום!</span>
                         <button 
                             onClick={handleLogout} 
                             style={{ 
-                                backgroundColor: '#f44336', 
+                                backgroundColor: '#e74c3c', 
                                 color: 'white', 
                                 border: 'none', 
                                 padding: '8px 15px', 
                                 cursor: 'pointer',
-                                borderRadius: '4px'
+                                borderRadius: '5px'
                             }}>
                             התנתק
                         </button>

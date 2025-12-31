@@ -1,5 +1,4 @@
-const { Product } = require('../models/Product');
-
+const Product = require('../models/Product'); // בלי סוגריים מסולסלים
 // 1. שליפת כל המוצרים (Read)
 exports.getAllProducts = async (req, res) => {
     try {

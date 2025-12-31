@@ -1,25 +1,24 @@
 const jwt = require('jsonwebtoken');
 
-// מידלוואר לאימות טוקן כללי (Authentication)
-const auth = (req, res, next) => {
-    const token = req.header('x-auth-token'); 
-    if (!token) return res.status(401).send('גישה נדחתה. לא סופק טוקן.');
+// בדיקה אם המשתמש מחובר (עבור הוספת חידון)
+exports.verifyToken = (req, res, next) => {
+    const token = req.header('Authorization')?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: "גישה נדחתה, לא נמצא טוקן" });
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; 
+        const verified = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = verified; // מכיל את ה-id וה-role
         next();
-    } catch (ex) {
-        res.status(400).send('טוקן לא תקין.');
+    } catch (err) {
+        res.status(400).json({ message: "טוקן לא תקין" });
     }
 };
 
-// מידלוואר לבדיקת הרשאת מנהל (Authorization)
-const admin = (req, res, next) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).send('גישה נדחתה. מנהלים בלבד.');
+// בדיקה אם המשתמש הוא מנהל (עבור מחיקת חידון)
+exports.isAdmin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ message: "פעולה זו מותרת למנהלים בלבד" });
     }
-    next();
 };
-
-module.exports = { auth, admin };
