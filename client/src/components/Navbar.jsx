@@ -3,35 +3,49 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    // בדיקה האם קיים Token בזיכרון של הדפדפן
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token'); // בדיקת התחברות
 
     const handleLogout = () => {
-        localStorage.removeItem('token'); // מחיקת המפתח הסודי
-        alert('התנתקת בהצלחה');
-        navigate('/login'); // העברה לדף התחברות
+        localStorage.removeItem('token'); // מחיקת הטוקן
+        navigate('/login');
     };
 
     return (
-        <nav style={{ padding: '15px', backgroundColor: '#333', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+        <nav style={{ 
+            padding: '15px', 
+            backgroundColor: '#333', 
+            color: '#fff', 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center' 
+        }}>
             <div>
-                <Link to="/" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>דף הבית</Link>
-                <Link to="/products" style={{ color: '#fff', textDecoration: 'none' }}>מוצרים</Link>
+                <Link to="/" style={{ color: '#fff', marginRight: '20px', textDecoration: 'none', fontWeight: 'bold' }}>דף הבית</Link>
+                <Link to="/quizzes" style={{ color: '#fff', textDecoration: 'none' }}>חידונים</Link>
             </div>
             
             <div>
                 {!token ? (
-                    // מה שרואים כשלא מחוברים
                     <>
                         <Link to="/login" style={{ color: '#fff', marginRight: '15px', textDecoration: 'none' }}>התחברות</Link>
-                        <Link to="/register" style={{ color: '#fff', textDecoration: 'none' }}>הרשמה</Link>
+                        <Link to="/register" style={{ color: '#fff', textDecoration: 'none', border: '1px solid #fff', padding: '5px 10px', borderRadius: '4px' }}>הרשמה</Link>
                     </>
                 ) : (
-                    // מה שרואים כשמחוברים
-                    <>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span style={{ marginRight: '15px' }}>שלום משתמש!</span>
-                        <button onClick={handleLogout} style={{ cursor: 'pointer', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px' }}>התנתק</button>
-                    </>
+                        <button 
+                            onClick={handleLogout} 
+                            style={{ 
+                                backgroundColor: '#f44336', 
+                                color: 'white', 
+                                border: 'none', 
+                                padding: '8px 15px', 
+                                cursor: 'pointer',
+                                borderRadius: '4px'
+                            }}>
+                            התנתק
+                        </button>
+                    </div>
                 )}
             </div>
         </nav>
