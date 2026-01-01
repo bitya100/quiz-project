@@ -1,66 +1,45 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import '../App.css'; // מוודאים שהעיצוב מיובא
 
 const Navbar = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('role');
+    const userName = localStorage.getItem('userName');
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
-    };
-
-    const linkStyle = { 
-        color: '#fff', 
-        marginRight: '20px', 
-        textDecoration: 'none',
-        fontSize: '16px'
+        localStorage.clear();
+        window.location.href = '/login';
     };
 
     return (
-        <nav style={{ 
-            padding: '15px 30px', 
-            backgroundColor: '#2c3e50', 
-            color: '#fff', 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-        }}>
-            <div>
-                <Link to="/" style={{ ...linkStyle, fontWeight: 'bold', fontSize: '18px' }}>QuizApp</Link>
-                <Link to="/quizzes" style={linkStyle}>חידונים</Link>
-                {/* קישור לדף המנהל החדש */}
-                <Link to="/create-quiz" style={{ ...linkStyle, color: '#f1c40f' }}>➕ צור חידון</Link>
+        <nav className="navbar">
+            <div className="nav-links">
+                <Link to="/" className="nav-logo">QuizApp</Link>
+                <Link to="/quizzes" className="nav-link">חידונים</Link>
+                
+                {/* קישור למנהל בלבד */}
+                {token && userRole === 'admin' && (
+                    <Link to="/create-quiz" className="nav-link nav-link-admin">
+                        ➕ צור חידון
+                    </Link>
+                )}
             </div>
             
-            <div>
+            <div className="nav-auth-buttons">
                 {!token ? (
                     <>
-                        <Link to="/login" style={linkStyle}>התחברות</Link>
-                        <Link to="/register" style={{ 
-                            ...linkStyle, 
-                            backgroundColor: '#3498db', 
-                            padding: '8px 15px', 
-                            borderRadius: '5px' 
-                        }}>הרשמה</Link>
+                        <Link to="/login" className="nav-link">התחברות</Link>
+                        <Link to="/register" className="nav-link btn-register">הרשמה</Link>
                     </>
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ marginLeft: '15px' }}>שלום!</span>
-                        <button 
-                            onClick={handleLogout} 
-                            style={{ 
-                                backgroundColor: '#e74c3c', 
-                                color: 'white', 
-                                border: 'none', 
-                                padding: '8px 15px', 
-                                cursor: 'pointer',
-                                borderRadius: '5px'
-                            }}>
+                    <>
+                        <span className="user-greeting">שלום, {userName || 'אורח'}</span>
+                        <button onClick={handleLogout} className="btn-logout">
                             התנתק
                         </button>
-                    </div>
+                    </>
                 )}
             </div>
         </nav>

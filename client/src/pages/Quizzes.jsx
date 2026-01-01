@@ -1,91 +1,195 @@
-import React, { useEffect, useState } from 'react';
+// import React from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { useQuizzes } from '../context/QuizContext';
+// import axios from 'axios';
+// import '../App.css'; 
+
+// const Quizzes = () => {
+//     const { quizzes, loading, refreshQuizzes } = useQuizzes();
+//     const navigate = useNavigate();
+//     const userRole = localStorage.getItem('role');
+//     const token = localStorage.getItem('token');
+
+//     // פונקציית עזר לבחירת אימוג'י לפי קטגוריה או איקון ספציפי
+//     const getIcon = (quiz) => {
+//         if (quiz.icon) return quiz.icon; 
+        
+//         const icons = {
+//             'מוזיקה': '🎵',
+//             'music': '🎵',
+//             'היסטוריה': '📜',
+//             'history': '📜',
+//             'בריאות': '🏥',
+//             'health': '🏥',
+//             'מדע': '🧪',
+//             'science': '🧪',
+//             'כללי': '🧠',
+//             'general': '🧠'
+//         };
+//         // מחזיר איקון לפי קטגוריה (תומך בעברית ואנגלית) או מוח כברירת מחדל
+//         return icons[quiz.category?.toLowerCase()] || icons[quiz.category] || '🧠';
+//     };
+
+//     const deleteQuiz = async (id) => {
+//         if (!window.confirm("בטוח שברצונך למחוק את החידון לצמיתות?")) return;
+//         try {
+//             await axios.delete(`http://localhost:3001/api/quizzes/${id}`, {
+//                 headers: { Authorization: `Bearer ${token}` }
+//             });
+//             refreshQuizzes();
+//         } catch (err) { 
+//             console.error(err);
+//             alert("שגיאה במערכת - ודא שהשרת מחובר"); 
+//         }
+//     };
+
+//     if (loading) return (
+//         <div className="loader-container">
+//             <div className="spinner"></div>
+//             <h2 className="main-title" style={{fontSize: '2rem'}}>טוען את האתגרים...</h2>
+//         </div>
+//     );
+
+//     return (
+//         <div className="page-wrapper">
+//             {/* חלק עליון: כותרות וכפתור ניהול */}
+//             <header style={{textAlign: 'center', padding: '40px 0'}}>
+//                 <h1 className="main-title" style={{fontSize: '5rem', textShadow: '0 0 20px var(--neon-purple)'}}>QUIZ ZONE</h1>
+//                 <p className="subtitle">בחרו אתגר, צברו נקודות והוכיחו שאתם הכי טובים!</p>
+                
+//                 {userRole === 'admin' && (
+//                     <button onClick={() => navigate('/create-quiz')} className="admin-create-btn">
+//                         ⚡ יצירת חידון חדש
+//                     </button>
+//                 )}
+//             </header>
+
+//             {/* גריד החידונים */}
+//             <div className="quizzes-grid">
+//                 {quizzes.length === 0 ? (
+//                     <p className="subtitle" style={{gridColumn: '1/-1', fontSize: '2rem'}}>לא נמצאו חידונים כרגע...</p>
+//                 ) : (
+//                     quizzes.map(quiz => (
+//                         <div key={quiz._id} className="quiz-card">
+                            
+//                             {/* הצגת האימוג'י המשתנה */}
+//                             <div className="icon-circle" style={{fontSize: '50px', marginBottom: '20px'}}>
+//                                 {getIcon(quiz)}
+//                             </div>
+
+//                             <h3 className="card-title">{quiz.title}</h3>
+//                             <p className="card-description">{quiz.description}</p>
+                            
+//                             <div className="card-footer" style={{width: '100%'}}>
+//                                 {/* כפתור כניסה לחידון */}
+//                                 <button onClick={() => navigate(`/quiz/${quiz._id}`)} className="play-btn">
+//                                     בואו נשחק! 🚀
+//                                 </button>
+
+//                                 {/* כפתורי ניהול למנהל בלבד */}
+//                                 {userRole === 'admin' && (
+//                                     <div className="admin-actions" style={{display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center'}}>
+//                                         <button 
+//                                             onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
+//                                             style={{color: 'var(--neon-blue)', background: 'none', border: '1px solid var(--neon-blue)', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer'}}
+//                                         >
+//                                             עריכה ✏️
+//                                         </button>
+//                                         <button 
+//                                             onClick={() => deleteQuiz(quiz._id)} 
+//                                             style={{color: '#ff4d4d', background: 'none', border: '1px solid #ff4d4d', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer'}}
+//                                         >
+//                                             מחיקה 🗑️
+//                                         </button>
+//                                     </div>
+//                                 )}
+//                             </div>
+//                         </div>
+//                     ))
+//                 )}
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default Quizzes;
+
+
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useQuizzes } from '../context/QuizContext';
+import axios from 'axios';
+import '../App.css'; 
 
 const Quizzes = () => {
     const { quizzes, loading, refreshQuizzes } = useQuizzes();
     const navigate = useNavigate();
-
-    // שליפת נתונים מה-localStorage בתוך State כדי להבטיח רינדור נכון
-    const [token, setToken] = useState(localStorage.getItem('token'));
-    const [userRole, setUserRole] = useState(localStorage.getItem('role'));
-
-    useEffect(() => {
-        // רענון הערכים מהאחסון המקומי בכל פעם שהקומפוננטה נטענת
-        setToken(localStorage.getItem('token'));
-        setUserRole(localStorage.getItem('role'));
-    }, []);
+    const userRole = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
 
     const deleteQuiz = async (id) => {
-        if (window.confirm("האם את בטוחה שברצונך למחוק את החידון?")) {
-            try {
-                await axios.delete(`http://localhost:3001/api/quizzes/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                refreshQuizzes();
-            } catch (err) {
-                alert(err.response?.data?.message || "שגיאה במחיקת החידון");
-            }
+        if (!window.confirm("בטוח שברצונך למחוק את החידון לצמיתות?")) return;
+        try {
+            await axios.delete(`http://localhost:3001/api/quizzes/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            refreshQuizzes();
+        } catch (err) { 
+            console.error(err);
+            alert("שגיאה במערכת - ודא שהשרת מחובר"); 
         }
     };
 
     if (loading) return (
-        <div style={{ textAlign: 'center', marginTop: '100px' }}>
-            <h2 style={{ color: '#34495e' }}>טוען חידונים...</h2>
+        <div className="loader-container">
+            <div className="spinner"></div>
+            <h2 className="main-title" style={{fontSize: '2rem'}}>טוען את האתגרים...</h2>
         </div>
     );
 
     return (
-        <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', direction: 'rtl' }}>
-            <h1 style={{ textAlign: 'center', color: '#2c3e50', marginBottom: '40px', fontSize: '32px' }}>החידונים שלנו</h1>
-            
-            {/* כפתור הוספה - מופיע רק אם המשתמש מחובר */}
-            {token && (
-                <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <button onClick={() => navigate('/create-quiz')} style={buttonStyle}>
-                        צרי חידון חדש +
+        <div className="page-wrapper">
+            <header style={{textAlign: 'center', padding: '40px 0'}}>
+                <h1 className="main-title">QUIZ ZONE</h1>
+                <p className="subtitle">בחרו אתגר, צברו נקודות והוכיחו שאתם הכי טובים!</p>
+                
+                {userRole === 'admin' && (
+                    <button onClick={() => navigate('/create-quiz')} className="admin-create-btn">
+                       ⚡ יצירת חידון חדש ⚡
                     </button>
-                </div>
-            )}
+                )}
+            </header>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '25px' }}>
+            <div className="quizzes-grid">
                 {quizzes.length === 0 ? (
-                    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                        <p>אין חידונים זמינים כרגע.</p>
-                        {token && <button onClick={() => navigate('/create-quiz')} style={buttonStyle}>צרי את החידון הראשון!</button>}
-                    </div>
+                    <p className="subtitle" style={{gridColumn: '1/-1', fontSize: '2rem'}}>לא נמצאו חידונים כרגע...</p>
                 ) : (
                     quizzes.map(quiz => (
-                        <div key={quiz._id} style={cardStyle}>
-                            <div>
-                                <h3 style={{ color: '#2c3e50', marginBottom: '10px' }}>{quiz.title}</h3>
-                                <p style={{ color: '#7f8c8d', fontSize: '14px', lineHeight: '1.5', height: '42px', overflow: 'hidden' }}>
-                                    {quiz.description}
-                                </p>
-                            </div>
-                            <div style={{ marginTop: '20px', display: 'grid', gap: '10px' }}>
-                                <button 
-                                    onClick={() => navigate(`/quiz/${quiz._id}`)} 
-                                    style={buttonStyle}
-                                >
-                                    התחל חידון 🚀
+                        <div key={quiz._id} className="quiz-card">
+                            
+                            {/* כל בלוק ה-icon-circle הוסר מכאן */}
+
+                            <h3 className="card-title">{quiz.title}</h3>
+                            <p className="card-description">{quiz.description}</p>
+                            
+                            <div className="card-footer" style={{width: '100%'}}>
+                                <button onClick={() => navigate(`/quiz/${quiz._id}`)} className="play-btn">
+                                    בואו נשחק!
                                 </button>
 
-                                {/* בדיקה כפולה: האם ה-role הוא admin? */}
                                 {userRole === 'admin' && (
-                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                    <div className="admin-actions" style={{display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center'}}>
                                         <button 
                                             onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
-                                            style={{ ...smallButtonStyle, backgroundColor: '#f1c40f', color: '#000' }}
+                                            style={{color: 'var(--neon-blue)', background: 'none', border: '1px solid var(--neon-blue)', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}}
                                         >
-                                            ערוך ✏️
+                                            עריכה ✏️
                                         </button>
                                         <button 
                                             onClick={() => deleteQuiz(quiz._id)} 
-                                            style={{ ...smallButtonStyle, backgroundColor: '#e74c3c', color: 'white' }}
+                                            style={{color: '#ff4d4d', background: 'none', border: '1px solid #ff4d4d', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}}
                                         >
-                                            מחק 🗑️
+                                            מחיקה 🗑️
                                         </button>
                                     </div>
                                 )}
@@ -96,42 +200,6 @@ const Quizzes = () => {
             </div>
         </div>
     );
-};
-
-// --- Styles ---
-const cardStyle = {
-    backgroundColor: '#fff',
-    borderRadius: '15px',
-    padding: '25px',
-    width: '300px',
-    boxShadow: '0 10px 20px rgba(0,0,0,0.05)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    transition: 'transform 0.2s ease',
-    textAlign: 'right'
-};
-
-const buttonStyle = {
-    backgroundColor: '#2ecc71',
-    color: 'white',
-    border: 'none',
-    padding: '12px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '16px',
-    transition: 'background 0.3s'
-};
-
-const smallButtonStyle = {
-    flex: 1,
-    border: 'none',
-    padding: '10px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600'
 };
 
 export default Quizzes;

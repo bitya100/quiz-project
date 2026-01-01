@@ -1,42 +1,172 @@
-/* #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap');
+
+:root {
+    --bg-dark: #0a0a0c;
+    --card-bg: #16161a;
+    --neon-purple: #bc13fe;
+    --neon-blue: #40e0d0;
+    --text-white: #e0e0e0;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+body {
+    margin: 0;
+    font-family: 'Assistant', sans-serif;
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(188, 19, 254, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(64, 224, 208, 0.12) 0%, transparent 40%);
+    color: var(--text-white);
+    direction: rtl;
+    min-height: 100vh;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* --- נאבבאר --- */
+.navbar {
+    background: rgba(10, 10, 12, 0.95);
+    backdrop-filter: blur(15px);
+    border-bottom: 2px solid var(--neon-blue);
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.card {
-  padding: 2em;
+.nav-logo {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #fff !important;
+    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px rgba(64, 224, 208, 0.4);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-.read-the-docs {
-  color: #888;
-} */
+.nav-link {
+    text-decoration: none;
+    color: var(--text-white);
+    font-weight: 700;
+    margin: 0 15px;
+    transition: 0.3s;
+}
+
+/* החזרתי את הזוהר הנהדר שאהבת */
+.nav-link:hover {
+    color: var(--neon-blue);
+    text-shadow: 0 0 12px var(--neon-blue), 0 0 20px rgba(64, 224, 208, 0.6);
+}
+
+/* --- הכותרת הראשית QUIZ ZONE --- */
+.main-title {
+    font-size: 4.5rem;
+    font-weight: 900;
+    text-align: center;
+    color: #fff; /* לבן בוהק כבסיס */
+    text-shadow: 0 0 15px var(--neon-blue), 0 0 30px rgba(64, 224, 208, 0.4);
+    margin-top: 50px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+}
+
+/* --- כרטיסים וגריד --- */
+.quizzes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 40px;
+    padding: 20px 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.quiz-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(64, 224, 208, 0.2);
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    transition: 0.4s ease;
+    text-align: center;
+    overflow: hidden;
+}
+
+.quiz-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 25px rgba(64, 224, 208, 0.2);
+}
+
+.card-title {
+    font-size: 1.8rem;
+    color: var(--neon-blue);
+    margin-bottom: 15px;
+    font-weight: 800;
+}
+
+.card-description {
+    color: #6cdfff;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.play-btn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    color: var(--neon-blue);
+    border: 2px solid var(--neon-blue);
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.play-btn:hover {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 30px var(--neon-blue);
+}
+
+/* כפתור יצירה מנהל */
+.admin-create-btn {
+    background: var(--neon-purple);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 0 20px var(--neon-purple);
+    transition: 0.4s;
+    margin: 30px auto;
+    display: block;
+}
+
+.admin-create-btn:hover {
+    box-shadow: 0 0 40px var(--neon-purple);
+    transform: scale(1.05);
+}
+
+/* אנימציית טעינה */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(64, 224, 208, 0.1);
+    border-top: 5px solid var(--neon-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

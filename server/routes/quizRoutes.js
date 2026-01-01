@@ -1,19 +1,26 @@
 const express = require('express');
 const router = express.Router();
 const quizController = require('../controllers/quizController');
+const auth = require('../middleware/auth'); 
 
-// ייבוא ה-Middlewares להגנה
-const { verifyToken, isAdmin } = require('../middlewares/auth');
+// --- נתיבים ציבוריים (נגישים לכולם) ---
 
-// ניתובים פתוחים (צפייה בלבד)
-router.get('/', quizController.getQuizzes);
+// קבלת רשימת כל החידונים
+router.get('/', quizController.getAllQuizzes);
+
+// קבלת חידון ספציפי למשחק
 router.get('/:id', quizController.getQuizById);
 
-// ניתובים מוגנים למשתמשים רשומים בלבד (verifyToken)
-router.post('/add', verifyToken, quizController.createQuiz);
-router.put('/:id', verifyToken, quizController.updateQuiz);
 
-// ניתוב מוגן למנהלים בלבד (isAdmin דורש קודם verifyToken)
-router.delete('/:id', verifyToken, isAdmin, quizController.deleteQuiz);
+// --- נתיבים מוגנים (דורשים Token ובדיקת מנהל בתוך הקונטרולר) ---
+
+// יצירת חידון חדש
+router.post('/', auth, quizController.createQuiz);
+
+// עדכון חידון קיים
+router.put('/:id', auth, quizController.updateQuiz);
+
+// מחיקת חידון
+router.delete('/:id', auth, quizController.deleteQuiz);
 
 module.exports = router;
