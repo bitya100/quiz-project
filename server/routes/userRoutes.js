@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-// ייבוא הקונטרולר - שימי לב שייבאנו את כל הפונקציות
+// ייבוא הקונטרולר
 const userController = require('../controllers/userController');
-// ייבוא ה-Middleware של ה-Auth (כדי שנוכל להשתמש בזה בנתיבים מוגנים)
-const auth = require('../middleware/auth'); 
+// התיקון הקריטי: ייבוא באמצעות Destructuring (סוגריים מסולסלים)
+const { auth, adminOnly } = require('../middleware/auth'); 
 
 // --- נתיבים ציבוריים ---
 // הרשמה: /api/users/register
@@ -19,5 +19,8 @@ router.post('/save-result', auth, userController.saveQuizResult);
 
 // קבלת נתוני הפרופיל וההיסטוריה
 router.get('/profile', auth, userController.getProfile);
+
+// בונוס לדרישות הפרויקט: נתיב למנהל בלבד לצפייה בכל המשתמשים
+router.get('/all', auth, adminOnly, userController.getAllUsers);
 
 module.exports = router;

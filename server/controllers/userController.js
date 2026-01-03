@@ -2,7 +2,7 @@ const { User, validateUser } = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// --- פונקציית הרשמה ---
+// --- פונקציית הרשמה מתוקנת (כוללת החזרת נתונים לחיבור אוטומטי) ---
 const register = async (req, res) => {
     try {
         const { error } = validateUser(req.body);
@@ -22,7 +22,21 @@ const register = async (req, res) => {
         });
 
         await newUser.save();
-        return res.status(201).json({ message: 'נרשמת בהצלחה!' });
+
+        // יצירת טוקן מיד לאחר ההרשמה
+        const token = jwt.sign(
+            { _id: newUser._id, role: newUser.role }, 
+            process.env.JWT_SECRET || 'fallback_secret'
+        );
+
+        // שליחת כל הנתונים הנדרשים ל-Frontend
+        return res.status(201).json({ 
+            message: 'נרשמת בהצלחה!',
+            token: token,
+            role: newUser.role,
+            userId: newUser._id,
+            userName: newUser.userName 
+        });
     } catch (ex) {
         return res.status(500).send('שגיאת שרת פנימית');
     }
@@ -58,7 +72,7 @@ const login = async (req, res) => {
 const saveQuizResult = async (req, res) => {
     try {
         const { quizTitle, score, totalQuestions } = req.body;
-        const userId = req.user._id; // מגיע מה-middleware (הטוקן)
+        const userId = req.user._id;
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).send('משתמש לא נמצא');
@@ -79,7 +93,6 @@ const saveQuizResult = async (req, res) => {
 // --- קבלת נתוני פרופיל והיסטוריה ---
 const getProfile = async (req, res) => {
     try {
-        // מוצאים את המשתמש ושולחים הכל חוץ מהסיסמה
         const user = await User.findById(req.user._id).select('-password');
         res.json(user);
     } catch (ex) {
@@ -87,10 +100,21 @@ const getProfile = async (req, res) => {
     }
 };
 
-// הייצוא המתוקן שכולל את כל הפונקציות
+// --- קבלת כל המשתמשים (למנהל בלבד) ---
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select('-password');
+        res.json(users);
+    } catch (ex) {
+        res.status(500).send('שגיאה בטעינת רשימת המשתמשים');
+    }
+};
+
+// הייצוא הכולל
 module.exports = { 
     register, 
     login, 
     saveQuizResult, 
-    getProfile 
+    getProfile,
+    getAllUsers 
 };

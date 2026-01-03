@@ -12,9 +12,7 @@ const QuizPage = () => {
     const [timeLeft, setTimeLeft] = useState(15);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-    // פונקציה להפעלת סאונד
     const playSound = (isCorrect) => {
-        // הנתיב מתחיל מה-public
         const audioPath = isCorrect ? '/music/correct.mp3' : '/music/false.mp3';
         const audio = new Audio(audioPath);
         audio.play().catch(err => console.log("Audio play error:", err));
@@ -28,17 +26,20 @@ const QuizPage = () => {
 
     const finishQuiz = useCallback(async (finalScore) => {
         setShowScore(true);
-        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token'); // שימוש בטוקן במקום רק ב-ID
         const finalPercent = Math.round((finalScore / quiz.questions.length) * 100);
 
-        if (userId) {
+        if (token) {
             try {
+                // שליחת התוצאה עם ה-Token ב-Headers
                 await axios.post('http://localhost:3001/api/results/save', {
-                    userId,
                     quizId: id,
                     quizTitle: quiz.title,
                     score: finalPercent
+                }, {
+                    headers: { Authorization: `Bearer ${token}` }
                 });
+                console.log("Score saved successfully");
             } catch (err) {
                 console.error("Failed to save score:", err);
             }
@@ -59,7 +60,7 @@ const QuizPage = () => {
         if (selectedAnswer !== null) return;
 
         setSelectedAnswer(index);
-        playSound(isCorrect); // הפעלת המוזיקה כאן
+        playSound(isCorrect);
 
         let nextScore = score;
         if (isCorrect) nextScore += 1;
@@ -89,7 +90,9 @@ const QuizPage = () => {
                     <div style={styles.resultCircle}>
                         <span style={styles.resultText}>{Math.round((score / quiz.questions.length) * 100)}%</span>
                     </div>
-                    <button onClick={() => navigate('/quizzes')} style={styles.backButton}>חזור לרשימת החידונים</button>
+                    <p>צברת {score} תשובות נכונות מתוך {quiz.questions.length}</p>
+                    <button onClick={() => navigate('/my-scores')} style={styles.backButton}>לצפייה בכל הציונים שלי</button>
+                    <button onClick={() => navigate('/quizzes')} style={{...styles.backButton, backgroundColor: '#95a5a6', marginRight: '10px'}}>חזור לחידונים</button>
                 </div>
             ) : (
                 <div style={styles.card}>

@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyScores from "./pages/MyScores";
+import AllScores from "./pages/AllScores"; // וודא שהקובץ קיים בתיקיית pages
 
 function App() {
   return (
@@ -19,11 +20,17 @@ function App() {
             <Route path="/" element={<Navigate to="/quizzes" />} />
             <Route path="/quizzes" element={<Quizzes />} />
             <Route path="/quiz/:id" element={<QuizPage />} />
-            <Route path="/create-quiz" element={<CreateQuiz />} />
-            <Route path="/edit-quiz/:id" element={<CreateQuiz />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            
+            {/* ציונים אישיים */}
             <Route path="/my-scores" element={<MyScores />} />
+
+            {/* ניהול למנהל בלבד */}
+            <Route path="/create-quiz" element={<CreateQuiz />} />
+            <Route path="/edit-quiz/:id" element={<CreateQuiz />} />
+            <Route path="/admin/all-scores" element={<AllScores />} /> 
+
             <Route path="*" element={<h1 style={{ textAlign: 'center', marginTop: '50px' }}>404 - דף לא נמצא</h1>} />
           </Routes>
         </div>

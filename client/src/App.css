@@ -170,3 +170,94 @@ body {
 }
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+/* עיצוב כפתור התנתקות */
+.btn-logout {
+    background-color: #f8d7da; /* רקע אדום בהיר מאוד */
+    color: #b02a37;           /* טקסט אדום כהה */
+    border: 1px solid #f5c2c7;
+    padding: 6px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    margin-right: 15px;      /* רווח מהקישורים האחרים */
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;                /* רווח לאייקון אם תוסיף בעתיד */
+}
+
+/* אפקט מעבר עכבר */
+.btn-logout:hover {
+    background-color: #dc3545; /* הופך לאדום מלא */
+    color: white;              /* טקסט לבן */
+    border-color: #dc3545;
+    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+}
+
+/* אפקט לחיצה */
+.btn-logout:active {
+    transform: scale(0.95);
+}
+
+
+/* עיצוב כללי לטבלאות הציונים */
+.table-wrapper, .table-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* הפיכת האותיות לכהות וברורות */
+table {
+    width: 100%;
+    color: #2c3e50; /* כחול-כהה עמוק, קריא מאוד */
+    border-collapse: collapse;
+}
+
+/* עיצוב שורת הכותרת */
+th {
+    background-color: #34495e;
+    color: #ffffff !important; /* לבן בוהק על רקע כהה */
+    padding: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* עיצוב שורות הנתונים - האותיות שראינו בתמונה */
+td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 16px;
+    color: #333 !important; /* וידוא שהטקסט שחור/כהה */
+    text-align: center;
+}
+
+/* הדגשת שם החידון */
+td:first-child {
+    font-weight: 600;
+}
+
+/* שורות צבועות לסירוגין לקריאה קלה */
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* אפקט מעבר עכבר על שורה */
+tbody tr:hover {
+    background-color: #f1f1f1;
+    transition: 0.2s;
+}
+
+
+.table-wrapper, .table-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin: 40px auto; /* מוסיף רווח מלמעלה וממרכז את הטבלה */
+    max-width: 90%;    /* מונע מהטבלה להיצמד לקצוות המסך */
+}

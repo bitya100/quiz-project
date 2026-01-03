@@ -13,7 +13,7 @@ const auth = (req, res, next) => {
     }
 };
 
-// פונקציה חדשה: בדיקה אם המשתמש מנהל
+// פונקציה לבדיקה אם המשתמש מנהל
 const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === 'admin') {
         next();
