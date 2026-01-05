@@ -1,120 +1,3 @@
-// import React from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import { useQuizzes } from '../context/QuizContext';
-// import axios from 'axios';
-// import '../App.css'; 
-
-// const Quizzes = () => {
-//     const { quizzes, loading, refreshQuizzes } = useQuizzes();
-//     const navigate = useNavigate();
-//     const userRole = localStorage.getItem('role');
-//     const token = localStorage.getItem('token');
-
-//     // פונקציית עזר לבחירת אימוג'י לפי קטגוריה או איקון ספציפי
-//     const getIcon = (quiz) => {
-//         if (quiz.icon) return quiz.icon; 
-        
-//         const icons = {
-//             'מוזיקה': '🎵',
-//             'music': '🎵',
-//             'היסטוריה': '📜',
-//             'history': '📜',
-//             'בריאות': '🏥',
-//             'health': '🏥',
-//             'מדע': '🧪',
-//             'science': '🧪',
-//             'כללי': '🧠',
-//             'general': '🧠'
-//         };
-//         // מחזיר איקון לפי קטגוריה (תומך בעברית ואנגלית) או מוח כברירת מחדל
-//         return icons[quiz.category?.toLowerCase()] || icons[quiz.category] || '🧠';
-//     };
-
-//     const deleteQuiz = async (id) => {
-//         if (!window.confirm("בטוח שברצונך למחוק את החידון לצמיתות?")) return;
-//         try {
-//             await axios.delete(`http://localhost:3001/api/quizzes/${id}`, {
-//                 headers: { Authorization: `Bearer ${token}` }
-//             });
-//             refreshQuizzes();
-//         } catch (err) { 
-//             console.error(err);
-//             alert("שגיאה במערכת - ודא שהשרת מחובר"); 
-//         }
-//     };
-
-//     if (loading) return (
-//         <div className="loader-container">
-//             <div className="spinner"></div>
-//             <h2 className="main-title" style={{fontSize: '2rem'}}>טוען את האתגרים...</h2>
-//         </div>
-//     );
-
-//     return (
-//         <div className="page-wrapper">
-//             {/* חלק עליון: כותרות וכפתור ניהול */}
-//             <header style={{textAlign: 'center', padding: '40px 0'}}>
-//                 <h1 className="main-title" style={{fontSize: '5rem', textShadow: '0 0 20px var(--neon-purple)'}}>QUIZ ZONE</h1>
-//                 <p className="subtitle">בחרו אתגר, צברו נקודות והוכיחו שאתם הכי טובים!</p>
-                
-//                 {userRole === 'admin' && (
-//                     <button onClick={() => navigate('/create-quiz')} className="admin-create-btn">
-//                         ⚡ יצירת חידון חדש
-//                     </button>
-//                 )}
-//             </header>
-
-//             {/* גריד החידונים */}
-//             <div className="quizzes-grid">
-//                 {quizzes.length === 0 ? (
-//                     <p className="subtitle" style={{gridColumn: '1/-1', fontSize: '2rem'}}>לא נמצאו חידונים כרגע...</p>
-//                 ) : (
-//                     quizzes.map(quiz => (
-//                         <div key={quiz._id} className="quiz-card">
-                            
-//                             {/* הצגת האימוג'י המשתנה */}
-//                             <div className="icon-circle" style={{fontSize: '50px', marginBottom: '20px'}}>
-//                                 {getIcon(quiz)}
-//                             </div>
-
-//                             <h3 className="card-title">{quiz.title}</h3>
-//                             <p className="card-description">{quiz.description}</p>
-                            
-//                             <div className="card-footer" style={{width: '100%'}}>
-//                                 {/* כפתור כניסה לחידון */}
-//                                 <button onClick={() => navigate(`/quiz/${quiz._id}`)} className="play-btn">
-//                                     בואו נשחק! 🚀
-//                                 </button>
-
-//                                 {/* כפתורי ניהול למנהל בלבד */}
-//                                 {userRole === 'admin' && (
-//                                     <div className="admin-actions" style={{display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center'}}>
-//                                         <button 
-//                                             onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
-//                                             style={{color: 'var(--neon-blue)', background: 'none', border: '1px solid var(--neon-blue)', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer'}}
-//                                         >
-//                                             עריכה ✏️
-//                                         </button>
-//                                         <button 
-//                                             onClick={() => deleteQuiz(quiz._id)} 
-//                                             style={{color: '#ff4d4d', background: 'none', border: '1px solid #ff4d4d', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer'}}
-//                                         >
-//                                             מחיקה 🗑️
-//                                         </button>
-//                                     </div>
-//                                 )}
-//                             </div>
-//                         </div>
-//                     ))
-//                 )}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default Quizzes;
-
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuizzes } from '../context/QuizContext';
@@ -151,7 +34,7 @@ const Quizzes = () => {
         <div className="page-wrapper">
             <header style={{textAlign: 'center', padding: '40px 0'}}>
                 <h1 className="main-title">QUIZ ZONE</h1>
-                <p className="subtitle">בחרו אתגר, צברו נקודות והוכיחו שאתם הכי טובים!</p>
+                <p className="subtitle">בחרו אתגר, צברו נקודות והוכיחו שאתם יודעים!</p>
                 
                 {userRole === 'admin' && (
                     <button onClick={() => navigate('/create-quiz')} className="admin-create-btn">
@@ -167,7 +50,6 @@ const Quizzes = () => {
                     quizzes.map(quiz => (
                         <div key={quiz._id} className="quiz-card">
                             
-                            {/* כל בלוק ה-icon-circle הוסר מכאן */}
 
                             <h3 className="card-title">{quiz.title}</h3>
                             <p className="card-description">{quiz.description}</p>

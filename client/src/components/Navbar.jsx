@@ -1,66 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../App.css';
 
 const Navbar = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
-    
-    // פונקציית עזר לשליפה בטוחה של נתונים (מונעת הצגת undefined)
-    const getSafeItem = (key) => {
-        const value = localStorage.getItem(key);
-        return (value && value !== 'undefined') ? value : null;
-    };
 
-    const token = getSafeItem('token');
-    const userRole = getSafeItem('role');
-    const userName = getSafeItem('userName');
+    // שליפת נתונים מה-localStorage
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('role');
+    const userName = localStorage.getItem('userName');
 
     const handleLogout = () => {
         localStorage.clear();
+        setIsMenuOpen(false);
         window.location.href = '/login';
     };
 
+    const closeMenu = () => setIsMenuOpen(false);
+
     return (
         <nav className="navbar">
-            <div className="nav-links">
-                <Link to="/" className="nav-logo">QUIZ ZONE</Link>
-                <Link to="/quizzes" className="nav-link">חידונים</Link>
+            <Link to="/" className="nav-logo" onClick={closeMenu}>QUIZ ZONE</Link>
+            
+            {/* כפתור המבורגר */}
+            <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? '✕' : '☰'}
+            </div>
+
+            {/* רשימת קישורים */}
+            <div className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
+                <Link to="/quizzes" className="nav-link" onClick={closeMenu}>חידונים</Link>
                 
-                {/* הצגת "הציונים שלי" רק אם יש טוקן (משתמש מחובר) */}
                 {token && (
-                    <Link to="/my-scores" className="nav-link">הציונים שלי</Link>
+                    <Link to="/my-scores" className="nav-link" onClick={closeMenu}>הציונים שלי</Link>
                 )}
 
-                {/* תפריט מנהל */}
                 {token && userRole === 'admin' && (
                     <>
-                        <Link to="/admin/all-scores" className="nav-link" style={{color: 'var(--neon-purple)'}}>
+                        <Link to="/admin/all-scores" className="nav-link" style={{color: 'var(--neon-purple)'}} onClick={closeMenu}>
                             ניהול ציונים
                         </Link>
-                        <Link to="/create-quiz" className="nav-link nav-link-admin">
+                        <Link to="/create-quiz" className="nav-link nav-link-admin" onClick={closeMenu}>
                             צור חידון
                         </Link>
                     </>
                 )}
-            </div>
-            
-            <div className="nav-auth-buttons">
-                {!token ? (
-                    <>
-                        <Link to="/login" className="nav-link">התחברות</Link>
-                        <Link to="/register" className="nav-link btn-register">הרשמה</Link>
-                    </>
-                ) : (
-                    <>
-                        {/* כאן התיקון הקריטי להצגת השם */}
-                        <span className="user-greeting" style={{color: 'white', marginLeft: '10px'}}>
-                            שלום, <b style={{color: 'var(--neon-blue)'}}>{userName || 'אורח'}</b>
-                        </span>
-                        <button onClick={handleLogout} className="btn-logout">
-                            התנתק
-                        </button>
-                    </>
-                )}
+
+                <div className="nav-auth-mobile">
+                    {!token ? (
+                        <>
+                            <Link to="/login" className="nav-link" onClick={closeMenu}>התחברות</Link>
+                            <Link to="/register" className="nav-link btn-register" onClick={closeMenu}>הרשמה</Link>
+                        </>
+                    ) : (
+                        <div className="user-section-mobile">
+                            <span className="user-greeting">
+                                שלום, <b style={{color: 'var(--neon-blue)'}}>{userName || 'אורח'}</b>
+                            </span>
+                            <button onClick={handleLogout} className="btn-logout">התנתק</button>
+                        </div>
+                    )}
+                </div>
             </div>
         </nav>
     );

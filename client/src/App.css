@@ -261,3 +261,71 @@ tbody tr:hover {
     margin: 40px auto; /* מוסיף רווח מלמעלה וממרכז את הטבלה */
     max-width: 90%;    /* מונע מהטבלה להיצמד לקצוות המסך */
 }
+
+
+
+/* עיצוב בסיסי לנאבבאר */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    background: rgba(10, 10, 12, 0.95);
+    border-bottom: 2px solid var(--neon-blue);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* הסתרת המבורגר כברירת מחדל (למחשב) */
+.hamburger {
+    display: none;
+    font-size: 2rem;
+    color: var(--neon-blue);
+    cursor: pointer;
+}
+
+/* --- התאמה לטלפונים (Mobile) --- */
+@media (max-width: 768px) {
+    .hamburger {
+        display: block; /* הצגת ההמבורגר רק במובייל */
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #0a0a0c;
+        flex-direction: column;
+        padding: 20px 0;
+        gap: 15px;
+        transition: 0.3s ease-in-out;
+        display: none; /* הסתרת התפריט כשהוא סגור */
+    }
+
+    .nav-links.open {
+        display: flex; /* הצגת התפריט כשהוא פתוח */
+        border-bottom: 1px solid var(--neon-blue);
+    }
+
+    .nav-link {
+        font-size: 1.2rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    .user-section-mobile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+}
