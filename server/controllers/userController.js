@@ -44,7 +44,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email: email.toLowerCase() });
+        const user = await User.findOne({ email: email.toLowerCase() });       
         if (!user) return res.status(400).send('אימייל או סיסמה שגויים');
 
         const validPassword = await bcrypt.compare(password, user.password);

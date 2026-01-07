@@ -31,7 +31,7 @@ const MyScores = () => {
         <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
             <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>היסטוריית הציונים שלי 🏆</h1>
             {results.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#f9f9f9', borderRadius: '10px' }}>
+                <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#9c9c9cff', borderRadius: '10px' }}>
                     <p>עדיין לא פתרת חידונים. זה הזמן להתחיל!</p>
                 </div>
             ) : (

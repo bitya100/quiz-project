@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './ManageUsers.css';
 
 const ManageUsers = () => {
     const [users, setUsers] = useState([]);
@@ -36,16 +37,16 @@ const ManageUsers = () => {
             alert("התפקיד עודכן בהצלחה!");
             fetchUsers(); 
         } catch (err) {
-            alert("שגיאה בעדכון התפקיד");
+            alert(err.response?.data || "שגיאה בעדכון התפקיד");
         }
     };
 
-    if (loading) return <div style={{textAlign: 'center', marginTop: '50px', color: 'white'}}>טוען משתמשים...</div>;
+    if (loading) return <div className="loading-text">טוען משתמשים...</div>;
 
     return (
-        <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto' }}>
-            <h1 style={{ textAlign: 'center', color: 'white', marginBottom: '30px' }}>ניהול משתמשים 👥</h1>
-            <div className="table-container">
+        <div className="manage-users-page" dir="rtl">
+            <h1 className="admin-title">ניהול משתמשים 👥</h1>
+            <div className="table-wrapper">
                 <table className="admin-table">
                     <thead>
                         <tr>
@@ -57,28 +58,21 @@ const ManageUsers = () => {
                     </thead>
                     <tbody>
                         {users.map(user => (
-                            <tr key={user._id}>
-                                <td>{user.userName}</td>
-                                <td>{user.email}</td>
-                                <td style={{ color: user.role === 'admin' ? 'var(--neon-purple)' : 'white' }}>
-                                    {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
+                            <tr key={user._id} className="user-row">
+                                <td data-label="שם משתמש" className="text-white">{user.userName}</td>
+                                <td data-label="אימייל" className="text-white">{user.email}</td>
+                                <td data-label="תפקיד">
+                                    <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
+                                        {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
+                                    </span>
                                 </td>
-                                <td>
-                                    {user.role === 'admin' ? (
-                                        <button 
-                                            onClick={() => handleRoleChange(user._id, 'user', user.userName)}
-                                            style={{...adminBtnStyle, backgroundColor: '#8c44ffff'}}
-                                        >
-                                            הפוך למשתמש
-                                        </button>
-                                    ) : (
-                                        <button 
-                                            onClick={() => handleRoleChange(user._id, 'admin', user.userName)}
-                                            style={adminBtnStyle}
-                                        >
-                                            הפוך למנהל
-                                        </button>
-                                    )}
+                                <td data-label="פעולות">
+                                    <button 
+                                        onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
+                                        className={`admin-btn ${user.role === 'admin' ? 'btn-remove' : 'btn-add'}`}
+                                    >
+                                        {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -87,17 +81,6 @@ const ManageUsers = () => {
             </div>
         </div>
     );
-};
-
-const adminBtnStyle = {
-    backgroundColor: 'var(--neon-purple)',
-    color: 'white',
-    border: 'none',
-    padding: '8px 15px',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    transition: '0.3s'
 };
 
 export default ManageUsers;

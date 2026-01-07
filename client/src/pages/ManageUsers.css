@@ -1,0 +1,140 @@
+/* הגדרות כלליות לדף */
+.manage-users-page {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    color: white;
+}
+
+.admin-title {
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px var(--neon-blue);
+}
+
+.loading-text {
+    text-align: center;
+    margin-top: 50px;
+    color: white;
+}
+
+/* מעטפת הטבלה - רקע שחור בלבד */
+.table-wrapper {
+    background-color: #000000 !important;
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #000000 !important; /* מוודא שהטבלה שחורה */
+}
+
+/* כותרות */
+.admin-table th {
+    background-color: #111 !important;
+    color: #40e0d0;
+    padding: 15px;
+    text-align: right;
+    border-bottom: 2px solid #222;
+}
+
+/* שורות המשתמשים - ביטול השחור/לבן */
+.admin-table tr, 
+.admin-table tr:nth-child(even), 
+.admin-table tr:nth-child(odd) {
+    background-color: #000000 !important; /* הופך את כל השורות לשחורות */
+}
+
+/* אפקט מעבר עכבר עדין (Hover) */
+.admin-table tr:hover {
+    background-color: #111111 !important;
+}
+
+.admin-table td {
+    padding: 15px;
+    border-bottom: 1px solid #222;
+}
+
+/* צבעי טקסט וסטטוס */
+.text-white {
+    color: #ffffff !important;
+}
+
+.role-admin {
+    color: #bc13fe;
+    font-weight: bold;
+}
+
+.role-user {
+    color: #ffffff;
+}
+
+/* כפתורים */
+.admin-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-add {
+    background-color: #d36bf9;
+    color: white;
+}
+
+.btn-remove {
+    background-color: #573b9e;
+    color: white;
+    border: 1px solid #555;
+}
+.btn-remove:hover{
+     background-color: #713af2;
+}
+.admin-btn:hover {
+    filter: brightness(1.2);
+}
+
+/* --- תיקון מובייל (כרטיסים) --- */
+@media (max-width: 768px) {
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .admin-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #222;
+        padding: 12px 5px;
+        text-align: left;
+    }
+
+    .admin-table td::before {
+        content: attr(data-label);
+        color: #40e0d0;
+        font-weight: bold;
+    }
+
+    .admin-table td:last-child {
+        border-bottom: none;
+        flex-direction: column;
+        padding-top: 15px;
+    }
+
+    .admin-btn {
+        width: 100%;
+    }
+}
