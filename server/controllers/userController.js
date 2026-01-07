@@ -108,30 +108,43 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// --- הפיכת משתמש למנהל (למנהל בלבד) ---
-const makeAdmin = async (req, res) => {
+// --- עדכון תפקיד משתמש (למנהל בלבד + הגנה על המנהל האחרון) ---
+const updateUserRole = async (req, res) => {
     try {
-        const userId = req.params.id;
-        const user = await User.findByIdAndUpdate(
-            userId, 
-            { role: 'admin' }, 
+        const userIdToUpdate = req.params.id;
+        const { role } = req.body; // 'admin' או 'user'
+
+        // 1. אם מנסים להסיר הרשאת מנהל (להפוך ל-user)
+        if (role === 'user') {
+            const adminCount = await User.countDocuments({ role: 'admin' });
+            const userToUpdate = await User.findById(userIdToUpdate);
+
+            // בדיקה אם זה המנהל האחרון במערכת
+            if (userToUpdate.role === 'admin' && adminCount <= 1) {
+                return res.status(400).send('לא ניתן להסיר את המנהל האחרון במערכת. חייב להישאר לפחות מנהל אחד.');
+            }
+        }
+
+        // 2. ביצוע העדכון
+        const updatedUser = await User.findByIdAndUpdate(
+            userIdToUpdate, 
+            { role: role }, 
             { new: true }
         ).select('-password');
 
-        if (!user) return res.status(404).send('משתמש לא נמצא');
+        if (!updatedUser) return res.status(404).send('משתמש לא נמצא');
         
-        res.json({ message: `המשתמש ${user.userName} הוא עכשיו מנהל`, user });
+        res.json({ message: `המשתמש ${updatedUser.userName} הוא כעת ${role}`, user: updatedUser });
     } catch (ex) {
         res.status(500).send('שגיאה בעדכון התפקיד');
     }
 };
 
-// ייצוא מאוחד של כל הפונקציות
 module.exports = { 
     register, 
     login, 
     saveQuizResult, 
     getProfile,
     getAllUsers,
-    makeAdmin 
+    updateUserRole 
 };
