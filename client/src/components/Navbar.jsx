@@ -59,10 +59,10 @@ const Navbar = () => {
                         </>
                     ) : (
                         <div className="user-section-mobile">
-                            <span className="user-greeting">
-                                שלום, <b style={{color: 'var(--neon-blue)'}}>{userName || 'אורח'}</b>
-                            </span>
-                            <button onClick={handleLogout} className="btn-logout">התנתק</button>
+                           <span className="user-greeting" style={{ color: 'var(--neon-blue)' }}>
+    שלום, <b style={{ color: 'var(--neon-blue)' }}>{userName || 'אורח'}</b>
+</span>
+                            <button onClick={handleLogout} className="btn-logout" style={{ marginRight: '15px' }}>התנתק</button>
                         </div>
                     )}
                 </div>

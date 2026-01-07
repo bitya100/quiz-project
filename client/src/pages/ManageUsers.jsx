@@ -34,14 +34,13 @@ const ManageUsers = () => {
                 { role: newRole },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            alert("התפקיד עודכן בהצלחה!");
             fetchUsers(); 
         } catch (err) {
-            alert(err.response?.data || "שגיאה בעדכון התפקיד");
+            alert("שגיאה בעדכון התפקיד");
         }
     };
 
-    if (loading) return <div className="loading-text">טוען משתמשים...</div>;
+    if (loading) return <div style={{textAlign: 'center', padding: '50px'}}>טוען...</div>;
 
     return (
         <div className="manage-users-page" dir="rtl">
@@ -58,11 +57,11 @@ const ManageUsers = () => {
                     </thead>
                     <tbody>
                         {users.map(user => (
-                            <tr key={user._id} className="user-row">
-                                <td data-label="שם משתמש" className="text-white">{user.userName}</td>
-                                <td data-label="אימייל" className="text-white">{user.email}</td>
+                            <tr key={user._id}>
+                                <td data-label="שם משתמש">{user.userName}</td>
+                                <td data-label="אימייל">{user.email}</td>
                                 <td data-label="תפקיד">
-                                    <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
+                                    <span style={{ color: user.role === 'admin' ? '#a333c8' : '#333', fontWeight: 'bold' }}>
                                         {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
                                     </span>
                                 </td>

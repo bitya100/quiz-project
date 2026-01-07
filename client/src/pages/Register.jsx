@@ -82,7 +82,7 @@ const styles = {
   },
   inputContainer: { display: 'flex', flexDirection: 'column', textAlign: 'right' },
   error: { color: '#ff4d4d', fontSize: '0.8rem', marginTop: '5px' },
-  footer: { marginTop: '25px', color: '#94a3b8', fontSize: '0.9rem' },
+  footer: { marginTop: '25px', fontSize: '0.9rem' },
   link: { color: '#40e0d0', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }
 };
 

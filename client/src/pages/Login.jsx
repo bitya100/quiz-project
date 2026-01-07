@@ -111,7 +111,6 @@ const styles = {
     },
     footer: {
         marginTop: '25px',
-        color: '#94a3b8',
         fontSize: '0.9rem'
     },
     link: {

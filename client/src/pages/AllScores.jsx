@@ -66,7 +66,7 @@ const AllScores = () => {
 const styles = {
     container: { padding: '40px', maxWidth: '1000px', margin: '0 auto' },
     title: { textAlign: 'center', color: '#2c3e50' },
-    subtitle: { textAlign: 'center', color: '#7f8c8d', marginBottom: '30px' },
+    subtitle: { textAlign: 'center', color: '#ffffffff', marginBottom: '30px' },
     tableWrapper: { boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: '12px', overflow: 'hidden' },
     table: { width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' },
     thr: { backgroundColor: '#2c3e50', color: 'white' },

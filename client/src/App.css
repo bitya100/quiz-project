@@ -11,74 +11,90 @@
 body {
     margin: 0;
     font-family: 'Assistant', sans-serif;
-    background-color: var(--bg-dark);
-    background-image: 
-        radial-gradient(circle at 20% 20%, rgba(188, 19, 254, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 80% 80%, rgba(64, 224, 208, 0.12) 0%, transparent 40%);
-    color: var(--text-white);
+    background-color:rgb(172, 172, 172);
     direction: rtl;
     min-height: 100vh;
 }
 
-/* --- נאבבאר --- */
+/* --- נאבבאר (גרסה מאוחדת ומתוקנת) --- */
 .navbar {
-    background: rgba(10, 10, 12, 0.95);
-    backdrop-filter: blur(15px);
+    background: #000000 !important;
     border-bottom: 2px solid var(--neon-blue);
-    padding: 1rem 5%;
+    padding: 10px 5%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 2000;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .nav-logo {
     font-size: 2.2rem;
     font-weight: 900;
     color: #fff !important;
-    text-shadow: 0 0 10px var(--neon-blue), 0 0 20px rgba(64, 224, 208, 0.4);
+    text-shadow: 0 0 10px var(--neon-blue);
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 2px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1; /* מוסיף גמישות */
+    justify-content: space-evenly; /* מפזר את הקישורים שווה במרכז */
 }
 
 .nav-link {
     text-decoration: none;
     color: var(--text-white);
     font-weight: 700;
-    margin: 0 15px;
     transition: 0.3s;
+    white-space: nowrap;
 }
 
-/* החזרתי את הזוהר הנהדר שאהבת */
 .nav-link:hover {
     color: var(--neon-blue);
-    text-shadow: 0 0 12px var(--neon-blue), 0 0 20px rgba(64, 224, 208, 0.6);
+    text-shadow: 0 0 12px var(--neon-blue);
 }
 
-/* --- הכותרת הראשית QUIZ ZONE --- */
+.nav-link-manage-users { color: #ffeb3b !important; }
+.nav-link-manage-scores { color: #bc13fe !important; }
+
+.hamburger {
+    display: none;
+    font-size: 2.2rem;
+    color: white;
+    cursor: pointer;
+    z-index: 2101;
+}
+
+/* --- כותרות ועיצוב דף --- */
 .main-title {
     font-size: 4.5rem;
     font-weight: 900;
     text-align: center;
-    color: #fff; /* לבן בוהק כבסיס */
+    color: #ffffff;
     text-shadow: 0 0 15px var(--neon-blue), 0 0 30px rgba(64, 224, 208, 0.4);
     margin-top: 50px;
     margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 4px;
 }
 
 .subtitle {
     text-align: center;
-    color: #94a3b8;
     font-size: 1.2rem;
     margin-bottom: 40px;
 }
 
-/* --- כרטיסים וגריד --- */
+/* --- כרטיסי חידונים --- */
 .quizzes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -89,35 +105,30 @@ body {
 }
 
 .quiz-card {
-    background: var(--card-bg);
+    background: black;
     border: 1px solid rgba(64, 224, 208, 0.2);
     border-radius: 20px;
     padding: 30px;
-    position: relative;
     transition: 0.4s ease;
     text-align: center;
-    overflow: hidden;
 }
+
+
+
+
 
 .quiz-card:hover {
     transform: translateY(-10px);
-    border-color: var(--neon-blue);
+    border-color:var(--neon-blue);
     box-shadow: 0 0 25px rgba(64, 224, 208, 0.2);
 }
 
-.card-title {
-    font-size: 1.8rem;
-    color: var(--neon-blue);
-    margin-bottom: 15px;
-    font-weight: 800;
-}
 
-.card-description {
-    color: #6cdfff;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 25px;
-}
+
+
+
+
+
 
 .play-btn {
     width: 100%;
@@ -138,7 +149,7 @@ body {
     box-shadow: 0 0 30px var(--neon-blue);
 }
 
-/* כפתור יצירה מנהל */
+/* --- כפתורי ניהול וטעינה --- */
 .admin-create-btn {
     background: var(--neon-purple);
     color: white;
@@ -154,12 +165,6 @@ body {
     display: block;
 }
 
-.admin-create-btn:hover {
-    box-shadow: 0 0 40px var(--neon-purple);
-    transform: scale(1.05);
-}
-
-/* אנימציית טעינה */
 .spinner {
     width: 50px;
     height: 50px;
@@ -168,164 +173,81 @@ body {
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
-
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-
-/* עיצוב כפתור התנתקות */
-.btn-logout {
-    background-color: #f8d7da; /* רקע אדום בהיר מאוד */
-    color: #b02a37;           /* טקסט אדום כהה */
+/* --- כפתור התנתקות --- */
+.btn-logout, .logout-btn {
+    background-color: #f8d7da;
+    color: #b02a37;
     border: 1px solid #f5c2c7;
     padding: 6px 15px;
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    margin-right: 15px;      /* רווח מהקישורים האחרים */
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;                /* רווח לאייקון אם תוסיף בעתיד */
+    transition: all 0.2s;
 }
 
-/* אפקט מעבר עכבר */
 .btn-logout:hover {
-    background-color: #dc3545; /* הופך לאדום מלא */
-    color: white;              /* טקסט לבן */
-    border-color: #dc3545;
-    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+    background-color: #dc3545;
+    color: white;
 }
 
-/* אפקט לחיצה */
-.btn-logout:active {
-    transform: scale(0.95);
-}
-
-
-/* עיצוב כללי לטבלאות הציונים */
+/* --- טבלאות --- */
 .table-wrapper, .table-container {
     background-color: white;
     border-radius: 12px;
     padding: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin: 40px auto;
+    max-width: 90%;
 }
 
-/* הפיכת האותיות לכהות וברורות */
 table {
     width: 100%;
-    color: #2c3e50; /* כחול-כהה עמוק, קריא מאוד */
+    color: #2c3e50;
     border-collapse: collapse;
 }
 
-/* עיצוב שורת הכותרת */
 th {
     background-color: #34495e;
-    color: #ffffff !important; /* לבן בוהק על רקע כהה */
+    color: #ffffff !important;
     padding: 15px;
-    font-weight: bold;
     text-align: center;
 }
 
-/* עיצוב שורות הנתונים - האותיות שראינו בתמונה */
 td {
     padding: 12px;
     border-bottom: 1px solid #eee;
-    font-size: 16px;
-    color: #333 !important; /* וידוא שהטקסט שחור/כהה */
+    color: #333 !important;
     text-align: center;
 }
 
-/* הדגשת שם החידון */
-td:first-child {
-    font-weight: 600;
-}
-
-/* שורות צבועות לסירוגין לקריאה קלה */
-tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
-/* אפקט מעבר עכבר על שורה */
-tbody tr:hover {
-    background-color: #f1f1f1;
-    transition: 0.2s;
-}
-
-
-.table-wrapper, .table-container {
-    background-color: white;
-    border-radius: 12px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin: 40px auto; /* מוסיף רווח מלמעלה וממרכז את הטבלה */
-    max-width: 90%;    /* מונע מהטבלה להיצמד לקצוות המסך */
-}
-
-
-
-/* עיצוב בסיסי לנאבבאר */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 5%;
-    background: rgba(10, 10, 12, 0.95);
-    border-bottom: 2px solid var(--neon-blue);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.nav-links {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-/* הסתרת המבורגר כברירת מחדל (למחשב) */
-.hamburger {
-    display: none;
-    font-size: 2rem;
-    color: var(--neon-blue);
-    cursor: pointer;
-}
-
-/* --- התאמה לטלפונים (Mobile) --- */
+/* --- רספונסיביות למובייל (תיקון ההשתלטות) --- */
 @media (max-width: 768px) {
     .hamburger {
-        display: block; /* הצגת ההמבורגר רק במובייל */
+        display: block;
     }
 
     .nav-links {
-        position: absolute;
-        top: 100%;
+        display: none;
+        flex-direction: column;
+        position: absolute; /* שינוי מ-fixed כדי שלא ישתלט על כל המסך */
+        top: 100%; /* נפתח בדיוק מתחת לנאבבאר */
         left: 0;
         width: 100%;
-        background: #0a0a0c;
-        flex-direction: column;
+        height: auto; /* לא תופס את כל הגובה */
+        background-color: #0a0a0c;
         padding: 20px 0;
-        gap: 15px;
-        transition: 0.3s ease-in-out;
-        display: none; /* הסתרת התפריט כשהוא סגור */
+        gap: 20px;
+        z-index: 2100;
+        align-items: center;
+        border-bottom: 2px solid var(--neon-blue);
     }
 
     .nav-links.open {
-        display: flex; /* הצגת התפריט כשהוא פתוח */
-        border-bottom: 1px solid var(--neon-blue);
-    }
-
-    .nav-link {
-        font-size: 1.2rem;
-        width: 100%;
-        text-align: center;
-    }
-
-    .user-section-mobile {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin-top: 10px;
     }
+
+    .main-title { font-size: 2.8rem; }
 }

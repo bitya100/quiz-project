@@ -23,7 +23,7 @@ function App() {
         {/* קונטיינר ראשי עם עיצוב רספונסיבי [cite: 21, 27] */}
         <div style={{ 
           minHeight: '100vh', 
-          backgroundColor: '#b7b7b7ff', // צבע כהה שמתאים לעיצוב הניאון
+          // backgroundColor: '#c1c1c1ff', // צבע כהה שמתאים לעיצוב הניאון
           paddingBottom: '50px',
           color: 'white'
         }}>

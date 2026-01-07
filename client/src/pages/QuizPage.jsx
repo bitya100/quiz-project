@@ -138,8 +138,15 @@ const QuizPage = () => {
 };
 
 const styles = {
-    container: { display: 'flex', justifyContent: 'center', padding: '40px', backgroundColor: '#f0f2f5', minHeight: '90vh' },
-    card: { backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', width: '100%', maxWidth: '600px', textAlign: 'center' },
+    container: { 
+        display: 'flex', 
+        justifyContent: 'center', 
+        padding: '40px', 
+        backgroundColor: 'transparent', // יראה את הצבע של ה-body
+        width: '100%',
+        boxSizing: 'border-box'
+    },
+    card: { backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', width: '100%', maxWidth: '600px', textAlign: 'center', color: '#333' },
     header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
     progress: { width: '100%', height: '8px', backgroundColor: '#eee', borderRadius: '4px', marginBottom: '25px', overflow: 'hidden' },
     progressBar: { height: '100%', backgroundColor: '#3498db', transition: 'width 0.3s ease' },
@@ -147,8 +154,10 @@ const styles = {
     optionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
     optionButton: { padding: '15px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff' },
     resultCircle: { width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#3498db', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px auto', color: '#fff', fontSize: '24px' },
-    backButton: { marginTop: '20px', padding: '12px 25px', backgroundColor: '#3498db', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' },
+    backButton: { marginTop: '20px', padding: '12px 25px', backgroundColor: '#00c1abff', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' },
     loading: { textAlign: 'center', marginTop: '50px', fontSize: '20px' }
+
+
 };
 
 export default QuizPage;

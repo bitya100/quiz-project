@@ -1,140 +1,104 @@
-/* הגדרות כלליות לדף */
 .manage-users-page {
-    padding: 20px;
-    max-width: 1000px;
+    padding: 30px 15px;
+    max-width: 1100px;
     margin: 0 auto;
-    color: white;
+    min-height: 100vh;
 }
 
 .admin-title {
     text-align: center;
+    color: #34495e;
+    font-size: 2.2rem;
     margin-bottom: 30px;
-    text-shadow: 0 0 10px var(--neon-blue);
+    font-weight: bold;
 }
 
-.loading-text {
-    text-align: center;
-    margin-top: 50px;
-    color: white;
-}
-
-/* מעטפת הטבלה - רקע שחור בלבד */
+/* מעטפת הטבלה */
 .table-wrapper {
-    background-color: #000000 !important;
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    border-radius: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     overflow: hidden;
+    border: 1px solid #dee2e6;
 }
 
 .admin-table {
     width: 100%;
     border-collapse: collapse;
-    background-color: #000000 !important; /* מוודא שהטבלה שחורה */
+    /* background-color: white; */
 }
 
-/* כותרות */
+/* כותרת הטבלה - כחול כהה כמו בטבלת הציונים */
 .admin-table th {
-    background-color: #111 !important;
-    color: #40e0d0;
+    background-color: #455e7a; /* הצבע המדויק מהתמונה */
+    color: #ffffff;
     padding: 15px;
     text-align: right;
-    border-bottom: 2px solid #222;
+    font-weight: 600;
 }
 
-/* שורות המשתמשים - ביטול השחור/לבן */
-.admin-table tr, 
-.admin-table tr:nth-child(even), 
-.admin-table tr:nth-child(odd) {
-    background-color: #000000 !important; /* הופך את כל השורות לשחורות */
-}
-
-/* אפקט מעבר עכבר עדין (Hover) */
-.admin-table tr:hover {
-    background-color: #111111 !important;
-}
-
+/* שורות הטבלה - טקסט כהה וברור */
 .admin-table td {
     padding: 15px;
-    border-bottom: 1px solid #222;
+    text-align: right;
+    color: #2c3e50; 
+    border-bottom: 1px solid #f1f1f1;
 }
 
-/* צבעי טקסט וסטטוס */
-.text-white {
-    color: #ffffff !important;
+/* אפקט זברה - שורה אחת לבנה, שורה אחת אפורה בהירה מאוד */
+.admin-table tr:nth-child(even) {
+    background-color: #fcfcfc;
 }
 
-.role-admin {
-    color: #bc13fe;
-    font-weight: bold;
+.admin-table tr:nth-child(odd) {
+    background-color: #ffffff;
 }
 
-.role-user {
-    color: #ffffff;
-}
 
-/* כפתורים */
+
+/* כפתורים בעיצוב מודרני */
 .admin-btn {
-    padding: 8px 16px;
+    padding: 8px 20px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
     font-weight: bold;
-    transition: 0.3s;
-}
-
-.btn-add {
-    background-color: #d36bf9;
     color: white;
+    transition: 0.2s ease;
 }
 
+/* כפתור הפוך למשתמש - כחול */
 .btn-remove {
-    background-color: #573b9e;
-    color: white;
-    border: 1px solid #555;
+    background-color: #2185d0;
 }
-.btn-remove:hover{
-     background-color: #713af2;
+
+/* כפתור הפוך למנהל - סגול */
+.btn-add {
+    background-color: #a333c8;
 }
+
 .admin-btn:hover {
-    filter: brightness(1.2);
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
-/* --- תיקון מובייל (כרטיסים) --- */
+/* מובייל - שומר על קו נקי */
 @media (max-width: 768px) {
-    .admin-table thead {
-        display: none;
-    }
-
+    .admin-table thead { display: none; }
     .admin-table tr {
         display: block;
-        margin-bottom: 15px;
-        border: 1px solid #333;
-        border-radius: 10px;
-        padding: 10px;
+        margin: 15px;
+        border: 1px solid #eee;
+        border-radius: 8px;
     }
-
     .admin-table td {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #222;
-        padding: 12px 5px;
-        text-align: left;
+        border-bottom: 1px solid #f9f9f9;
     }
-
     .admin-table td::before {
         content: attr(data-label);
-        color: #40e0d0;
         font-weight: bold;
-    }
-
-    .admin-table td:last-child {
-        border-bottom: none;
-        flex-direction: column;
-        padding-top: 15px;
-    }
-
-    .admin-btn {
-        width: 100%;
+        color: #455e7a;
     }
 }
