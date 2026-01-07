@@ -30,7 +30,7 @@ router.get('/my-scores', auth, async (req, res) => {
     }
 });
 
-// 3. מנהל בלבד: קבלת כל הציונים עם שמות המשתמשים (מתוקן)
+// 3. מנהל בלבד: קבלת כל הציונים עם שמות המשתמשים 
 router.get('/admin/all', auth, adminOnly, async (req, res) => {
     try {
         // כאן הוספנו את ה-populate כדי לקבל את שם המשתמש מה-ID

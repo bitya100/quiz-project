@@ -23,4 +23,7 @@ router.get('/profile', auth, userController.getProfile);
 // בונוס לדרישות הפרויקט: נתיב למנהל בלבד לצפייה בכל המשתמשים
 router.get('/all', auth, adminOnly, userController.getAllUsers);
 
+// בונוס נוסף: נתיב למנהל בלבד לקידום משתמש למנהל
+router.put('/make-admin/:id', auth, adminOnly, userController.makeAdmin);
+
 module.exports = router;

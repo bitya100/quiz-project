@@ -2,7 +2,7 @@ const { User, validateUser } = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// --- פונקציית הרשמה מתוקנת (כוללת החזרת נתונים לחיבור אוטומטי) ---
+// --- פונקציית הרשמה ---
 const register = async (req, res) => {
     try {
         const { error } = validateUser(req.body);
@@ -23,13 +23,11 @@ const register = async (req, res) => {
 
         await newUser.save();
 
-        // יצירת טוקן מיד לאחר ההרשמה
         const token = jwt.sign(
             { _id: newUser._id, role: newUser.role }, 
             process.env.JWT_SECRET || 'fallback_secret'
         );
 
-        // שליחת כל הנתונים הנדרשים ל-Frontend
         return res.status(201).json({ 
             message: 'נרשמת בהצלחה!',
             token: token,
@@ -110,11 +108,30 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// הייצוא הכולל
+// --- הפיכת משתמש למנהל (למנהל בלבד) ---
+const makeAdmin = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findByIdAndUpdate(
+            userId, 
+            { role: 'admin' }, 
+            { new: true }
+        ).select('-password');
+
+        if (!user) return res.status(404).send('משתמש לא נמצא');
+        
+        res.json({ message: `המשתמש ${user.userName} הוא עכשיו מנהל`, user });
+    } catch (ex) {
+        res.status(500).send('שגיאה בעדכון התפקיד');
+    }
+};
+
+// ייצוא מאוחד של כל הפונקציות
 module.exports = { 
     register, 
     login, 
     saveQuizResult, 
     getProfile,
-    getAllUsers 
+    getAllUsers,
+    makeAdmin 
 };
