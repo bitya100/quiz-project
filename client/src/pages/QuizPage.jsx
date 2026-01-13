@@ -18,6 +18,12 @@ const QuizPage = () => {
         audio.play().catch(err => console.log("Audio play error:", err));
     };
 
+    // פונקציה חדשה להשמעת מחיאות כפיים בסיום
+    const playApplause = () => {
+        const audio = new Audio('/music/clapps3.mp3');
+        audio.play().catch(err => console.log("Applause audio error:", err));
+    };
+
     useEffect(() => {
         axios.get(`http://localhost:3001/api/quizzes/${id}`)
             .then(res => setQuiz(res.data))
@@ -26,12 +32,13 @@ const QuizPage = () => {
 
     const finishQuiz = useCallback(async (finalScore) => {
         setShowScore(true);
-        const token = localStorage.getItem('token'); // שימוש בטוקן במקום רק ב-ID
+        playApplause(); // השמעת השמע ברגע שהחידון מסתיים
+        
+        const token = localStorage.getItem('token');
         const finalPercent = Math.round((finalScore / quiz.questions.length) * 100);
 
         if (token) {
             try {
-                // שליחת התוצאה עם ה-Token ב-Headers
                 await axios.post('http://localhost:3001/api/results/save', {
                     quizId: id,
                     quizTitle: quiz.title,
@@ -142,7 +149,7 @@ const styles = {
         display: 'flex', 
         justifyContent: 'center', 
         padding: '40px', 
-        backgroundColor: 'transparent', // יראה את הצבע של ה-body
+        backgroundColor: 'transparent',
         width: '100%',
         boxSizing: 'border-box'
     },
@@ -156,8 +163,6 @@ const styles = {
     resultCircle: { width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#3498db', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px auto', color: '#fff', fontSize: '24px' },
     backButton: { marginTop: '20px', padding: '12px 25px', backgroundColor: '#00c1abff', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' },
     loading: { textAlign: 'center', marginTop: '50px', fontSize: '20px' }
-
-
 };
 
 export default QuizPage;
