@@ -1,142 +1,146 @@
-// import React, { useState } from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-// import '../App.css';
-
-// const Navbar = () => {
-//     const [isMenuOpen, setIsMenuOpen] = useState(false);
-//     const navigate = useNavigate();
-
-//     // שליפת נתונים מה-localStorage לצורך הרשאות מותאמות
-//     const token = localStorage.getItem('token');
-//     const userRole = localStorage.getItem('role');
-//     const userName = localStorage.getItem('userName');
-
-//     const handleLogout = () => {
-//         localStorage.clear();
-//         setIsMenuOpen(false);
-//         window.location.href = '/login'; // אימות יציאה וניקוי נתונים
-//     };
-
-//     const closeMenu = () => setIsMenuOpen(false);
-
-//     return (
-//         <nav className="navbar" dir="rtl">
-//             <Link to="/" className="nav-logo" onClick={closeMenu}>QUIZ ZONE</Link>
-            
-//             {/* כפתור המבורגר לרספונסיביות */}
-//             <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-//                 {isMenuOpen ? '✕' : '☰'}
-//             </div>
-
-//             {/* רשימת קישורים */}
-//             <div className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
-//                 <Link to="/quizzes" className="nav-link" onClick={closeMenu}>חידונים</Link>
-                
-//                 {token && (
-//                     <Link to="/my-scores" className="nav-link" onClick={closeMenu}>הציונים שלי</Link>
-//                 )}
-
-//                 {/* תצוגת ניהול למנהל בלבד */}
-//                 {token && userRole === 'admin' && (
-//                     <>
-//                         <Link to="/admin/all-scores" className="nav-link" style={{color: 'var(--neon-purple)'}} onClick={closeMenu}>
-//                             ניהול ציונים
-//                         </Link>
-//                         <Link to="/admin/users" className="nav-link" style={{color: '#ffcc00'}} onClick={closeMenu}>
-//                             ניהול משתמשים
-//                         </Link>
-//                         <Link to="/create-quiz" className="nav-link nav-link-admin" onClick={closeMenu}>
-//                             צור חידון
-//                         </Link>
-//                     </>
-//                 )}
-
-//                 {/* אזור אימות ומשתמש - מבנה שטוח לפיזור נכון */}
-//                 <div className="nav-auth-section">
-//                     <span className="user-greeting" style={{ color: 'white' }}>
-//                         שלום, <b style={{ color: 'var(--neon-blue)' }}>{userName || 'אורח'}</b>
-//                     </span>
-                    
-//                     {!token ? (
-//                         <div className="auth-buttons">
-//                             <Link to="/login" className="nav-link" onClick={closeMenu}>התחברות</Link>
-//                             <Link to="/register" className="nav-link btn-register" onClick={closeMenu}>הרשמה</Link>
-//                         </div>
-//                     ) : (
-//                         <button onClick={handleLogout} className="btn-logout">התנתק</button>
-//                     )}
-//                 </div>
-//             </div>
-//         </nav>
-//     );
-// };
-
-// export default Navbar;
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../App.css';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+  Container,
+  Divider
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Navbar = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
-    const token = localStorage.getItem('token');
-    const userRole = localStorage.getItem('role');
-    const userName = localStorage.getItem('userName');
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('role');
+  const userName = localStorage.getItem('userName');
 
-    const handleLogout = () => {
-        localStorage.clear();
-        setIsMenuOpen(false);
-        window.location.href = '/login';
-    };
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsMenuOpen(false);
+    window.location.href = '/login';
+  };
 
-    const closeMenu = () => setIsMenuOpen(false);
+  const toggleDrawer = (open) => () => {
+    setIsMenuOpen(open);
+  };
 
-    return (
-        <nav className="navbar" dir="rtl">
-            <Link to="/" className="nav-logo" onClick={closeMenu}>QUIZ ZONE</Link>
+  // תפריט הצד (Drawer) לניידים - עומד בדרישת "תפריט המבורגר" 
+  const drawerList = (
+    <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+        <IconButton><CloseIcon /></IconButton>
+      </Box>
+      <List>
+        <ListItem button component={Link} to="/quizzes">
+          <ListItemText primary="חידונים" sx={{ textAlign: 'right' }} />
+        </ListItem>
+        {token && (
+          <ListItem button component={Link} to="/my-scores">
+            <ListItemText primary="הציונים שלי" sx={{ textAlign: 'right' }} />
+          </ListItem>
+        )}
+        {token && userRole === 'admin' && (
+          <>
+            <Divider />
+            <ListItem button component={Link} to="/admin/all-scores">
+              <ListItemText primary="ניהול ציונים" sx={{ textAlign: 'right', color: 'purple' }} />
+            </ListItem>
+            <ListItem button component={Link} to="/admin/users">
+              <ListItemText primary="ניהול משתמשים" sx={{ textAlign: 'right', color: 'orange' }} />
+            </ListItem>
+          </>
+        )}
+      </List>
+      <Divider />
+      <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Typography variant="body1">שלום, <b>{userName || 'אורח'}</b></Typography>
+        {!token ? (
+          <>
+            <Button fullWidth component={Link} to="/login" sx={{ mt: 1 }}>התחברות</Button>
+            <Button fullWidth variant="contained" component={Link} to="/register" sx={{ mt: 1 }}>הרשמה</Button>
+          </>
+        ) : (
+          <Button fullWidth variant="outlined" color="error" onClick={handleLogout} sx={{ mt: 1 }}>התנתק</Button>
+        )}
+      </Box>
+    </Box>
+  );
+
+  return (
+    <AppBar position="sticky" sx={{ backgroundColor: '#121212', borderBottom: '1px solid #333' }}>
+      <Container maxWidth="xl">
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          
+          {/* לוגו */}
+          <Typography
+            variant="h6"
+            component={Link}
+            to="/"
+            sx={{ textDecoration: 'none', color: '#00c1ab', fontWeight: 'bold', letterSpacing: 1 }}
+          >
+            QUIZ ZONE
+          </Typography>
+
+          {/* תפריט למסכים גדולים (Desktop)  */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+            <Button component={Link} to="/quizzes" color="inherit">חידונים</Button>
+            {token && <Button component={Link} to="/my-scores" color="inherit">הציונים שלי</Button>}
             
-            <div className="hamburger" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                {isMenuOpen ? '✕' : '☰'}
-            </div>
+            {token && userRole === 'admin' && (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button component={Link} to="/admin/all-scores" sx={{ color: '#bc13fe' }}>ניהול ציונים</Button>
+                <Button component={Link} to="/admin/users" sx={{ color: '#ffcc00' }}>ניהול משתמשים</Button>
+              </Box>
+            )}
 
-            <div className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
-                <Link to="/quizzes" className="nav-link" onClick={closeMenu}>חידונים</Link>
-                
-                {token && (
-                    <Link to="/my-scores" className="nav-link" onClick={closeMenu}>הציונים שלי</Link>
-                )}
+            <Typography sx={{ ml: 2, color: '#ccc' }}>
+              שלום, <span style={{ color: '#00c1ab' }}>{userName || 'אורח'}</span>
+            </Typography>
 
-                {token && userRole === 'admin' && (
-                    <>
-                        <Link to="/admin/all-scores" className="nav-link" style={{color: 'var(--neon-purple)'}} onClick={closeMenu}>
-                            ניהול ציונים
-                        </Link>
-                        <Link to="/admin/users" className="nav-link" style={{color: '#ffcc00'}} onClick={closeMenu}>
-                            ניהול משתמשים
-                        </Link>
-                        <Link to="/create-quiz" className="nav-link nav-link-admin" onClick={closeMenu}>
-                            צור חידון
-                        </Link>
-                    </>
-                )}
+            {!token ? (
+              <>
+                <Button component={Link} to="/login" color="inherit">התחברות</Button>
+                <Button component={Link} to="/register" variant="contained" sx={{ bgcolor: '#00c1ab' }}>הרשמה</Button>
+              </>
+            ) : (
+              <Button onClick={handleLogout} variant="outlined" color="error" size="small">התנתק</Button>
+            )}
+          </Box>
 
-                {/* ברכת השלום מוצגת כאלמנט עצמאי לפיזור אופטימלי */}
-                <span className="nav-link user-greeting-text">
-                    שלום, <b style={{ color: 'var(--neon-blue)' }}>{userName || 'אורח'}</b>
-                </span>
-                
-                {!token ? (
-                    <>
-                        <Link to="/login" className="nav-link" onClick={closeMenu}>התחברות</Link>
-                        <Link to="/register" className="nav-link btn-register" onClick={closeMenu}>הרשמה</Link>
-                    </>
-                ) : (
-                    <button onClick={handleLogout} className="btn-logout">התנתק</button>
-                )}
-            </div>
-        </nav>
-    );
+          {/* כפתור המבורגר לניידים  */}
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={toggleDrawer(true)}
+            sx={{ display: { md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Toolbar>
+      </Container>
+
+      {/* Drawer - התפריט שנפתח מהצד */}
+      <Drawer
+        anchor="right"
+        open={isMenuOpen}
+        onClose={toggleDrawer(false)}
+      >
+        {drawerList}
+      </Drawer>
+    </AppBar>
+  );
 };
 
 export default Navbar;
