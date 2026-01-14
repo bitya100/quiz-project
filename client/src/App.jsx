@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QuizProvider } from "./context/QuizContext";
 
@@ -14,41 +14,47 @@ import AllScores from "./pages/AllScores";
 import ManageUsers from "./pages/ManageUsers"; 
 
 function App() {
+  // ניהול מצב החיפוש ברמת האפליקציה כדי שיעבור מהנאבבאר לדפים
+  const [searchTerm, setSearchTerm] = useState('');
+
   return (
     <QuizProvider>
       <Router>
-        {/* הנאבבאר מופיע בכל הדפים [cite: 42] */}
-        <Navbar />
+        {/* הנאבבאר מקבל את הפונקציה לעדכון החיפוש ואת הערך הנוכחי */}
+        <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         
-        {/* קונטיינר ראשי עם עיצוב רספונסיבי [cite: 21, 27] */}
+        {/* קונטיינר ראשי עם עיצוב רספונסיבי */}
         <div style={{ 
           minHeight: '100vh', 
-          // backgroundColor: '#c1c1c1ff', // צבע כהה שמתאים לעיצוב הניאון
           paddingBottom: '50px',
           color: 'white'
         }}>
           <Routes>
-            {/* ניתובים ציבוריים */}
+            {/* ניתובים ציבוריים - מעבירים את searchTerm לדפים שצריכים סינון */}
             <Route path="/" element={<Navigate to="/quizzes" />} />
-            <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/quizzes" element={<Quizzes searchTerm={searchTerm} />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             
             {/* דף ביצוע החידון */}
             <Route path="/quiz/:id" element={<QuizPage />} />
 
-            {/* דפים למשתמשים מחוברים בלבד [cite: 17, 99] */}
-            <Route path="/my-scores" element={<MyScores />} />
+            {/* דפים למשתמשים מחוברים בלבד */}
+            <Route path="/my-scores" element={<MyScores searchTerm={searchTerm} />} />
 
-            {/* דפי ניהול למנהל בלבד (Admin Only) [cite: 14, 16, 97] */}
+            {/* דפי ניהול למנהל בלבד (Admin Only) */}
             <Route path="/create-quiz" element={<CreateQuiz />} />
             <Route path="/edit-quiz/:id" element={<CreateQuiz />} />
-            <Route path="/admin/all-scores" element={<AllScores />} /> 
-            <Route path="/admin/users" element={<ManageUsers />} />
+            
+            {/* דף ניהול הציונים מקבל את ה-searchTerm מהנאבבאר */}
+            <Route path="/admin/all-scores" element={<AllScores searchTerm={searchTerm} />} /> 
+            
+            {/* דף ניהול משתמשים - גם כאן נוכל להשתמש בחיפוש בעתיד */}
+            <Route path="/admin/users" element={<ManageUsers searchTerm={searchTerm} />} />
 
             {/* דף שגיאה 404 */}
             <Route path="*" element={
-              <h1 style={{ textAlign: 'center', marginTop: '100px', color: 'var(--neon-blue)' }}>
+              <h1 style={{ textAlign: 'center', marginTop: '100px', color: '#00c1ab', textShadow: '0 0 10px #00c1ab' }}>
                 404 - דף לא נמצא
               </h1>
             } />

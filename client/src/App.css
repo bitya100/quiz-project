@@ -298,3 +298,28 @@ td {
     font-family: 'Assistant', sans-serif !important;
 }
 
+/* עיצוב שורת החיפוש */
+.MuiTextField-root {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #34495e !important; /* צבע הכותרת של הטבלה */
+}
+
+/* הבטחת גופן אחיד לחיפוש */
+.MuiInputBase-input::placeholder {
+    font-family: 'Assistant', sans-serif;
+    opacity: 0.7;
+}
+
+
+/* התאמת שדה החיפוש ב-Navbar */
+.MuiInput-root {
+    font-family: 'Assistant', sans-serif !important;
+}
+
+.MuiInput-root::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+}

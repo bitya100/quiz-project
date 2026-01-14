@@ -6,13 +6,23 @@ import {
 } from '@mui/material';
 import './ManageUsers.css';
 
-const ManageUsers = () => {
-    const [users, setUsers] = useState([]);
+const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
+    const [users, setUsers] = useState([]); // המקור המלא מהשרת
+    const [filteredUsers, setFilteredUsers] = useState([]); // מה שמוצג לאחר סינון
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchUsers();
     }, []);
+
+    // לוגיקת הסינון - פועלת בכל פעם שרשימת המשתמשים משתנה או כשמקלידים בחיפוש
+    useEffect(() => {
+        const results = users.filter(user => 
+            user.userName?.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
+            user.email?.toLowerCase().includes(searchTerm?.toLowerCase() || "")
+        );
+        setFilteredUsers(results);
+    }, [searchTerm, users]);
 
     const fetchUsers = async () => {
         try {
@@ -21,6 +31,7 @@ const ManageUsers = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUsers(res.data);
+            setFilteredUsers(res.data);
             setLoading(false);
         } catch (err) {
             console.error("שגיאה בטעינת משתמשים", err);
@@ -38,7 +49,7 @@ const ManageUsers = () => {
                 { role: newRole },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            fetchUsers(); 
+            fetchUsers(); // רענון הרשימה לאחר העדכון
         } catch (err) {
             alert("שגיאה בעדכון התפקיד");
         }
@@ -46,13 +57,12 @@ const ManageUsers = () => {
 
     if (loading) return (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: '#00c1ab' }} />
         </Box>
     );
 
     return (
         <Container maxWidth="lg" className="manage-users-page" sx={{ py: 4 }} dir="rtl">
-            {/* הכותרת הותאמה בדיוק למראה של דף הציונים */}
             <Typography 
                 variant="h3" 
                 component="h1" 
@@ -66,38 +76,48 @@ const ManageUsers = () => {
                 ניהול משתמשים 👥
             </Typography>
 
-            <TableContainer component={Paper} className="scores-table-container">
+            <TableContainer component={Paper} className="scores-table-container" elevation={5}>
                 <Table sx={{ minWidth: 650 }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>שם משתמש</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>אימייל</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>תפקיד</TableCell>
-                            <TableCell align="center" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>פעולות</TableCell>
+                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>שם משתמש</TableCell>
+                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>אימייל</TableCell>
+                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>תפקיד</TableCell>
+                            <TableCell align="center" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>פעולות</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {users.map((user) => (
-                            <TableRow key={user._id} className="user-row">
-                                <TableCell align="right" sx={{ fontFamily: 'inherit' }}>{user.userName}</TableCell>
-                                <TableCell align="right" sx={{ fontFamily: 'inherit' }}>{user.email}</TableCell>
-                                <TableCell align="right" sx={{ fontFamily: 'inherit' }}>
-                                    <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
-                                        {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
-                                    </span>
-                                </TableCell>
-                                <TableCell align="center">
-                                    <Button 
-                                        variant="contained" 
-                                        className={user.role === 'admin' ? 'btn-to-user' : 'btn-to-admin'}
-                                        sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
-                                        onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
-                                    >
-                                        {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}
-                                    </Button>
+                        {filteredUsers.length > 0 ? (
+                            filteredUsers.map((user) => (
+                                <TableRow key={user._id} className="user-row" hover>
+                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>{user.userName}</TableCell>
+                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>{user.email}</TableCell>
+                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>
+                                        <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
+                                            {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <Button 
+                                            variant="contained" 
+                                            className={user.role === 'admin' ? 'btn-to-user' : 'btn-to-admin'}
+                                            sx={{ fontFamily: 'Assistant', fontWeight: 'bold', borderRadius: '8px' }}
+                                            onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
+                                        >
+                                            {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                                    <Typography variant="body1" sx={{ fontFamily: 'Assistant', color: 'gray' }}>
+                                        לא נמצאו משתמשים התואמים לחיפוש "{searchTerm}"
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>

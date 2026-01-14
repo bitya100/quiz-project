@@ -1,14 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuizzes } from '../context/QuizContext';
 import axios from 'axios';
 import '../App.css'; 
 
-const Quizzes = () => {
+const Quizzes = ({ searchTerm }) => { // קבלת ה-Prop מה-App.js
     const { quizzes, loading, refreshQuizzes } = useQuizzes();
+    const [filteredQuizzes, setFilteredQuizzes] = useState([]);
     const navigate = useNavigate();
     const userRole = localStorage.getItem('role');
     const token = localStorage.getItem('token');
+
+    // סינון החידונים בזמן אמת
+    useEffect(() => {
+        const results = quizzes.filter(quiz => 
+            quiz.title?.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
+            quiz.description?.toLowerCase().includes(searchTerm?.toLowerCase() || "")
+        );
+        setFilteredQuizzes(results);
+    }, [searchTerm, quizzes]);
 
     const deleteQuiz = async (id) => {
         if (!window.confirm("בטוח שברצונך למחוק את החידון לצמיתות?")) return;
@@ -44,13 +54,13 @@ const Quizzes = () => {
             </header>
 
             <div className="quizzes-grid">
-                {quizzes.length === 0 ? (
-                    <p className="subtitle" style={{gridColumn: '1/-1', fontSize: '2rem'}}>לא נמצאו חידונים כרגע...</p>
+                {filteredQuizzes.length === 0 ? (
+                    <p className="subtitle" style={{gridColumn: '1/-1', fontSize: '2rem'}}>
+                        {searchTerm ? `לא נמצאו חידונים עבור "${searchTerm}"` : 'לא נמצאו חידונים כרגע...'}
+                    </p>
                 ) : (
-                    quizzes.map(quiz => (
+                    filteredQuizzes.map(quiz => (
                         <div key={quiz._id} className="quiz-card">
-                            
-
                             <h3 className="card-title">{quiz.title}</h3>
                             <p className="card-description">{quiz.description}</p>
                             

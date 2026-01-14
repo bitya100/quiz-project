@@ -12,12 +12,14 @@ import {
   ListItemContent,
   Sheet,
   Divider,
-  Stack
+  Stack,
+  Input
 } from '@mui/joy';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 
-const Navbar = () => {
+const Navbar = ({ searchTerm, setSearchTerm }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -31,7 +33,6 @@ const Navbar = () => {
     window.location.href = '/login';
   };
 
-  // עיצוב משותף לזוהר ניאון
   const neonGlow = {
     color: '#00c1ab',
     textShadow: '0 0 8px rgba(0, 193, 171, 0.8), 0 0 15px rgba(0, 193, 171, 0.5)',
@@ -42,16 +43,11 @@ const Navbar = () => {
     textShadow: '0 0 8px rgba(188, 19, 254, 0.8)',
   };
 
-  // רשימת הניווט המעודכנת עם אפקט זוהר
   const NavLinks = ({ isMobile = false }) => (
     <>
       <ListItem>
         <ListItemButton component={Link} to="/quizzes" onClick={() => setIsMenuOpen(false)}>
-          <ListItemContent sx={{ 
-            textAlign: isMobile ? 'right' : 'center',
-            ...neonGlow,
-            fontWeight: 'bold'
-          }}>
+          <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...neonGlow, fontWeight: 'bold' }}>
             חידונים
           </ListItemContent>
         </ListItemButton>
@@ -60,11 +56,7 @@ const Navbar = () => {
       {token && (
         <ListItem>
           <ListItemButton component={Link} to="/my-scores" onClick={() => setIsMenuOpen(false)}>
-            <ListItemContent sx={{ 
-              textAlign: isMobile ? 'right' : 'center',
-              ...neonGlow,
-              fontWeight: 'bold'
-            }}>
+            <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...neonGlow, fontWeight: 'bold' }}>
               הציונים שלי
             </ListItemContent>
           </ListItemButton>
@@ -75,23 +67,14 @@ const Navbar = () => {
         <>
           <ListItem>
             <ListItemButton component={Link} to="/admin/all-scores" onClick={() => setIsMenuOpen(false)}>
-              <ListItemContent sx={{ 
-                textAlign: isMobile ? 'right' : 'center', 
-                ...adminGlow,
-                fontWeight: 'bold'
-              }}>
+              <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...adminGlow, fontWeight: 'bold' }}>
                 ניהול ציונים
               </ListItemContent>
             </ListItemButton>
           </ListItem>
           <ListItem>
             <ListItemButton component={Link} to="/admin/users" onClick={() => setIsMenuOpen(false)}>
-              <ListItemContent sx={{ 
-                textAlign: isMobile ? 'right' : 'center', 
-                color: 'orange',
-                textShadow: '0 0 8px rgba(255, 165, 0, 0.7)',
-                fontWeight: 'bold'
-              }}>
+              <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', color: 'orange', textShadow: '0 0 8px rgba(255, 165, 0, 0.7)', fontWeight: 'bold' }}>
                 ניהול משתמשים
               </ListItemContent>
             </ListItemButton>
@@ -104,7 +87,6 @@ const Navbar = () => {
   return (
     <Sheet
       variant="solid"
-      color="neutral"
       invertedColors
       sx={{
         display: 'flex',
@@ -116,95 +98,127 @@ const Navbar = () => {
         position: 'sticky',
         top: 0,
         zIndex: 1100,
-        boxShadow: '0 4px 20px rgba(0, 193, 171, 0.2)' // צל מתחת לנאבבאר
+        boxShadow: '0 4px 20px rgba(0, 193, 171, 0.2)'
       }}
     >
       {/* לוגו */}
-      <Typography
-        component={Link}
-        to="/"
-        level="h4"
-        sx={{ 
-            textDecoration: 'none', 
-            fontWeight: 'bold',
-            ...neonGlow,
-            fontSize: '1.5rem'
-        }}
-      >
+      <Typography component={Link} to="/" level="h4" sx={{ textDecoration: 'none', fontWeight: 'bold', ...neonGlow, fontSize: '1.5rem', flexShrink: 0 }}>
         QUIZ ZONE
       </Typography>
 
-      {/* תפריט למסכים גדולים */}
-      <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
-        <List orientation="horizontal" sx={{ gap: 1 }}>
-          <NavLinks />
-        </List>
-        
-        <Divider orientation="vertical" sx={{ mx: 1, bgcolor: '#333' }} />
-        
-        <Typography level="body-sm" sx={{ mr: 2, color: 'white' }}>
-          שלום, <b style={neonGlow}>{userName || 'אורח'}</b>
-        </Typography>
+      {/* --- שורת חיפוש חכמה (מתרחבת בלחיצה) - דסקטופ --- */}
+      <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexGrow: 1, justifyContent: 'center', px: 2 }}>
+        <Input
+          placeholder="חיפוש מהיר..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          startDecorator={<SearchIcon sx={{ color: '#00c1ab' }} />}
+          sx={{
+            width: '180px',
+            transition: 'all 0.3s ease',
+            backgroundColor: '#1a1a1a',
+            border: '1px solid #333',
+            color: 'white',
+            borderRadius: '20px',
+            '&:focus-within': {
+              width: '350px',
+              borderColor: '#00c1ab',
+              boxShadow: '0 0 10px rgba(0, 193, 171, 0.3)'
+            }
+          }}
+        />
+      </Box>
+
+      {/* תפריט וכפתורים */}
+      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
+          <List orientation="horizontal" sx={{ gap: 1 }}>
+            <NavLinks />
+          </List>
+          {token && <Divider orientation="vertical" sx={{ mx: 1, bgcolor: '#333', height: '24px' }} />}
+        </Box>
 
         {!token ? (
           <Stack direction="row" spacing={1}>
             <Button variant="ghost" component={Link} to="/login">התחברות</Button>
-            <Button variant="solid" sx={{ bgcolor: '#00c1ab', boxShadow: '0 0 10px #00c1ab' }} component={Link} to="/register">הרשמה</Button>
+            <Button variant="solid" sx={{ bgcolor: '#00c1ab' }} component={Link} to="/register">הרשמה</Button>
           </Stack>
         ) : (
-          <Button variant="outlined" color="danger" size="sm" onClick={handleLogout}>התנתק</Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 'bold', fontSize: '0.9rem' }}>
+              שלום, <span style={neonGlow}>{userName}</span>
+            </Typography>
+            <Button 
+                variant="outlined" 
+                color="danger" 
+                size="sm" 
+                sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: '8px' }} 
+                onClick={handleLogout}
+            >
+                התנתק
+            </Button>
+          </Box>
         )}
+
+        <IconButton
+          variant="outlined"
+          onClick={() => setIsMenuOpen(true)}
+          sx={{ display: { md: 'none' }, borderColor: '#00c1ab', color: '#00c1ab' }}
+        >
+          <MenuIcon />
+        </IconButton>
       </Box>
 
-      {/* כפתור המבורגר לניידים */}
-      <IconButton
-        variant="outlined"
-        color="neutral"
-        onClick={() => setIsMenuOpen(true)}
-        sx={{ display: { md: 'none' }, borderColor: '#00c1ab', color: '#00c1ab' }}
-      >
-        <MenuIcon />
-      </IconButton>
-
-      {/* Drawer - תפריט צד רספונסיבי */}
-      <Drawer
-        anchor="right"
-        open={isMenuOpen}
+      {/* Drawer למובייל וטאבלט */}
+      <Drawer 
+        anchor="right" 
+        open={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)}
-        slotProps={{
-          content: {
+        slotProps={{ 
+          backdrop: {
             sx: {
-              bgcolor: '#0a0a0ad8', // רקע כהה מאוד כדי שהזוהר יבלוט
-              color: 'white',
-              p: 3,
-              borderLeft: '1px solid #00c1ab'
-            },
+              // אם יש טקסט בחיפוש - מבטל טשטוש וצבע רקע כדי שיראו את התוצאות
+              backdropFilter: searchTerm ? 'none' : 'blur(4px)',
+              backgroundColor: searchTerm ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
+              transition: 'all 0.3s ease',
+            }
           },
+          content: { 
+            sx: { 
+              bgcolor: '#0a0a0c', 
+              color: 'white', 
+              p: 3, 
+              direction: 'rtl',
+              boxShadow: searchTerm ? '-10px 0 30px rgba(0,0,0,0.8)' : 'none' 
+            } 
+          } 
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Typography level="h6" sx={neonGlow}>תפריט</Typography>
           <IconButton onClick={() => setIsMenuOpen(false)} sx={{ color: 'white' }}><CloseIcon /></IconButton>
         </Box>
+
+        <Input
+          placeholder="חיפוש..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          startDecorator={<SearchIcon sx={{ color: '#00c1ab' }} />}
+          sx={{ 
+            mb: 3, 
+            backgroundColor: '#1a1a1a', 
+            color: 'white',
+            borderColor: '#333',
+            '&:focus-within': { borderColor: '#00c1ab' }
+          }}
+        />
+
         <Divider sx={{ mb: 2, bgcolor: '#333' }} />
-        <List>
-          <NavLinks isMobile />
-        </List>
+        <List><NavLinks isMobile /></List>
         
         <Box sx={{ mt: 'auto', textAlign: 'center', pb: 2 }}>
-          {/* עדכון: השם צבוע וזוהר גם כאן */}
-          <Typography sx={{ mb: 2, color: 'white' }}>
-            שלום, <b style={neonGlow}>{userName || 'אורח'}</b>
-          </Typography>
-          
-          {!token ? (
-            <Stack spacing={1}>
-              <Button fullWidth variant="outlined" component={Link} to="/login" onClick={() => setIsMenuOpen(false)}>התחברות</Button>
-              <Button fullWidth variant="solid" sx={{ bgcolor: '#00c1ab' }} component={Link} to="/register" onClick={() => setIsMenuOpen(false)}>הרשמה</Button>
-            </Stack>
-          ) : (
-            <Button fullWidth color="danger" variant="soft" onClick={handleLogout}>התנתק</Button>
-          )}
+           <Typography sx={{ mb: 2 }}>מחובר כ: <b style={neonGlow}>{userName || 'אורח'}</b></Typography>
+           {token && <Button fullWidth color="danger" variant="soft" onClick={handleLogout}>התנתק מהמערכת</Button>}
         </Box>
       </Drawer>
     </Sheet>
