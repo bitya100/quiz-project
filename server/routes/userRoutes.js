@@ -7,15 +7,11 @@ const { auth, adminOnly } = require('../middleware/auth');
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 
-// --- נתיבים מוגנים (דורשים Token) ---
-router.post('/save-result', auth, userController.saveQuizResult);
+// --- נתיבים מוגנים ---
 router.get('/profile', auth, userController.getProfile);
 
-// --- נתיבי ניהול (מנהל בלבד) ---
-// קבלת רשימת כל המשתמשים
+// --- נתיבי ניהול ---
 router.get('/all', auth, adminOnly, userController.getAllUsers);
-
-// עדכון תפקיד (הפוך למנהל או החזר למשתמש)
 router.put('/update-role/:id', auth, adminOnly, userController.updateUserRole);
 
 module.exports = router;

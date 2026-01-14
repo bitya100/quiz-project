@@ -66,28 +66,6 @@ const login = async (req, res) => {
     }
 };
 
-// --- שמירת תוצאת חידון (היסטוריה) ---
-const saveQuizResult = async (req, res) => {
-    try {
-        const { quizTitle, score, totalQuestions } = req.body;
-        const userId = req.user._id;
-
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).send('משתמש לא נמצא');
-
-        user.quizHistory.push({
-            quizTitle,
-            score,
-            totalQuestions
-        });
-
-        await user.save();
-        res.status(200).send('התוצאה נשמרה בהצלחה');
-    } catch (ex) {
-        res.status(500).send('שגיאה בשמירת התוצאה');
-    }
-};
-
 // --- קבלת נתוני פרופיל והיסטוריה ---
 const getProfile = async (req, res) => {
     try {
@@ -108,24 +86,20 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// --- עדכון תפקיד משתמש (למנהל בלבד + הגנה על המנהל האחרון) ---
+// --- עדכון תפקיד משתמש ---
 const updateUserRole = async (req, res) => {
     try {
         const userIdToUpdate = req.params.id;
-        const { role } = req.body; // 'admin' או 'user'
+        const { role } = req.body;
 
-        // 1. אם מנסים להסיר הרשאת מנהל (להפוך ל-user)
         if (role === 'user') {
             const adminCount = await User.countDocuments({ role: 'admin' });
             const userToUpdate = await User.findById(userIdToUpdate);
-
-            // בדיקה אם זה המנהל האחרון במערכת
             if (userToUpdate.role === 'admin' && adminCount <= 1) {
-                return res.status(400).send('לא ניתן להסיר את המנהל האחרון במערכת. חייב להישאר לפחות מנהל אחד.');
+                return res.status(400).send('לא ניתן להסיר את המנהל האחרון במערכת.');
             }
         }
 
-        // 2. ביצוע העדכון
         const updatedUser = await User.findByIdAndUpdate(
             userIdToUpdate, 
             { role: role }, 
@@ -133,7 +107,6 @@ const updateUserRole = async (req, res) => {
         ).select('-password');
 
         if (!updatedUser) return res.status(404).send('משתמש לא נמצא');
-        
         res.json({ message: `המשתמש ${updatedUser.userName} הוא כעת ${role}`, user: updatedUser });
     } catch (ex) {
         res.status(500).send('שגיאה בעדכון התפקיד');
@@ -143,7 +116,6 @@ const updateUserRole = async (req, res) => {
 module.exports = { 
     register, 
     login, 
-    saveQuizResult, 
     getProfile,
     getAllUsers,
     updateUserRole 

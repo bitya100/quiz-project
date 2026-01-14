@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const Result = require('../models/Result');
+const { User } = require('../models/User'); // הוספנו את המודל של המשתמש
 const { auth, adminOnly } = require('../middleware/auth');
 
-// 1. שמירת תוצאה חדשה - רק למשתמש מחובר
+// 1. שמירת תוצאה - מעדכן גם את טבלת התוצאות וגם את המשתמש עצמו
 router.post('/save', auth, async (req, res) => {
     try {
-        const { quizId, quizTitle, score } = req.body;
+        const { quizId, quizTitle, score, totalQuestions } = req.body;
+        
+        // א. שמירה בטבלת התוצאות הכללית (עבור המנהל)
         const newResult = new Result({ 
             userId: req.user._id, 
             quizId, 
@@ -14,13 +17,26 @@ router.post('/save', auth, async (req, res) => {
             score 
         });
         await newResult.save();
-        res.status(201).json({ message: "הציון נשמר בהצלחה!" });
+
+        // ב. שמירה בתוך ה-User (עבור הפרופיל/היסטוריה)
+        await User.findByIdAndUpdate(req.user._id, {
+            $push: {
+                quizHistory: {
+                    quizTitle,
+                    score,
+                    totalQuestions,
+                    date: new Date()
+                }
+            }
+        });
+
+        res.status(201).json({ message: "הציון נשמר בהצלחה בכל המערכות!" });
     } catch (err) {
         res.status(400).json({ message: "שגיאה בשמירת הציון: " + err.message });
     }
 });
 
-// 2. קבלת ציונים אישיים - למשתמש המחובר בלבד
+// 2. קבלת ציונים אישיים
 router.get('/my-scores', auth, async (req, res) => {
     try {
         const results = await Result.find({ userId: req.user._id }).sort({ date: -1 });
@@ -30,10 +46,9 @@ router.get('/my-scores', auth, async (req, res) => {
     }
 });
 
-// 3. מנהל בלבד: קבלת כל הציונים עם שמות המשתמשים 
+// 3. מנהל בלבד: קבלת כל הציונים
 router.get('/admin/all', auth, adminOnly, async (req, res) => {
     try {
-        // כאן הוספנו את ה-populate כדי לקבל את שם המשתמש מה-ID
         const results = await Result.find()
             .populate('userId', 'userName') 
             .sort({ date: -1 });
