@@ -5,12 +5,12 @@ import { useNavigate } from 'react-router-dom';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [status, setStatus] = useState({ type: '', message: '' }); // לניהול שגיאות והצלחות
+    const [status, setStatus] = useState({ type: '', message: '' });
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setStatus({ type: '', message: '' }); // איפוס הודעות
+        setStatus({ type: '', message: '' });
 
         try {
             const response = await axios.post('http://localhost:3001/api/users/login', { 
@@ -23,31 +23,26 @@ const Login = () => {
             localStorage.setItem('role', response.data.role);
             localStorage.setItem('userName', response.data.userName);
 
-            // הצגת הודעת הצלחה בתוך הדף
             setStatus({ 
                 type: 'success', 
-                message: `שלום ${response.data.userName || 'ברוך הבא'}, התחברת בהצלחה! מעביר אותך לחידונים...` 
+                message: `שלום ${response.data.userName || 'ברוך הבא'}, התחברת בהצלחה!` 
             });
 
-            // השהיה קצרה כדי שהמשתמש יספיק לקרוא את ההודעה לפני המעבר
             setTimeout(() => {
                 window.location.href = '/quizzes'; 
             }, 2000);
             
         } catch (err) {
             const errorMessage = err.response?.data || 'אימייל או סיסמה שגויים';
-            setStatus({ type: 'error', message: 'שגיאה בהתחברות: ' + errorMessage });
+            setStatus({ type: 'error', message: 'שגיאה: ' + errorMessage });
         }
     };
 
     return (
         <div style={styles.container}>
             <div style={styles.card}>
-                <h2 className="main-title" style={{ fontSize: '2.5rem', marginTop: '0', marginBottom: '30px' }}>
-                    התחברות
-                </h2>
+                <h2 className="main-title" style={styles.header}>התחברות</h2>
 
-                {/* תצוגת הודעות סטטוס (שגיאה או הצלחה) */}
                 {status.message && (
                     <div style={{
                         ...styles.statusBox,
@@ -60,29 +55,23 @@ const Login = () => {
                 )}
 
                 <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.inputGroup}>
-                        <input 
-                            type="email" 
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)} 
-                            required 
-                            style={styles.input}
-                            placeholder="אימייל"
-                        />
-                    </div>
-                    <div style={styles.inputGroup}>
-                        <input 
-                            type="password" 
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)} 
-                            required 
-                            style={styles.input}
-                            placeholder="סיסמה"
-                        />
-                    </div>
-                    <button type="submit" className="play-btn" style={styles.button}>
-                        כניסה למערכת
-                    </button>
+                    <input 
+                        type="email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)} 
+                        required 
+                        style={styles.input}
+                        placeholder="אימייל"
+                    />
+                    <input 
+                        type="password" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)} 
+                        required 
+                        style={styles.input}
+                        placeholder="סיסמה"
+                    />
+                    <button type="submit" className="play-btn">כניסה למערכת</button>
                 </form>
                 <p style={styles.footer}>
                     עוד לא רשום? <span style={styles.link} onClick={() => navigate('/register')}>צור חשבון חדש</span>
@@ -94,32 +83,21 @@ const Login = () => {
 
 const styles = {
     container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', padding: '20px' },
+    header: { fontSize: '2.5rem', marginTop: '0', marginBottom: '30px' },
     card: {
         background: 'var(--card-bg)',
         border: '1px solid rgba(64, 224, 208, 0.2)',
-        borderRadius: '20px',
-        padding: '40px',
-        boxShadow: '0 0 25px rgba(64, 224, 208, 0.1)',
-        width: '100%',
-        maxWidth: '400px',
-        textAlign: 'center'
+        borderRadius: '20px', padding: '40px', boxShadow: '0 0 25px rgba(64, 224, 208, 0.1)',
+        width: '100%', maxWidth: '400px', textAlign: 'center'
     },
-    statusBox: {
-        padding: '12px',
-        borderRadius: '8px',
-        border: '1px solid',
-        fontSize: '0.9rem',
-        marginBottom: '20px',
-        fontWeight: 'bold'
-    },
+    statusBox: { padding: '12px', borderRadius: '8px', border: '1px solid', fontSize: '0.9rem', marginBottom: '20px', fontWeight: 'bold' },
     form: { display: 'flex', flexDirection: 'column', gap: '20px' },
     input: { 
         width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #444', 
         background: '#0a0a0c', color: 'white', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' 
     },
-    button: { marginTop: '10px' },
-    footer: { marginTop: '25px', fontSize: '0.9rem' },
-    link: { color: 'var(--neon-blue)', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }
+    footer: { marginTop: '25px', fontSize: '0.9rem', color: 'white' },
+    link: { color: '#40e0d0', cursor: 'pointer', fontWeight: 'bold', textDecoration: 'underline' }
 };
 
 export default Login;
