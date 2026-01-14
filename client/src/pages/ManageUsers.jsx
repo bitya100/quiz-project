@@ -6,16 +6,17 @@ import {
 } from '@mui/material';
 import './ManageUsers.css';
 
-const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
-    const [users, setUsers] = useState([]); // המקור המלא מהשרת
-    const [filteredUsers, setFilteredUsers] = useState([]); // מה שמוצג לאחר סינון
+const ManageUsers = ({ searchTerm }) => {
+    const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
     useEffect(() => {
         fetchUsers();
     }, []);
 
-    // לוגיקת הסינון - פועלת בכל פעם שרשימת המשתמשים משתנה או כשמקלידים בחיפוש
     useEffect(() => {
         const results = users.filter(user => 
             user.userName?.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
@@ -27,7 +28,7 @@ const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:3001/api/users/all', {
+            const res = await axios.get(`${API_URL}/users/all`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUsers(res.data);
@@ -45,11 +46,11 @@ const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
 
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:3001/api/users/update-role/${userId}`, 
+            await axios.put(`${API_URL}/users/update-role/${userId}`, 
                 { role: newRole },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            fetchUsers(); // רענון הרשימה לאחר העדכון
+            fetchUsers();
         } catch (err) {
             alert("שגיאה בעדכון התפקיד");
         }
@@ -62,7 +63,8 @@ const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
     );
 
     return (
-        <Container maxWidth="lg" className="manage-users-page" sx={{ py: 4 }} dir="rtl">
+        /* שינוי: maxWidth וביטול Padding ידני שמתנגש */
+        <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }} dir="rtl">
             <Typography 
                 variant="h3" 
                 component="h1" 
@@ -70,20 +72,30 @@ const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
                 sx={{ 
                     mb: 4, 
                     fontFamily: 'Assistant, sans-serif', 
-                    fontWeight: 800 
+                    fontWeight: 800,
+                    width: '100%'
                 }}
             >
                 ניהול משתמשים 👥
             </Typography>
 
-            <TableContainer component={Paper} className="scores-table-container" elevation={5}>
-                <Table sx={{ minWidth: 650 }}>
+            <TableContainer 
+                component={Paper} 
+                className="scores-table-container" 
+                elevation={5}
+                sx={{ 
+                    overflowX: 'auto', 
+                    width: '100%', // מבטיח שהטבלה לא תצא מהקונטיינר
+                    maxWidth: '1200px'
+                }}
+            >
+                <Table sx={{ minWidth: 700 }}>
                     <TableHead>
-                        <TableRow>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>שם משתמש</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>אימייל</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>תפקיד</TableCell>
-                            <TableCell align="center" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>פעולות</TableCell>
+                        <TableRow sx={{ backgroundColor: '#34495e' }}>
+                            <TableCell align="right" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>שם משתמש</TableCell>
+                            <TableCell align="right" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>אימייל</TableCell>
+                            <TableCell align="right" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>תפקיד</TableCell>
+                            <TableCell align="center" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>פעולות</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -101,7 +113,7 @@ const ManageUsers = ({ searchTerm }) => { // קבלתsearchTerm מה-App.js
                                         <Button 
                                             variant="contained" 
                                             className={user.role === 'admin' ? 'btn-to-user' : 'btn-to-admin'}
-                                            sx={{ fontFamily: 'Assistant', fontWeight: 'bold', borderRadius: '8px' }}
+                                            sx={{ fontFamily: 'Assistant', fontWeight: 'bold', borderRadius: '8px', minWidth: '120px' }}
                                             onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
                                         >
                                             {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}

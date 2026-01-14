@@ -49,7 +49,7 @@ body {
     margin: 0;
     padding: 0;
     flex-grow: 1;
-    justify-content: space-evenly; /* פיזור שווה במסך גדול */
+    justify-content: space-evenly;
 }
 
 .nav-link {
@@ -180,34 +180,52 @@ body {
     border-radius: 20px;
 }
 
-/* --- טבלאות --- */
-.table-wrapper, .table-container {
-    background-color: white;
-    border-radius: 12px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin: 40px auto;
-    max-width: 90%;
+/* --- טבלאות (תיקון מרכזי למניעת בריחה) --- */
+.table-wrapper, .table-container, .scores-table-container {
+    background-color: white !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    margin: 40px auto !important;
+    max-width: 95% !important;
+    width: 100% !important; /* שינוי מ-1200px ל-100% כדי שיתאים לקונטיינר האב */
+    overflow-x: auto !important;
+    direction: rtl !important;
+}
+
+/* הגבלת רוחב למסכים רחבים מאוד דרך ה-Container ב-React */
+@media (min-width: 1200px) {
+    .table-wrapper, .table-container, .scores-table-container {
+        width: 1100px !important; /* רוחב אופטימלי למסך גדול */
+    }
 }
 
 table {
-    width: 100%;
-    color: #2c3e50;
-    border-collapse: collapse;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: auto !important;
 }
 
 th {
-    background-color: #34495e;
+    background-color: #34495e !important;
     color: #ffffff !important;
-    padding: 15px;
-    text-align: center;
+    padding: 18px 15px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
 }
 
 td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
+    padding: 15px !important;
+    border-bottom: 1px solid #eee !important;
     color: #333 !important;
-    text-align: center;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* תיקון ספציפי לכפתורים בתוך טבלה */
+td button, td .MuiButton-root {
+    margin: 2px auto !important;
+    display: inline-flex !important;
 }
 
 /* --- רספונסיביות למובייל (768px ומטה) --- */
@@ -225,7 +243,7 @@ td {
         width: 100%;
         background-color: #0a0a0c;
         padding: 30px 0;
-        gap: 25px; /* ריווח אנכי ברור בין הקישורים */
+        gap: 25px;
         z-index: 2100;
         align-items: center;
         border-bottom: 2px solid var(--neon-blue);
@@ -237,58 +255,30 @@ td {
 
     .main-title { font-size: 2.8rem; }
 
-    .btn-logout {
-        margin: 10px 0;
+    .table-wrapper, .table-container, .scores-table-container {
+        max-width: 98% !important;
+        margin: 20px auto !important;
     }
-}
-/* הגדרות לטבלת ניהול הציונים */
-.scores-table-container {
-    background-color: white;
-    border-radius: 12px;
-    padding: 0; /* ביטול פדינג פנימי כדי שהכותרת תיצמד למעלה */
-    overflow: hidden; /* שומר על פינות מעוגלות */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    margin: 40px auto;
-    max-width: 90%;
-}
+    
+    td, th {
+        padding: 10px 5px !important;
+        font-size: 0.85rem !important;
+    }
 
-/* הבטחת מראה הכותרת הכחולה ללא דריסות */
-.scores-table-container thead th {
-    background-color: #34495e !important;
-    color: #ffffff !important;
-    padding: 15px;
-    text-align: center;
-}
-
-/* ביטול אפקט הזברה והמעבר */
-.scores-table-container tbody tr {
-    background-color: white !important;
-}
-
-.scores-table-container tbody tr:hover {
-    background-color: white !important; /* מבטל שינוי צבע במעבר עכבר */
+    .admin-page-title {
+        font-size: 2rem !important;
+    }
 }
 
 /* צבעי ציונים */
 .score-pass { color: #27ae60 !important; font-weight: bold; }
 .score-fail { color: #e74c3c !important; font-weight: bold; }
 
-
 /* טקסטים של מצבי טעינה ושגיאה */
 .center-message { text-align: center; margin-top: 100px; font-size: 20px; color: white; }
 .error-message { color: #ff4d4d; }
 
 /* מחלקה אחידה לכותרות דפי ניהול */
-.admin-page-title {
-    text-align: center !important;
-    color: #2c3e50 !important; /* צבע כהה סולידי ללא ניאון */
-    font-weight: 800 !important; /* עובי אות חזק */
-    font-size: 2.8rem !important; /* גודל אחיד */
-    margin-top: 40px !important;
-    font-family: 'Assistant', sans-serif; /* הבטחת שימוש בפונט הפרויקט */
-}
-
-/* אחידות לכותרות ניהול בכל האפליקציה */
 .admin-page-title {
     text-align: center !important;
     color: #2c3e50 !important;
@@ -304,23 +294,11 @@ td {
 }
 
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-    border-color: #34495e !important; /* צבע הכותרת של הטבלה */
+    border-color: #34495e !important;
 }
 
 /* הבטחת גופן אחיד לחיפוש */
 .MuiInputBase-input::placeholder {
-    font-family: 'Assistant', sans-serif;
-    opacity: 0.7;
-}
-
-
-/* התאמת שדה החיפוש ב-Navbar */
-.MuiInput-root {
     font-family: 'Assistant', sans-serif !important;
+    opacity: 0.7 !important;
 }
-
-.MuiInput-root::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.9rem;
-}
-

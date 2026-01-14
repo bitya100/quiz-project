@@ -1,26 +1,26 @@
-/* כותרת דף ניהול - אחידות מלאה */
+/* כותרת דף ניהול */
 .admin-page-title {
     text-align: center;
     color: #2c3e50 !important;
     font-family: 'Assistant', sans-serif !important;
     font-weight: 800 !important;
-    font-size: 2.8rem !important; /* גודל זהה לדף הציונים */
+    font-size: 2.8rem !important;
     margin-top: 40px !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
+    width: 100%;
 }
 
-/* התאמת הקונטיינר למראה הלבן והנקי */
+/* קונטיינר הטבלה */
 .scores-table-container {
     background-color: white !important;
     border-radius: 12px !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
-    overflow: hidden;
+    margin: 0 auto !important; /* מרכוז נקי */
+    overflow-x: auto !important; 
 }
 
-/* עיצוב כותרת הטבלה (MUI Header) */
+/* כותרת הטבלה */
 .MuiTableHead-root {
-    background-color: #34495e !important; /* כחול כהה זהה */
+    background-color: #34495e !important;
 }
 
 .MuiTableHead-root .MuiTableCell-root {
@@ -29,17 +29,14 @@
     font-weight: 700 !important;
     font-size: 1.1rem !important;
     padding: 18px !important;
+    white-space: nowrap; /* מונע שבירת שורות בכותרת */
 }
 
-/* עיצוב גוף הטבלה */
+/* גוף הטבלה */
 .MuiTableCell-body {
     font-family: 'Assistant', sans-serif !important;
     color: #333 !important;
     font-size: 1rem !important;
-}
-
-.user-row {
-    background-color: white !important;
 }
 
 /* עיצוב תפקידים */
@@ -47,9 +44,24 @@
 .role-user { color: #333; font-weight: bold; }
 
 /* כפתורים */
-.btn-to-admin { background-color: #a333c8 !important; }
-.btn-to-user { background-color: #2185d0 !important; }
+.btn-to-admin { background-color: #a333c8 !important; color: white !important; }
+.btn-to-user { background-color: #2185d0 !important; color: white !important; }
 
 .btn-to-admin:hover, .btn-to-user:hover {
     filter: brightness(1.1);
+}
+
+/* רספונסיביות למובייל */
+@media (max-width: 600px) {
+    .admin-page-title {
+        font-size: 1.8rem !important;
+    }
+    .MuiTableCell-root {
+        padding: 10px 8px !important;
+        font-size: 0.85rem !important;
+    }
+    .btn-to-admin, .btn-to-user {
+        min-width: 90px !important;
+        font-size: 0.75rem !important;
+    }
 }
