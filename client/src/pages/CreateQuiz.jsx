@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuizzes } from '../context/QuizContext';
+// ייבוא רכיבים מ-Joy UI
+import { IconButton, Box, Typography, Button, Input, Textarea, Divider, Stack } from '@mui/joy';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+// ייבוא אנימציות
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateQuiz = () => {
     const { id } = useParams(); 
@@ -10,7 +15,6 @@ const CreateQuiz = () => {
     
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    // הוסר ה-State של ה-icon
     const [questions, setQuestions] = useState([{ questionText: '', options: ['', '', '', ''], correctAnswer: 1 }]);
 
     useEffect(() => {
@@ -19,7 +23,6 @@ const CreateQuiz = () => {
                 .then(res => {
                     setTitle(res.data.title);
                     setDescription(res.data.description);
-                    // הוסרה טעינת האימוג'י
                     setQuestions(res.data.questions.map(q => ({ 
                         ...q, 
                         correctAnswer: Number(q.correctAnswer) + 1 
@@ -38,13 +41,21 @@ const CreateQuiz = () => {
 
     const addQuestion = () => setQuestions([...questions, { questionText: '', options: ['', '', '', ''], correctAnswer: 1 }]);
 
+    const removeQuestion = (index) => {
+        if (questions.length === 1) {
+            alert("חובה להשאיר לפחות שאלה אחת בחידון");
+            return;
+        }
+        // המחיקה מתבצעת מיד, האנימציה תופעל בזכות AnimatePresence
+        const newQuestions = questions.filter((_, i) => i !== index);
+        setQuestions(newQuestions);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
         const data = { 
             title, 
             description, 
-            // השדה icon הוסר מהנתונים שנשלחים לשרת
             questions: questions.map(q => ({ 
                 ...q, 
                 correctAnswer: Number(q.correctAnswer) - 1 
@@ -57,7 +68,6 @@ const CreateQuiz = () => {
             } else {
                 await axios.post('http://localhost:3001/api/quizzes/', data);
             }
-            
             if (refreshQuizzes) await refreshQuizzes(); 
             navigate('/quizzes');
         } catch (err) { 
@@ -66,66 +76,150 @@ const CreateQuiz = () => {
         }
     };
 
-    const inputStyle = { 
-        display: 'block', 
-        width: '100%', 
-        marginBottom: '15px', 
-        padding: '12px', 
-        borderRadius: '8px', 
-        border: '1px solid rgba(255,255,255,0.1)', 
-        backgroundColor: 'rgba(255,255,255,0.05)', 
-        color: 'white',
-        boxSizing: 'border-box',
-        textAlign: 'right'
-    };
-    
     return (
         <div className="page-wrapper" style={{ padding: '20px', minHeight: '100vh', direction: 'rtl' }}>
-            <div className="quiz-card" style={{ maxWidth: '800px', margin: '40px auto', background: 'rgba(20, 20, 35, 0.9)', padding: '30px', borderRadius: '20px', border: '1px solid var(--neon-blue)', boxShadow: '0 0 20px rgba(64, 224, 208, 0.2)' }}>
+            <Box className="quiz-card" sx={{ 
+                maxWidth: '800px', 
+                margin: '40px auto', 
+                background: 'rgba(20, 20, 35, 0.9)', 
+                padding: '30px', 
+                borderRadius: '20px', 
+                border: '1px solid #00c1ab', 
+                boxShadow: '0 0 20px rgba(0, 193, 171, 0.2)' 
+            }}>
                 
-                <h1 className="main-title" style={{ fontSize: '2.5rem', marginBottom: '30px', textAlign: 'center' }}>
+                <Typography level="h2" sx={{ color: 'white', mb: 3, textAlign: 'center', textShadow: '0 0 10px #00c1ab' }}>
                     {id ? 'עריכת חידון' : 'יצירת חידון חדש'}
-                </h1>
+                </Typography>
                 
                 <form onSubmit={handleSubmit}>
-                    {/* כל בלוק האימוג'ים והבחירה שלהם הוסר מכאן */}
-
-                    <label className="subtitle" style={{ display: 'block', marginBottom: '5px', textAlign: 'right' }}>כותרת החידון:</label>
-                    <input type="text" placeholder="שם החידון..." value={title} onChange={e => setTitle(e.target.value)} required style={inputStyle} />
+                    <Typography level="body-md" sx={{ color: '#00c1ab', mb: 1 }}>כותרת החידון:</Typography>
+                    <Input 
+                        placeholder="שם החידון..." 
+                        value={title} 
+                        onChange={e => setTitle(e.target.value)} 
+                        required 
+                        variant="soft"
+                        sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.05)', color: 'white' }} 
+                    />
                     
-                    <label className="subtitle" style={{ display: 'block', marginBottom: '5px', textAlign: 'right' }}>תיאור קצר:</label>
-                    <textarea placeholder="תאר בקצרה את האתגר..." value={description} onChange={e => setDescription(e.target.value)} required style={{ ...inputStyle, height: '80px' }} />
+                    <Typography level="body-md" sx={{ color: '#00c1ab', mb: 1 }}>תיאור קצר:</Typography>
+                    <Textarea 
+                        minRows={2}
+                        placeholder="תאר בקצרה את האתגר..." 
+                        value={description} 
+                        onChange={e => setDescription(e.target.value)} 
+                        required 
+                        variant="soft"
+                        sx={{ mb: 3, bgcolor: 'rgba(255,255,255,0.05)', color: 'white' }} 
+                    />
                     
-                    <hr style={{ margin: '30px 0', border: 'none', height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)' }} />
+                    <Divider sx={{ my: 3, bgcolor: 'rgba(255,255,255,0.1)' }} />
 
-                    {questions.map((q, qIndex) => (
-                        <div key={qIndex} style={{ padding: '20px', marginBottom: '25px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <h4 style={{ marginTop: 0, color: 'var(--neon-blue)', marginBottom: '15px', textAlign: 'right' }}>שאלה {qIndex + 1}</h4>
-                            <input type="text" placeholder="מה השאלה?" value={q.questionText} onChange={e => handleQuestionChange(qIndex, 'questionText', e.target.value)} required style={inputStyle} />
-                            
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                {q.options.map((opt, oIndex) => (
-                                    <input key={oIndex} type="text" placeholder={`תשובה ${oIndex + 1}`} value={opt} onChange={e => handleQuestionChange(qIndex, 'options', e.target.value, oIndex)} required style={inputStyle} />
-                                ))}
-                            </div>
-                            
-                            <div style={{ textAlign: 'right', marginTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px' }}>
-                                <label style={{ color: '#ccc', marginLeft: '10px' }}>מספר תשובה נכונה (1-4): </label>
-                                <input type="number" min="1" max="4" value={q.correctAnswer} onChange={e => handleQuestionChange(qIndex, 'correctAnswer', e.target.value)} 
-                                    style={{ ...inputStyle, width: '70px', display: 'inline-block', marginBottom: 0 }} />
-                            </div>
-                        </div>
-                    ))}
+                    {/* עטיפת השאלות ב-AnimatePresence מאפשרת אנימציית יציאה (exit) */}
+                    <AnimatePresence>
+                        {questions.map((q, qIndex) => (
+                            <motion.div
+                                key={qIndex}
+                                initial={{ opacity: 0, height: 0, x: -20 }}
+                                animate={{ opacity: 1, height: 'auto', x: 0 }}
+                                exit={{ opacity: 0, x: 100, transition: { duration: 0.3 } }}
+                                layout // מבצע הזזה חלקה של השאלות האחרות בזמן מחיקה
+                            >
+                                <Box sx={{ 
+                                    padding: '20px', 
+                                    marginBottom: '25px', 
+                                    borderRadius: '12px', 
+                                    backgroundColor: 'rgba(255,255,255,0.02)', 
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    position: 'relative'
+                                }}>
+                                    
+                                    <IconButton 
+                                        color="danger" 
+                                        variant="soft"
+                                        onClick={() => removeQuestion(qIndex)}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            left: '10px',
+                                            borderRadius: '50%',
+                                            '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.2)' }
+                                        }}
+                                    >
+                                        <DeleteForeverIcon />
+                                    </IconButton>
 
-                    <button type="button" onClick={addQuestion} className="play-btn" style={{ marginBottom: '20px', width: '100%', background: 'transparent', border: '1px solid var(--neon-blue)', color: 'var(--neon-blue)' }}>
+                                    <Typography level="h4" sx={{ color: '#00c1ab', mb: 2 }}>שאלה {qIndex + 1}</Typography>
+                                    
+                                    <Input 
+                                        placeholder="מה השאלה?" 
+                                        value={q.questionText} 
+                                        onChange={e => handleQuestionChange(qIndex, 'questionText', e.target.value)} 
+                                        required 
+                                        variant="outlined"
+                                        sx={{ mb: 2, bgcolor: 'transparent', color: 'white' }}
+                                    />
+                                    
+                                    <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        {q.options.map((opt, oIndex) => (
+                                            <Input 
+                                                key={oIndex} 
+                                                placeholder={`תשובה ${oIndex + 1}`} 
+                                                value={opt} 
+                                                onChange={e => handleQuestionChange(qIndex, 'options', e.target.value, oIndex)} 
+                                                required 
+                                                variant="outlined"
+                                                sx={{ bgcolor: 'transparent', color: 'white' }}
+                                            />
+                                        ))}
+                                    </Box>
+                                    
+                                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <Typography level="body-sm" sx={{ color: '#ccc' }}>מספר תשובה נכונה (1-4): </Typography>
+                                        <Input 
+                                            type="number" 
+                                            slotProps={{ input: { min: 1, max: 4 } }}
+                                            value={q.correctAnswer} 
+                                            onChange={e => handleQuestionChange(qIndex, 'correctAnswer', e.target.value)} 
+                                            sx={{ width: '80px', bgcolor: 'transparent', color: 'white' }}
+                                        />
+                                    </Stack>
+                                </Box>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+
+                    <Button 
+                        fullWidth 
+                        variant="outlined" 
+                        onClick={addQuestion} 
+                        sx={{ 
+                            mb: 2, 
+                            borderColor: '#00c1ab', 
+                            color: '#00c1ab',
+                            '&:hover': { bgcolor: 'rgba(0, 193, 171, 0.1)', borderColor: '#00c1ab' }
+                        }}
+                    >
                         ➕ הוסף שאלה נוספת
-                    </button>
+                    </Button>
                     
-                    <button type="submit" className="admin-create-btn" style={{ width: '100%', margin: '0', padding: '15px', fontSize: '1.2rem' }}>
+                    <Button 
+                        type="submit" 
+                        fullWidth 
+                        size="lg"
+                        sx={{ 
+                            background: 'linear-gradient(45deg, #00c1ab, #008e7d)',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '1.1rem',
+                            boxShadow: '0 4px 15px rgba(0, 193, 171, 0.3)'
+                        }}
+                    >
                         {id ? 'שמור שינויים ועדכן' : 'פרסם חידון עכשיו'}
-                    </button>
+                    </Button>
                 </form>
-            </div>
+            </Box>
         </div>
     );
 };
