@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '../registerNlogin.css'; // נתיב לקובץ בתיקיית src
+import '../registerNlogin.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -9,21 +9,21 @@ const Login = () => {
     const [status, setStatus] = useState({ type: '', message: '' });
     const navigate = useNavigate();
 
-    // משיכת כתובת ה-API מה-env (חייב להתחיל ב-VITE ב-Vite)
-    const API_URL = import.meta.env.VITE_API_URL;
+    // שליפת הכתובת מה-env עם ברירת מחדל לביטחון
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus({ type: '', message: '' });
 
         try {
-            // שימוש בכתובת מה-env כפי שנדרש במסמך [cite: 103, 105]
+            // ביצוע הקריאה לשרת [cite: 100, 103]
             const response = await axios.post(`${API_URL}/users/login`, { 
                 email: email.toLowerCase(), 
                 password 
             });
             
-            // שמירת נתונים ב-LocalStorage [cite: 8, 226]
+            // שמירת נתונים ואימות משתמש [cite: 8, 14, 106]
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('userId', response.data.userId); 
             localStorage.setItem('role', response.data.role);
@@ -35,10 +35,11 @@ const Login = () => {
             });
 
             setTimeout(() => {
-                window.location.href = '/quizzes'; 
+                window.location.href = '/quizzes'; // ניווט לאחר התחברות [cite: 77, 89]
             }, 2000);
             
         } catch (err) {
+            console.error("Login Error:", err);
             const errorMessage = err.response?.data || 'אימייל או סיסמה שגויים';
             setStatus({ type: 'error', message: 'שגיאה: ' + errorMessage });
         }
@@ -48,30 +49,10 @@ const Login = () => {
         <div className="auth-page-wrapper">
             <div className="auth-card">
                 <h2 className="main-title auth-header">התחברות</h2>
-
-                {status.message && (
-                    <div className={`auth-status-box ${status.type}`}>
-                        {status.message}
-                    </div>
-                )}
-
+                {status.message && <div className={`auth-status-box ${status.type}`}>{status.message}</div>}
                 <form onSubmit={handleSubmit} className="auth-form">
-                    <input 
-                        type="email" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)} 
-                        required 
-                        className="auth-input"
-                        placeholder="אימייל"
-                    />
-                    <input 
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)} 
-                        required 
-                        className="auth-input"
-                        placeholder="סיסמה"
-                    />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="auth-input" placeholder="אימייל" />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="auth-input" placeholder="סיסמה" />
                     <button type="submit" className="play-btn">כניסה למערכת</button>
                 </form>
                 <p className="auth-footer">
