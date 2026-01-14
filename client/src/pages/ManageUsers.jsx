@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { 
+    Table, TableBody, TableCell, TableContainer, TableHead, 
+    TableRow, Paper, Button, Typography, Container, Box, CircularProgress 
+} from '@mui/material';
 import './ManageUsers.css';
 
 const ManageUsers = () => {
@@ -40,45 +44,64 @@ const ManageUsers = () => {
         }
     };
 
-    if (loading) return <div style={{textAlign: 'center', padding: '50px'}}>טוען...</div>;
+    if (loading) return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+            <CircularProgress />
+        </Box>
+    );
 
     return (
-        <div className="manage-users-page" dir="rtl">
-            <h1 className="admin-title">ניהול משתמשים 👥</h1>
-            <div className="table-wrapper">
-                <table className="admin-table">
-                    <thead>
-                        <tr>
-                            <th>שם משתמש</th>
-                            <th>אימייל</th>
-                            <th>תפקיד</th>
-                            <th>פעולות</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map(user => (
-                            <tr key={user._id}>
-                                <td data-label="שם משתמש">{user.userName}</td>
-                                <td data-label="אימייל">{user.email}</td>
-                                <td data-label="תפקיד">
-                                    <span style={{ color: user.role === 'admin' ? '#a333c8' : '#333', fontWeight: 'bold' }}>
+        <Container maxWidth="lg" className="manage-users-page" sx={{ py: 4 }} dir="rtl">
+            {/* הכותרת הותאמה בדיוק למראה של דף הציונים */}
+            <Typography 
+                variant="h3" 
+                component="h1" 
+                className="admin-page-title" 
+                sx={{ 
+                    mb: 4, 
+                    fontFamily: 'Assistant, sans-serif', 
+                    fontWeight: 800 
+                }}
+            >
+                ניהול משתמשים 👥
+            </Typography>
+
+            <TableContainer component={Paper} className="scores-table-container">
+                <Table sx={{ minWidth: 650 }}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>שם משתמש</TableCell>
+                            <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>אימייל</TableCell>
+                            <TableCell align="right" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>תפקיד</TableCell>
+                            <TableCell align="center" sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}>פעולות</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {users.map((user) => (
+                            <TableRow key={user._id} className="user-row">
+                                <TableCell align="right" sx={{ fontFamily: 'inherit' }}>{user.userName}</TableCell>
+                                <TableCell align="right" sx={{ fontFamily: 'inherit' }}>{user.email}</TableCell>
+                                <TableCell align="right" sx={{ fontFamily: 'inherit' }}>
+                                    <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
                                         {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
                                     </span>
-                                </td>
-                                <td data-label="פעולות">
-                                    <button 
+                                </TableCell>
+                                <TableCell align="center">
+                                    <Button 
+                                        variant="contained" 
+                                        className={user.role === 'admin' ? 'btn-to-user' : 'btn-to-admin'}
+                                        sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
                                         onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
-                                        className={`admin-btn ${user.role === 'admin' ? 'btn-remove' : 'btn-add'}`}
                                     >
                                         {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}
-                                    </button>
-                                </td>
-                            </tr>
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Container>
     );
 };
 

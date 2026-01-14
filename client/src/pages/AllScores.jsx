@@ -24,17 +24,19 @@ const AllScores = () => {
         fetchAllScores();
     }, []);
 
-    if (loading) return <div className="user-greeting-text" style={{textAlign: 'center', marginTop: '100px'}}>טוען נתוני מערכת...</div>;
-    if (error) return <div className="user-greeting-text" style={{textAlign: 'center', marginTop: '100px', color: 'red'}}>{error}</div>;
+    if (loading) return <div className="center-message">טוען נתוני מערכת...</div>;
+    if (error) return <div className="center-message error-message">{error}</div>;
 
     return (
-        <div className="container">
-            {/* הכותרת משתמשת במחלקה הקיימת main-title מה-CSS שלך */}
-            <h1 className="main-title" style={{ fontSize: '2.8rem' }}>ניהול ציוני מערכת 🛠️</h1>
-            <p className="subtitle" style={{ color: 'white', textAlign: 'center' }}>צפייה בכל התוצאות של כל המשתמשים</p>
+        <div className="container" style={{ direction: 'rtl' }}>
+            {/* כותרת נקייה ללא אפקט ניאון */}
+            <h1 className="admin-page-title">ניהול ציוני מערכת 🛠️</h1>
+            <p className="subtitle" style={{ color: '#666', marginBottom: '30px' }}>
+                צפייה בכל התוצאות של כל המשתמשים
+            </p>
             
             <div className="scores-table-container">
-                <table>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr>
                             <th>שם המשתמש</th>
@@ -46,7 +48,9 @@ const AllScores = () => {
                     <tbody>
                         {allResults.map((result) => (
                             <tr key={result._id}>
-                                <td>{result.userId ? result.userId.userName : 'משתמש לא ידוע'}</td>
+                                <td>
+                                    {result.userId ? result.userId.userName : 'משתמש לא ידוע'}
+                                </td>
                                 <td>{result.quizTitle}</td>
                                 <td className={result.score >= 60 ? 'score-pass' : 'score-fail'}>
                                     {result.score}%

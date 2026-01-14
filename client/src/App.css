@@ -277,3 +277,24 @@ td {
 /* טקסטים של מצבי טעינה ושגיאה */
 .center-message { text-align: center; margin-top: 100px; font-size: 20px; color: white; }
 .error-message { color: #ff4d4d; }
+
+/* מחלקה אחידה לכותרות דפי ניהול */
+.admin-page-title {
+    text-align: center !important;
+    color: #2c3e50 !important; /* צבע כהה סולידי ללא ניאון */
+    font-weight: 800 !important; /* עובי אות חזק */
+    font-size: 2.8rem !important; /* גודל אחיד */
+    margin-top: 40px !important;
+    font-family: 'Assistant', sans-serif; /* הבטחת שימוש בפונט הפרויקט */
+}
+
+/* אחידות לכותרות ניהול בכל האפליקציה */
+.admin-page-title {
+    text-align: center !important;
+    color: #2c3e50 !important;
+    font-weight: 800 !important;
+    font-size: 2.8rem !important;
+    margin-top: 40px !important;
+    font-family: 'Assistant', sans-serif !important;
+}
+

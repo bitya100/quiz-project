@@ -1,104 +1,55 @@
-.manage-users-page {
-    padding: 30px 15px;
-    max-width: 1100px;
-    margin: 0 auto;
-    min-height: 100vh;
-}
-
-.admin-title {
+/* כותרת דף ניהול - אחידות מלאה */
+.admin-page-title {
     text-align: center;
-    color: #34495e;
-    font-size: 2.2rem;
-    margin-bottom: 30px;
-    font-weight: bold;
+    color: #2c3e50 !important;
+    font-family: 'Assistant', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 2.8rem !important; /* גודל זהה לדף הציונים */
+    margin-top: 40px !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
 }
 
-/* מעטפת הטבלה */
-.table-wrapper {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+/* התאמת הקונטיינר למראה הלבן והנקי */
+.scores-table-container {
+    background-color: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
     overflow: hidden;
-    border: 1px solid #dee2e6;
 }
 
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    /* background-color: white; */
+/* עיצוב כותרת הטבלה (MUI Header) */
+.MuiTableHead-root {
+    background-color: #34495e !important; /* כחול כהה זהה */
 }
 
-/* כותרת הטבלה - כחול כהה כמו בטבלת הציונים */
-.admin-table th {
-    background-color: #455e7a; /* הצבע המדויק מהתמונה */
-    color: #ffffff;
-    padding: 15px;
-    text-align: right;
-    font-weight: 600;
+.MuiTableHead-root .MuiTableCell-root {
+    color: white !important;
+    font-family: 'Assistant', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    padding: 18px !important;
 }
 
-/* שורות הטבלה - טקסט כהה וברור */
-.admin-table td {
-    padding: 15px;
-    text-align: right;
-    color: #2c3e50; 
-    border-bottom: 1px solid #f1f1f1;
+/* עיצוב גוף הטבלה */
+.MuiTableCell-body {
+    font-family: 'Assistant', sans-serif !important;
+    color: #333 !important;
+    font-size: 1rem !important;
 }
 
-/* אפקט זברה - שורה אחת לבנה, שורה אחת אפורה בהירה מאוד */
-.admin-table tr:nth-child(even) {
-    background-color: #fcfcfc;
+.user-row {
+    background-color: white !important;
 }
 
-.admin-table tr:nth-child(odd) {
-    background-color: #ffffff;
-}
+/* עיצוב תפקידים */
+.role-admin { color: #a333c8; font-weight: bold; }
+.role-user { color: #333; font-weight: bold; }
 
+/* כפתורים */
+.btn-to-admin { background-color: #a333c8 !important; }
+.btn-to-user { background-color: #2185d0 !important; }
 
-
-/* כפתורים בעיצוב מודרני */
-.admin-btn {
-    padding: 8px 20px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    transition: 0.2s ease;
-}
-
-/* כפתור הפוך למשתמש - כחול */
-.btn-remove {
-    background-color: #2185d0;
-}
-
-/* כפתור הפוך למנהל - סגול */
-.btn-add {
-    background-color: #a333c8;
-}
-
-.admin-btn:hover {
+.btn-to-admin:hover, .btn-to-user:hover {
     filter: brightness(1.1);
-    transform: translateY(-1px);
-}
-
-/* מובייל - שומר על קו נקי */
-@media (max-width: 768px) {
-    .admin-table thead { display: none; }
-    .admin-table tr {
-        display: block;
-        margin: 15px;
-        border: 1px solid #eee;
-        border-radius: 8px;
-    }
-    .admin-table td {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 1px solid #f9f9f9;
-    }
-    .admin-table td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        color: #455e7a;
-    }
 }
