@@ -109,7 +109,7 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
       {/* --- שורת חיפוש חכמה (מתרחבת בלחיצה) - דסקטופ --- */}
       <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexGrow: 1, justifyContent: 'center', px: 2 }}>
         <Input
-          placeholder="חיפוש מהיר..."
+          placeholder="חיפוש ..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           startDecorator={<SearchIcon sx={{ color: '#00c1ab' }} />}

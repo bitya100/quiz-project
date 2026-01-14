@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuizzes } from '../context/QuizContext';
-// ייבוא רכיבים מ-Joy UI
 import { IconButton, Box, Typography, Button, Input, Textarea, Divider, Stack } from '@mui/joy';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-// ייבוא אנימציות
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateQuiz = () => {
@@ -35,7 +33,14 @@ const CreateQuiz = () => {
     const handleQuestionChange = (index, field, value, optIndex = null) => {
         const newQuestions = [...questions];
         if (optIndex !== null) newQuestions[index].options[optIndex] = value;
-        else newQuestions[index][field] = value;
+        else {
+            // הגבלה ברמת ה-State למספרים בין 1 ל-4 בלבד עבור correctAnswer
+            if (field === 'correctAnswer') {
+                const val = Number(value);
+                if (val < 1 || val > 4) return; 
+            }
+            newQuestions[index][field] = value;
+        }
         setQuestions(newQuestions);
     };
 
@@ -46,7 +51,6 @@ const CreateQuiz = () => {
             alert("חובה להשאיר לפחות שאלה אחת בחידון");
             return;
         }
-        // המחיקה מתבצעת מיד, האנימציה תופעל בזכות AnimatePresence
         const newQuestions = questions.filter((_, i) => i !== index);
         setQuestions(newQuestions);
     };
@@ -87,7 +91,6 @@ const CreateQuiz = () => {
                 border: '1px solid #00c1ab', 
                 boxShadow: '0 0 20px rgba(0, 193, 171, 0.2)' 
             }}>
-                
                 <Typography level="h2" sx={{ color: 'white', mb: 3, textAlign: 'center', textShadow: '0 0 10px #00c1ab' }}>
                     {id ? 'עריכת חידון' : 'יצירת חידון חדש'}
                 </Typography>
@@ -116,7 +119,6 @@ const CreateQuiz = () => {
                     
                     <Divider sx={{ my: 3, bgcolor: 'rgba(255,255,255,0.1)' }} />
 
-                    {/* עטיפת השאלות ב-AnimatePresence מאפשרת אנימציית יציאה (exit) */}
                     <AnimatePresence>
                         {questions.map((q, qIndex) => (
                             <motion.div
@@ -124,7 +126,7 @@ const CreateQuiz = () => {
                                 initial={{ opacity: 0, height: 0, x: -20 }}
                                 animate={{ opacity: 1, height: 'auto', x: 0 }}
                                 exit={{ opacity: 0, x: 100, transition: { duration: 0.3 } }}
-                                layout // מבצע הזזה חלקה של השאלות האחרות בזמן מחיקה
+                                layout
                             >
                                 <Box sx={{ 
                                     padding: '20px', 
@@ -134,7 +136,6 @@ const CreateQuiz = () => {
                                     border: '1px solid rgba(255,255,255,0.05)',
                                     position: 'relative'
                                 }}>
-                                    
                                     <IconButton 
                                         color="danger" 
                                         variant="soft"
@@ -182,6 +183,7 @@ const CreateQuiz = () => {
                                             slotProps={{ input: { min: 1, max: 4 } }}
                                             value={q.correctAnswer} 
                                             onChange={e => handleQuestionChange(qIndex, 'correctAnswer', e.target.value)} 
+                                            required
                                             sx={{ width: '80px', bgcolor: 'transparent', color: 'white' }}
                                         />
                                     </Stack>

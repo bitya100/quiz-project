@@ -12,13 +12,18 @@ const QuizPage = () => {
     const [timeLeft, setTimeLeft] = useState(15);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
 
+    // --- התיקון היחיד: קפיצה לראש הדף בכל תחילת חידון או מעבר שאלה ---
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [id, currentQuestion, showScore]);
+    // -------------------------------------------------------------
+
     const playSound = (isCorrect) => {
         const audioPath = isCorrect ? '/music/correct.mp3' : '/music/false.mp3';
         const audio = new Audio(audioPath);
         audio.play().catch(err => console.log("Audio play error:", err));
     };
 
-    // פונקציה חדשה להשמעת מחיאות כפיים בסיום
     const playApplause = () => {
         const audio = new Audio('/music/clapps3.mp3');
         audio.play().catch(err => console.log("Applause audio error:", err));
@@ -32,7 +37,7 @@ const QuizPage = () => {
 
     const finishQuiz = useCallback(async (finalScore) => {
         setShowScore(true);
-        playApplause(); // השמעת השמע ברגע שהחידון מסתיים
+        playApplause(); 
         
         const token = localStorage.getItem('token');
         const finalPercent = Math.round((finalScore / quiz.questions.length) * 100);
@@ -46,7 +51,6 @@ const QuizPage = () => {
                 }, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                console.log("Score saved successfully");
             } catch (err) {
                 console.error("Failed to save score:", err);
             }
@@ -148,7 +152,7 @@ const styles = {
     container: { 
         display: 'flex', 
         justifyContent: 'center', 
-        padding: '40px', 
+        padding: '40px', // החזרתי ל-40px המקורי
         backgroundColor: 'transparent',
         width: '100%',
         boxSizing: 'border-box'

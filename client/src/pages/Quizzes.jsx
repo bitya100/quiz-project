@@ -4,14 +4,13 @@ import { useQuizzes } from '../context/QuizContext';
 import axios from 'axios';
 import '../App.css'; 
 
-const Quizzes = ({ searchTerm }) => { // קבלת ה-Prop מה-App.js
+const Quizzes = ({ searchTerm }) => {
     const { quizzes, loading, refreshQuizzes } = useQuizzes();
     const [filteredQuizzes, setFilteredQuizzes] = useState([]);
     const navigate = useNavigate();
     const userRole = localStorage.getItem('role');
     const token = localStorage.getItem('token');
 
-    // סינון החידונים בזמן אמת
     useEffect(() => {
         const results = quizzes.filter(quiz => 
             quiz.title?.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
@@ -36,26 +35,26 @@ const Quizzes = ({ searchTerm }) => { // קבלת ה-Prop מה-App.js
     if (loading) return (
         <div className="loader-container">
             <div className="spinner"></div>
-            <h2 className="main-title" style={{fontSize: '2rem'}}>טוען את האתגרים...</h2>
+            <h2 className="main-title" style={styles.loaderTitle}>טוען את האתגרים...</h2>
         </div>
     );
 
     return (
-        <div className="page-wrapper">
-            <header style={{textAlign: 'center', padding: '40px 0'}}>
+        <div className="page-wrapper" style={styles.pageWrapper}>
+            <header style={styles.header}>
                 <h1 className="main-title">QUIZ ZONE</h1>
                 <p className="subtitle">בחרו אתגר, צברו נקודות והוכיחו שאתם יודעים!</p>
                 
                 {userRole === 'admin' && (
                     <button onClick={() => navigate('/create-quiz')} className="admin-create-btn">
-                       ⚡ יצירת חידון חדש ⚡
+                        ⚡ יצירת חידון חדש ⚡
                     </button>
                 )}
             </header>
 
             <div className="quizzes-grid">
                 {filteredQuizzes.length === 0 ? (
-                    <p className="subtitle" style={{gridColumn: '1/-1', fontSize: '2rem'}}>
+                    <p className="subtitle" style={styles.noResults}>
                         {searchTerm ? `לא נמצאו חידונים עבור "${searchTerm}"` : 'לא נמצאו חידונים כרגע...'}
                     </p>
                 ) : (
@@ -64,22 +63,22 @@ const Quizzes = ({ searchTerm }) => { // קבלת ה-Prop מה-App.js
                             <h3 className="card-title">{quiz.title}</h3>
                             <p className="card-description">{quiz.description}</p>
                             
-                            <div className="card-footer" style={{width: '100%'}}>
+                            <div className="card-footer" style={styles.cardFooter}>
                                 <button onClick={() => navigate(`/quiz/${quiz._id}`)} className="play-btn">
                                     בואו נשחק!
                                 </button>
 
                                 {userRole === 'admin' && (
-                                    <div className="admin-actions" style={{display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center'}}>
+                                    <div className="admin-actions" style={styles.adminActions}>
                                         <button 
                                             onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
-                                            style={{color: 'var(--neon-blue)', background: 'none', border: '1px solid var(--neon-blue)', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}}
+                                            style={styles.editBtn}
                                         >
                                             עריכה ✏️
                                         </button>
                                         <button 
                                             onClick={() => deleteQuiz(quiz._id)} 
-                                            style={{color: '#ff4d4d', background: 'none', border: '1px solid #ff4d4d', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}}
+                                            style={styles.deleteBtn}
                                         >
                                             מחיקה 🗑️
                                         </button>
@@ -92,6 +91,51 @@ const Quizzes = ({ searchTerm }) => { // קבלת ה-Prop מה-App.js
             </div>
         </div>
     );
+};
+
+const styles = {
+    pageWrapper: {
+        paddingTop: '10px', // צמצום הריווח העליון כדי למנוע גלילה מיותרת
+    },
+    header: {
+        textAlign: 'center', 
+        padding: '20px 0' // צמצום הפדינג מ-40 ל-20
+    },
+    loaderTitle: {
+        fontSize: '2rem'
+    },
+    noResults: {
+        gridColumn: '1/-1', 
+        fontSize: '2rem',
+        textAlign: 'center'
+    },
+    cardFooter: {
+        width: '100%'
+    },
+    adminActions: {
+        display: 'flex', 
+        gap: '15px', 
+        marginTop: '20px', 
+        justifyContent: 'center'
+    },
+    editBtn: {
+        color: 'var(--neon-blue)', 
+        background: 'none', 
+        border: '1px solid var(--neon-blue)', 
+        padding: '5px 15px', 
+        borderRadius: '8px', 
+        cursor: 'pointer', 
+        fontWeight: 'bold'
+    },
+    deleteBtn: {
+        color: '#ff4d4d', 
+        background: 'none', 
+        border: '1px solid #ff4d4d', 
+        padding: '5px 15px', 
+        borderRadius: '8px', 
+        cursor: 'pointer', 
+        fontWeight: 'bold'
+    }
 };
 
 export default Quizzes;
