@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require('joi'); 
+const bcrypt = require('bcryptjs'); // חובה להתקין: npm install bcryptjs
 
 const userSchema = new mongoose.Schema({
     userName: { type: String, required: true },
@@ -10,7 +11,6 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'user'], 
         default: 'user' 
     },
-    // שדה היסטוריית ניצחונות ומשחקים
     quizHistory: [{
         quizTitle: { type: String },
         score: { type: Number },
@@ -19,7 +19,24 @@ const userSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
-// פונקציית וולידציה (Joi) - עבור רישום משתמש חדש
+/**
+ * מימוש דרישה 1: שימוש ב-pre save middleware של Mongoose
+ * פונקציה זו מצפינה את הסיסמה אוטומטית לפני שמירה ב-DB
+ */
+userSchema.pre('save', async function (next) {
+    // אם הסיסמה לא שונתה, המשך הלאה
+    if (!this.isModified('password')) return next();
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
+// פונקציית וולידציה (Joi) - עבור רישום משתמש חדש 
 const validateUser = (user) => {
     const schema = Joi.object({
         userName: Joi.string().min(2).required(),
