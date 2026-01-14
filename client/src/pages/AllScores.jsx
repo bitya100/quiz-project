@@ -24,36 +24,34 @@ const AllScores = () => {
         fetchAllScores();
     }, []);
 
-    if (loading) return <div style={styles.center}>טוען נתוני מערכת...</div>;
-    if (error) return <div style={{...styles.center, color: 'red'}}>{error}</div>;
+    if (loading) return <div className="user-greeting-text" style={{textAlign: 'center', marginTop: '100px'}}>טוען נתוני מערכת...</div>;
+    if (error) return <div className="user-greeting-text" style={{textAlign: 'center', marginTop: '100px', color: 'red'}}>{error}</div>;
 
     return (
-        <div style={styles.container}>
-            <h1 style={styles.title}>ניהול ציוני מערכת 🛠️</h1>
-            <p style={styles.subtitle}>צפייה בכל התוצאות של כל המשתמשים</p>
+        <div className="container">
+            {/* הכותרת משתמשת במחלקה הקיימת main-title מה-CSS שלך */}
+            <h1 className="main-title" style={{ fontSize: '2.8rem' }}>ניהול ציוני מערכת 🛠️</h1>
+            <p className="subtitle" style={{ color: 'white', textAlign: 'center' }}>צפייה בכל התוצאות של כל המשתמשים</p>
             
-            <div style={styles.tableWrapper}>
-                <table style={styles.table}>
+            <div className="scores-table-container">
+                <table>
                     <thead>
-                        <tr style={styles.thr}>
-                            <th style={styles.th}>שם המשתמש</th>
-                            <th style={styles.th}>חידון</th>
-                            <th style={styles.th}>ציון</th>
-                            <th style={styles.th}>תאריך</th>
+                        <tr>
+                            <th>שם המשתמש</th>
+                            <th>חידון</th>
+                            <th>ציון</th>
+                            <th>תאריך</th>
                         </tr>
                     </thead>
                     <tbody>
                         {allResults.map((result) => (
-                            <tr key={result._id} style={styles.tr}>
-                                {/* הצגת השם מתוך האובייקט המאוכלס */}
-                                <td style={styles.td}>
-                                    {result.userId ? result.userId.userName : 'משתמש לא ידוע'}
-                                </td>
-                                <td style={styles.td}>{result.quizTitle}</td>
-                                <td style={{...styles.td, fontWeight: 'bold', color: result.score >= 60 ? '#27ae60' : '#e74c3c'}}>
+                            <tr key={result._id}>
+                                <td>{result.userId ? result.userId.userName : 'משתמש לא ידוע'}</td>
+                                <td>{result.quizTitle}</td>
+                                <td className={result.score >= 60 ? 'score-pass' : 'score-fail'}>
                                     {result.score}%
                                 </td>
-                                <td style={styles.td}>{new Date(result.date).toLocaleString('he-IL')}</td>
+                                <td>{new Date(result.date).toLocaleString('he-IL')}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -61,18 +59,6 @@ const AllScores = () => {
             </div>
         </div>
     );
-};
-
-const styles = {
-    container: { padding: '40px', maxWidth: '1000px', margin: '0 auto' },
-    title: { textAlign: 'center', color: '#2c3e50' },
-    subtitle: { textAlign: 'center', color: '#ffffffff', marginBottom: '30px' },
-    tableWrapper: { boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: '12px', overflow: 'hidden' },
-    table: { width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' },
-    thr: { backgroundColor: '#2c3e50', color: 'white' },
-    th: { padding: '15px', textAlign: 'center' },
-    td: { padding: '12px', textAlign: 'center', borderBottom: '1px solid #eee' },
-    center: { textAlign: 'center', marginTop: '100px', fontSize: '20px' }
 };
 
 export default AllScores;

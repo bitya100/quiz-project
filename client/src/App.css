@@ -241,4 +241,39 @@ td {
         margin: 10px 0;
     }
 }
+/* הגדרות לטבלת ניהול הציונים */
+.scores-table-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 0; /* ביטול פדינג פנימי כדי שהכותרת תיצמד למעלה */
+    overflow: hidden; /* שומר על פינות מעוגלות */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin: 40px auto;
+    max-width: 90%;
+}
 
+/* הבטחת מראה הכותרת הכחולה ללא דריסות */
+.scores-table-container thead th {
+    background-color: #34495e !important;
+    color: #ffffff !important;
+    padding: 15px;
+    text-align: center;
+}
+
+/* ביטול אפקט הזברה והמעבר */
+.scores-table-container tbody tr {
+    background-color: white !important;
+}
+
+.scores-table-container tbody tr:hover {
+    background-color: white !important; /* מבטל שינוי צבע במעבר עכבר */
+}
+
+/* צבעי ציונים */
+.score-pass { color: #27ae60 !important; font-weight: bold; }
+.score-fail { color: #e74c3c !important; font-weight: bold; }
+
+
+/* טקסטים של מצבי טעינה ושגיאה */
+.center-message { text-align: center; margin-top: 100px; font-size: 20px; color: white; }
+.error-message { color: #ff4d4d; }
