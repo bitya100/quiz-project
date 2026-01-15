@@ -34,7 +34,6 @@ const CreateQuiz = () => {
         const newQuestions = [...questions];
         if (optIndex !== null) newQuestions[index].options[optIndex] = value;
         else {
-            // הגבלה ברמת ה-State למספרים בין 1 ל-4 בלבד עבור correctAnswer
             if (field === 'correctAnswer') {
                 const val = Number(value);
                 if (val < 1 || val > 4) return; 
@@ -197,7 +196,7 @@ const CreateQuiz = () => {
                         variant="outlined" 
                         onClick={addQuestion} 
                         sx={{ 
-                            mb: 2, 
+                            mb: 4, 
                             borderColor: '#00c1ab', 
                             color: '#00c1ab',
                             '&:hover': { bgcolor: 'rgba(0, 193, 171, 0.1)', borderColor: '#00c1ab' }
@@ -206,20 +205,41 @@ const CreateQuiz = () => {
                         ➕ הוסף שאלה נוספת
                     </Button>
                     
-                    <Button 
-                        type="submit" 
-                        fullWidth 
-                        size="lg"
-                        sx={{ 
-                            background: 'linear-gradient(45deg, #00c1ab, #008e7d)',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '1.1rem',
-                            boxShadow: '0 4px 15px rgba(0, 193, 171, 0.3)'
-                        }}
-                    >
-                        {id ? 'שמור שינויים ועדכן' : 'פרסם חידון עכשיו'}
-                    </Button>
+                    <Divider sx={{ mb: 3, bgcolor: 'rgba(255,255,255,0.1)' }} />
+
+                    {/* שורת הכפתורים הסופית */}
+                    <Stack direction="row" spacing={2}>
+                        <Button 
+                            variant="soft" 
+                            color="neutral"
+                            size="lg"
+                            onClick={() => navigate('/quizzes')}
+                            sx={{ 
+                                flex: 1,
+                                fontWeight: 'bold',
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                color: 'white',
+                                '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.2)', color: '#ff4d4d' }
+                            }}
+                        >
+                            ביטול וחזרה
+                        </Button>
+
+                        <Button 
+                            type="submit" 
+                            size="lg"
+                            sx={{ 
+                                flex: 2, 
+                                background: 'linear-gradient(45deg, #00c1ab, #008e7d)',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '1.1rem',
+                                boxShadow: '0 4px 15px rgba(0, 193, 171, 0.3)'
+                            }}
+                        >
+                            {id ? 'שמור שינויים ועדכן' : 'פרסם חידון עכשיו'}
+                        </Button>
+                    </Stack>
                 </form>
             </Box>
         </div>
