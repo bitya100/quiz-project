@@ -13,7 +13,12 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+
+/** * עדכון חשוב: הגדלת נפח הבקשה ל-50MB כדי לאפשר העלאת תמונות בפורמט Base64
+ * ללא הגדרה זו, השרת יחזיר שגיאה 500 או 413 בגלל גודל הקובץ
+ */
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // הגדרת נתיבי ה-API
 app.use('/api/quizzes', quizRoutes);

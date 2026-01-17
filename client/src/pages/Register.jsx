@@ -21,7 +21,7 @@ function Register() {
       localStorage.setItem('userName', response.data.userName);
       localStorage.setItem('userId', response.data.userId);
 
-      setStatus({ type: 'success', message: 'נרשמת וחוברת בהצלחה!' });
+      setStatus({ type: 'success', message: 'נרשמת וחוברת בהצלחה!רק רגע...' });
 
       setTimeout(() => {
         window.location.href = '/quizzes'; 

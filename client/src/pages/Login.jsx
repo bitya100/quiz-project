@@ -31,7 +31,7 @@ const Login = () => {
 
             setStatus({ 
                 type: 'success', 
-                message: `שלום ${response.data.userName || 'ברוך הבא'}, התחברת בהצלחה!` 
+                message: `שלום ${response.data.userName || 'ברוך הבא'}, התחברת בהצלחה! רק רגע... ` 
             });
 
             setTimeout(() => {

@@ -115,6 +115,17 @@ const QuizPage = () => {
                     </div>
                     <div style={styles.progress}><div style={{ ...styles.progressBar, width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}></div></div>
                     
+                    {/* הצגת תמונה אם קיימת בשאלה */}
+                    {currentQ.image && (
+                        <div style={{ marginBottom: '20px' }}>
+                            <img 
+                                src={currentQ.image} 
+                                alt="שאלה" 
+                                style={styles.questionImage} 
+                            />
+                        </div>
+                    )}
+
                     <h2 style={styles.questionText}>{currentQ.questionText}</h2>
                     
                     <div style={styles.optionsGrid}>
@@ -152,7 +163,7 @@ const styles = {
     container: { 
         display: 'flex', 
         justifyContent: 'center', 
-        padding: '40px', // החזרתי ל-40px המקורי
+        padding: '40px', 
         backgroundColor: 'transparent',
         width: '100%',
         boxSizing: 'border-box'
@@ -161,6 +172,7 @@ const styles = {
     header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
     progress: { width: '100%', height: '8px', backgroundColor: '#eee', borderRadius: '4px', marginBottom: '25px', overflow: 'hidden' },
     progressBar: { height: '100%', backgroundColor: '#3498db', transition: 'width 0.3s ease' },
+    questionImage: { width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '10px', border: '1px solid #eee' },
     questionText: { marginBottom: '25px', fontSize: '22px' },
     optionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
     optionButton: { padding: '15px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff' },

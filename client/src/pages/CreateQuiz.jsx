@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuizzes } from '../context/QuizContext';
 import { IconButton, Box, Typography, Button, Input, Textarea, Divider, Stack } from '@mui/joy';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CreateQuiz = () => {
@@ -13,7 +14,7 @@ const CreateQuiz = () => {
     
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [questions, setQuestions] = useState([{ questionText: '', options: ['', '', '', ''], correctAnswer: 1 }]);
+    const [questions, setQuestions] = useState([{ questionText: '', options: ['', '', '', ''], correctAnswer: 1, image: '' }]);
 
     useEffect(() => {
         if (id) {
@@ -23,12 +24,26 @@ const CreateQuiz = () => {
                     setDescription(res.data.description);
                     setQuestions(res.data.questions.map(q => ({ 
                         ...q, 
-                        correctAnswer: Number(q.correctAnswer) + 1 
+                        correctAnswer: Number(q.correctAnswer) + 1,
+                        image: q.image || '' 
                     })));
                 })
                 .catch(err => console.error("Error loading quiz for edit:", err));
         }
     }, [id]);
+
+    const handleImageUpload = (index, e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const newQuestions = [...questions];
+                newQuestions[index].image = reader.result; 
+                setQuestions(newQuestions);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleQuestionChange = (index, field, value, optIndex = null) => {
         const newQuestions = [...questions];
@@ -43,7 +58,7 @@ const CreateQuiz = () => {
         setQuestions(newQuestions);
     };
 
-    const addQuestion = () => setQuestions([...questions, { questionText: '', options: ['', '', '', ''], correctAnswer: 1 }]);
+    const addQuestion = () => setQuestions([...questions, { questionText: '', options: ['', '', '', ''], correctAnswer: 1, image: '' }]);
 
     const removeQuestion = (index) => {
         if (questions.length === 1) {
@@ -152,14 +167,55 @@ const CreateQuiz = () => {
 
                                     <Typography level="h4" sx={{ color: '#00c1ab', mb: 2 }}>שאלה {qIndex + 1}</Typography>
                                     
-                                    <Input 
-                                        placeholder="מה השאלה?" 
-                                        value={q.questionText} 
-                                        onChange={e => handleQuestionChange(qIndex, 'questionText', e.target.value)} 
-                                        required 
-                                        variant="outlined"
-                                        sx={{ mb: 2, bgcolor: 'transparent', color: 'white' }}
-                                    />
+                                    <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                                        <Input 
+                                            fullWidth
+                                            placeholder="מה השאלה?" 
+                                            value={q.questionText} 
+                                            onChange={e => handleQuestionChange(qIndex, 'questionText', e.target.value)} 
+                                            required 
+                                            variant="outlined"
+                                            sx={{ bgcolor: 'transparent', color: 'white' }}
+                                        />
+                                        <Button
+                                            component="label"
+                                            variant="soft"
+                                            startDecorator={<AddPhotoAlternateIcon />}
+                                            sx={{ 
+                                                minWidth: '120px',
+                                                bgcolor: 'rgba(0, 193, 171, 0.1)',
+                                                color: '#00c1ab',
+                                                '&:hover': { bgcolor: 'rgba(0, 193, 171, 0.2)' }
+                                            }}
+                                        >
+                                            תמונה
+                                            <input 
+                                                type="file" 
+                                                hidden 
+                                                accept="image/*" 
+                                                onChange={(e) => handleImageUpload(qIndex, e)} 
+                                            />
+                                        </Button>
+                                    </Stack>
+
+                                    {q.image && (
+                                        <Box sx={{ mb: 2, textAlign: 'center', position: 'relative' }}>
+                                            <img 
+                                                src={q.image} 
+                                                alt="preview" 
+                                                style={{ maxHeight: '150px', borderRadius: '8px', border: '1px solid #00c1ab' }} 
+                                            />
+                                            <br />
+                                            <Button 
+                                                size="sm" 
+                                                color="danger" 
+                                                variant="plain" 
+                                                onClick={() => handleQuestionChange(qIndex, 'image', '')}
+                                            >
+                                                הסר תמונה
+                                            </Button>
+                                        </Box>
+                                    )}
                                     
                                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                         {q.options.map((opt, oIndex) => (
@@ -207,7 +263,6 @@ const CreateQuiz = () => {
                     
                     <Divider sx={{ mb: 3, bgcolor: 'rgba(255,255,255,0.1)' }} />
 
-                    {/* שורת הכפתורים הסופית */}
                     <Stack direction="row" spacing={2}>
                         <Button 
                             variant="soft" 

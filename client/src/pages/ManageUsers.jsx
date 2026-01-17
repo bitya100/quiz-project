@@ -1,15 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, forwardRef } from 'react';
 import axios from 'axios';
 import { 
     Table, TableBody, TableCell, TableContainer, TableHead, 
-    TableRow, Paper, Button, Typography, Container, Box, CircularProgress 
+    TableRow, Paper, Button, Typography, Container, Box, CircularProgress,
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade
 } from '@mui/material';
 import './ManageUsers.css';
+
+// הגדרת אנימציית המעבר (Fade/Pop-in)
+const Transition = forwardRef(function Transition(props, ref) {
+    return <Fade ref={ref} {...props} timeout={400} />;
+});
 
 const ManageUsers = ({ searchTerm }) => {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // State לניהול חלונית האישור
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null);
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
@@ -40,19 +50,24 @@ const ManageUsers = ({ searchTerm }) => {
         }
     };
 
-    const handleRoleChange = async (userId, newRole, userName) => {
-        const actionText = newRole === 'admin' ? "להפוך למנהל" : "להחזיר למשתמש רגיל";
-        if (!window.confirm(`האם אתה בטוח שברצונך ${actionText} את ${userName}?`)) return;
+    const openConfirmDialog = (userId, newRole, userName) => {
+        setPendingAction({ userId, newRole, userName });
+        setConfirmOpen(true);
+    };
 
+    const handleConfirmAction = async () => {
+        if (!pendingAction) return;
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`${API_URL}/users/update-role/${userId}`, 
-                { role: newRole },
+            await axios.put(`${API_URL}/users/update-role/${pendingAction.userId}`, 
+                { role: pendingAction.newRole },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            setConfirmOpen(false);
             fetchUsers();
         } catch (err) {
-            alert("שגיאה בעדכון התפקיד");
+            console.error("שגיאה בעדכון", err);
+            setConfirmOpen(false);
         }
     };
 
@@ -63,48 +78,28 @@ const ManageUsers = ({ searchTerm }) => {
     );
 
     return (
-        /* שינוי: maxWidth וביטול Padding ידני שמתנגש */
         <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }} dir="rtl">
-            <Typography 
-                variant="h3" 
-                component="h1" 
-                className="admin-page-title" 
-                sx={{ 
-                    mb: 4, 
-                    fontFamily: 'Assistant, sans-serif', 
-                    fontWeight: 800,
-                    width: '100%'
-                }}
-            >
+            <Typography variant="h3" component="h1" className="admin-page-title" sx={{ mb: 4 }}>
                 ניהול משתמשים 👥
             </Typography>
 
-            <TableContainer 
-                component={Paper} 
-                className="scores-table-container" 
-                elevation={5}
-                sx={{ 
-                    overflowX: 'auto', 
-                    width: '100%', // מבטיח שהטבלה לא תצא מהקונטיינר
-                    maxWidth: '1200px'
-                }}
-            >
+            <TableContainer component={Paper} className="scores-table-container" elevation={5}>
                 <Table sx={{ minWidth: 700 }}>
                     <TableHead>
-                        <TableRow sx={{ backgroundColor: '#34495e' }}>
-                            <TableCell align="right" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>שם משתמש</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>אימייל</TableCell>
-                            <TableCell align="right" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>תפקיד</TableCell>
-                            <TableCell align="center" sx={{ color: 'white', fontFamily: 'Assistant', fontWeight: 'bold' }}>פעולות</TableCell>
+                        <TableRow>
+                            <TableCell align="right">שם משתמש</TableCell>
+                            <TableCell align="right">אימייל</TableCell>
+                            <TableCell align="right">תפקיד</TableCell>
+                            <TableCell align="center">פעולות</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {filteredUsers.length > 0 ? (
                             filteredUsers.map((user) => (
                                 <TableRow key={user._id} className="user-row" hover>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>{user.userName}</TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>{user.email}</TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>
+                                    <TableCell align="right">{user.userName}</TableCell>
+                                    <TableCell align="right">{user.email}</TableCell>
+                                    <TableCell align="right">
                                         <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
                                             {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
                                         </span>
@@ -113,8 +108,8 @@ const ManageUsers = ({ searchTerm }) => {
                                         <Button 
                                             variant="contained" 
                                             className={user.role === 'admin' ? 'btn-to-user' : 'btn-to-admin'}
-                                            sx={{ fontFamily: 'Assistant', fontWeight: 'bold', borderRadius: '8px', minWidth: '120px' }}
-                                            onClick={() => handleRoleChange(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
+                                            sx={{ fontWeight: 'bold', borderRadius: '8px', minWidth: '120px' }}
+                                            onClick={() => openConfirmDialog(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
                                         >
                                             {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}
                                         </Button>
@@ -124,15 +119,41 @@ const ManageUsers = ({ searchTerm }) => {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                                    <Typography variant="body1" sx={{ fontFamily: 'Assistant', color: 'gray' }}>
-                                        לא נמצאו משתמשים התואמים לחיפוש "{searchTerm}"
-                                    </Typography>
+                                    לא נמצאו משתמשים
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {/* דיאלוג אישור מעוצב עם אנימציה */}
+            <Dialog 
+                open={confirmOpen} 
+                TransitionComponent={Transition}
+                keepMounted
+                onClose={() => setConfirmOpen(false)} 
+                className="dark-dialog"
+                dir="rtl"
+            >
+                <DialogTitle className="custom-dialog-title">
+                     אישור שינוי הרשאה
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText className="custom-dialog-text">
+                        האם אתה בטוח שברצונך לשנות את הסטטוס של <strong>{pendingAction?.userName}</strong> ל-
+                        <strong>{pendingAction?.newRole === 'admin' ? 'מנהל' : 'משתמש רגיל'}</strong>?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ justifyContent: 'center', pb: 3, gap: 2 }}>
+                    <Button onClick={() => setConfirmOpen(false)} className="dialog-cancel-btn">
+                        ביטול
+                    </Button>
+                    <Button onClick={handleConfirmAction} variant="contained" className="dialog-confirm-btn">
+                        כן, בצע שינוי
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 };

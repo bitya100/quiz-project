@@ -14,7 +14,7 @@
     background-color: white !important;
     border-radius: 12px !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
-    margin: 0 auto !important; /* מרכוז נקי */
+    margin: 0 auto !important;
     overflow-x: auto !important; 
 }
 
@@ -29,7 +29,7 @@
     font-weight: 700 !important;
     font-size: 1.1rem !important;
     padding: 18px !important;
-    white-space: nowrap; /* מונע שבירת שורות בכותרת */
+    white-space: nowrap;
 }
 
 /* גוף הטבלה */
@@ -43,7 +43,7 @@
 .role-admin { color: #a333c8; font-weight: bold; }
 .role-user { color: #333; font-weight: bold; }
 
-/* כפתורים */
+/* כפתורים בטבלה */
 .btn-to-admin { background-color: #a333c8 !important; color: white !important; }
 .btn-to-user { background-color: #2185d0 !important; color: white !important; }
 
@@ -51,17 +51,46 @@
     filter: brightness(1.1);
 }
 
-/* רספונסיביות למובייל */
+/* עיצוב חלונית האישור (Dialog) - Dark & Neon */
+.dark-dialog .MuiPaper-root {
+    background-color: rgba(20, 20, 35, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid #00c1ab !important;
+    border-radius: 20px !important;
+    box-shadow: 0 0 25px rgba(0, 193, 171, 0.3) !important;
+    color: white !important;
+}
+
+.custom-dialog-title {
+    font-family: 'Assistant', sans-serif !important;
+    font-weight: 800 !important;
+    color: #00c1ab !important;
+    text-align: center;
+}
+
+.custom-dialog-text {
+    font-family: 'Assistant', sans-serif !important;
+    color: #ffffff !important;
+    text-align: center;
+}
+
+.dialog-cancel-btn {
+    color: #ff4d4d !important;
+    font-weight: bold !important;
+    font-family: 'Assistant' !important;
+}
+
+.dialog-confirm-btn {
+    background: linear-gradient(45deg, #00c1ab, #008e7d) !important;
+    color: white !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    font-family: 'Assistant' !important;
+}
+
+/* רספונסיביות */
 @media (max-width: 600px) {
-    .admin-page-title {
-        font-size: 1.8rem !important;
-    }
-    .MuiTableCell-root {
-        padding: 10px 8px !important;
-        font-size: 0.85rem !important;
-    }
-    .btn-to-admin, .btn-to-user {
-        min-width: 90px !important;
-        font-size: 0.75rem !important;
-    }
+    .admin-page-title { font-size: 1.8rem !important; }
+    .MuiTableCell-root { padding: 10px 8px !important; font-size: 0.85rem !important; }
+    .btn-to-admin, .btn-to-user { min-width: 90px !important; font-size: 0.75rem !important; }
 }
