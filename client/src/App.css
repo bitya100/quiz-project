@@ -302,3 +302,21 @@ td button, td .MuiButton-root {
     font-family: 'Assistant', sans-serif !important;
     opacity: 0.7 !important;
 }
+
+.main-footer {
+    background-color: #000000; /* צבע שחור שמתאים לנאבבאר שלך */
+    color: #e0e0e0;
+    text-align: center;
+    padding: 20px 0;
+    border-top: 2px solid #40e0d0; /* פס בצבע ניאון-כחול כמו בנאבבאר */
+    width: 100%;
+    margin-top: auto; /* דוחף את הפוטר לתחתית הקונטיינר */
+    font-family: 'Assistant', sans-serif;
+}
+
+.main-footer p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
