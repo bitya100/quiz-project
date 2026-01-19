@@ -320,3 +320,27 @@ td button, td .MuiButton-root {
     font-weight: 400;
     opacity: 0.8;
 }
+
+
+
+/* עדכון ב-body */
+body {
+    margin: 0;
+    font-family: 'Assistant', sans-serif;
+    background-color: #050505; /* רקע שחור עמוק כדי שהניאון יבלוט */
+    direction: rtl;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* הבטחת שקיפות מסוימת לקונטיינר התוכן כדי לראות את החלקיקים */
+.app-content-wrapper {
+    background: transparent;
+}
+
+/* מניעת הסתרת החלקיקים על ידי כרטיסים (אופציונלי) */
+.quiz-card {
+    background: rgba(0, 0, 0, 0.402) !important; /* כרטיס חצי שקוף */
+    backdrop-filter: blur(5px); /* אפקט זכוכית יפה */
+    border: 1px solid rgba(64, 224, 208, 0.3);
+}
