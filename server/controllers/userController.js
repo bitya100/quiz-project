@@ -5,24 +5,27 @@ const jwt = require('jsonwebtoken');
 // --- פונקציית הרשמה ---
 const register = async (req, res) => {
     try {
+        // 1. וולידציה של הקלט
         const { error } = validateUser(req.body);
         if (error) return res.status(400).send(error.details[0].message);
 
+        // 2. בדיקה אם המשתמש קיים
         let user = await User.findOne({ email: req.body.email.toLowerCase() });
         if (user) return res.status(400).send('משתמש כבר רשום במערכת');
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
+        // 3. יצירת משתמש חדש
+        // שים לב: אנחנו לא מצפינים כאן ידנית! 
+        // ה-pre('save') במודל User.js יטפל בהצפנה אוטומטית.
         const newUser = new User({
             userName: req.body.userName,
             email: req.body.email.toLowerCase(),
-            password: hashedPassword,
+            password: req.body.password, 
             role: 'user' 
         });
 
         await newUser.save();
 
+        // 4. יצירת טוקן
         const token = jwt.sign(
             { _id: newUser._id, role: newUser.role }, 
             process.env.JWT_SECRET || 'fallback_secret'
@@ -36,6 +39,7 @@ const register = async (req, res) => {
             userName: newUser.userName 
         });
     } catch (ex) {
+        console.error("Register Error Details:", ex); // מדפיס את השגיאה לטרמינל של השרת
         return res.status(500).send('שגיאת שרת פנימית');
     }
 };
@@ -62,6 +66,7 @@ const login = async (req, res) => {
             userName: user.userName 
         });
     } catch (ex) {
+        console.error("Login Error Details:", ex);
         res.status(500).send('שגיאה בתהליך ההתחברות');
     }
 };
