@@ -688,3 +688,44 @@ body {
     border-radius: 50px;
     cursor: pointer;
 }
+
+/* הגבלת גובה התמונה כדי שלא תתפוס את כל המסך */
+.question-img {
+    width: auto;             /* מאפשר לתמונה לשמור על פרופורציות */
+    max-width: 100%;         /* שלא תצא מהצדדים */
+    max-height: 200px;       /* הגבלה קריטית: גובה מקסימלי קטן יותר */
+    object-fit: contain;     /* מבטיח שהתמונה לא תתעוות */
+    border-radius: 15px;
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    margin: 0 auto 15px auto; /* מרכז את התמונה ומוסיף מרווח תחתון */
+    display: block;          /* מבטיח שהמרכז יעבוד */
+}
+
+/* התאמת הכרטיס למסכים קטנים כשיש תמונה */
+.quiz-card-glow {
+    padding: 30px;           /* צמצום מעט של ה-padding כדי לחסוך מקום */
+    max-height: 95vh;        /* הגבלה שלא יעבור את גובה המסך */
+    overflow-y: auto;        /* אם בכל זאת חסר מקום, תהיה גלילה פנימית בתוך הכרטיס */
+}
+
+/* צמצום מרווחים בין אלמנטים כשיש תמונה */
+.question-title {
+    font-size: 1.8rem !important; /* הקטנה קלה של השאלה כדי לפנות מקום */
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+/* התאמת כפתורי התשובות למובייל/מסכים קטנים */
+@media (max-height: 700px) {
+    .question-img {
+        max-height: 150px; /* תמונה קטנה עוד יותר במסכים נמוכים */
+    }
+    .question-title {
+        font-size: 1.5rem !important;
+    }
+    .option-btn {
+        padding: 12px;
+        font-size: 1.1rem !important;
+    }
+}
+
