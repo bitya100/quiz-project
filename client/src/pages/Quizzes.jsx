@@ -55,7 +55,7 @@ const Quizzes = ({ searchTerm }) => {
                 <div style={styles.heroContent}>
                     <h1 className="main-title" style={styles.heroTitle}>QUIZ ZONE</h1>
                     <p className="subtitle" style={styles.heroSubtitle}>
-                        המקום שבו ידע הופך לכוח. מוכנים לאתגר?
+                        המקום שבו ידע הופך לציון. מוכנים לאתגר?
                     </p>
                     <button onClick={scrollToQuizzes} className="hero-btn" style={styles.heroBtn}>
                         גלו את החידונים ↓

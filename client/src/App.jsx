@@ -57,6 +57,7 @@ function App() {
             fpsLimit: 120,
             interactivity: {
               events: {
+                onClick: { enable: true, mode: "push" },
                 onHover: {
                   enable: true,
                   mode: "repulse", // אפקט בריחה מהעכבר
@@ -93,6 +94,8 @@ function App() {
               },
               opacity: { value: 0.5 },
               shape: { type: "circle" },
+          //  shape: { type: "triangle" },
+
               size: { value: { min: 1, max: 3 } },
             },
             detectRetina: true,
