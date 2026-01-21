@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import Confetti from 'react-confetti'; // ייבוא הקונפטי
 
 const QuizPage = () => {
     const { id } = useParams();
@@ -11,12 +12,18 @@ const QuizPage = () => {
     const [showScore, setShowScore] = useState(false);
     const [timeLeft, setTimeLeft] = useState(15);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
+    // הוספת מצב לגודל המסך בשביל הקונפטי
+    const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
-    // --- התיקון היחיד: קפיצה לראש הדף בכל תחילת חידון או מעבר שאלה ---
+    useEffect(() => {
+        const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [id, currentQuestion, showScore]);
-    // -------------------------------------------------------------
 
     const playSound = (isCorrect) => {
         const audioPath = isCorrect ? '/music/correct.mp3' : '/music/false.mp3';
@@ -89,63 +96,77 @@ const QuizPage = () => {
         }, 1500);
     };
 
-    if (!quiz) return <div style={styles.loading}>טוען חידון...</div>;
+    if (!quiz) return <div className="center-message">טוען חידון...</div>;
 
     const currentQ = quiz.questions[currentQuestion];
+    const finalScorePercent = Math.round((score / quiz.questions.length) * 100);
 
     return (
-        <div style={styles.container}>
+        <div className="quiz-wrapper">
+            {/* הצגת קונפטי רק בציון 100 ובסיום המשחק */}
+            {showScore && finalScorePercent === 100 && (
+                <Confetti
+                    width={windowSize.width}
+                    height={windowSize.height}
+                    recycle={false} // יתפוצץ פעם אחת ולא יחזור על עצמו לנצח
+                    numberOfPieces={500}
+                />
+            )}
+
             {showScore ? (
-                <div style={styles.card}>
-                    <h2 style={styles.title}>החידון הסתיים!</h2>
-                    <div style={styles.resultCircle}>
-                        <span style={styles.resultText}>{Math.round((score / quiz.questions.length) * 100)}%</span>
+                <div className="quiz-card-glow">
+                    <h2 className="main-title" style={{fontSize: '3rem', marginTop: 0}}>כל הכבוד!</h2>
+                    <div className="result-score-circle">
+                        {finalScorePercent}%
                     </div>
-                    <p>צברת {score} תשובות נכונות מתוך {quiz.questions.length}</p>
-                    <button onClick={() => navigate('/my-scores')} style={styles.backButton}>לצפייה בכל הציונים שלי</button>
-                    <button onClick={() => navigate('/quizzes')} style={{...styles.backButton, backgroundColor: '#95a5a6', marginRight: '10px'}}>חזור לחידונים</button>
+                    <p style={{fontSize: '1.5rem', marginBottom: '30px'}}>
+                        צברת {score} תשובות נכונות מתוך {quiz.questions.length}
+                    </p>
+                    
+                    <div className="result-actions">
+                        <button onClick={() => navigate('/my-scores')} className="back-to-scores-btn">
+                            לצפייה בציונים שלי
+                        </button>
+                        <button onClick={() => navigate('/quizzes')} className="back-to-scores-btn" style={{backgroundColor: 'transparent', border: '2px solid white', color: 'white'}}>
+                            חזור לחידונים
+                        </button>
+                    </div>
                 </div>
             ) : (
-                <div style={styles.card}>
-                    <div style={styles.header}>
-                        <span>שאלה {currentQuestion + 1} מתוך {quiz.questions.length}</span>
-                        <span style={{ color: timeLeft < 5 ? '#e74c3c' : '#2c3e50', fontWeight: 'bold' }}>
-                            ⏳ {timeLeft} שניות
+                <div className="quiz-card-glow">
+                    <div className="quiz-header">
+                        <span>שאלה {currentQuestion + 1} / {quiz.questions.length}</span>
+                        <span style={{ color: timeLeft < 5 ? '#ff4d4d' : 'var(--neon-blue)', fontSize: '1.5rem' }}>
+                             ⏳ {timeLeft} שניות
                         </span>
                     </div>
-                    <div style={styles.progress}><div style={{ ...styles.progressBar, width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}></div></div>
+
+                    <div className="quiz-progress-container">
+                        <div 
+                            className="quiz-progress-bar" 
+                            style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
+                        ></div>
+                    </div>
                     
-                    {/* הצגת תמונה אם קיימת בשאלה */}
                     {currentQ.image && (
-                        <div style={{ marginBottom: '20px' }}>
-                            <img 
-                                src={currentQ.image} 
-                                alt="שאלה" 
-                                style={styles.questionImage} 
-                            />
-                        </div>
+                        <img src={currentQ.image} alt="שאלה" className="question-img" />
                     )}
 
-                    <h2 style={styles.questionText}>{currentQ.questionText}</h2>
+                    <h2 className="question-title">{currentQ.questionText}</h2>
                     
-                    <div style={styles.optionsGrid}>
+                    <div className="quiz-options-grid">
                         {currentQ.options.map((opt, i) => {
-                            let dynamicStyle = { ...styles.optionButton };
+                            let statusClass = "";
                             if (selectedAnswer !== null) {
-                                if (i === currentQ.correctAnswer) {
-                                    dynamicStyle.backgroundColor = '#27ae60';
-                                    dynamicStyle.color = 'white';
-                                } else if (i === selectedAnswer) {
-                                    dynamicStyle.backgroundColor = '#e74c3c';
-                                    dynamicStyle.color = 'white';
-                                }
+                                if (i === currentQ.correctAnswer) statusClass = "correct";
+                                else if (i === selectedAnswer) statusClass = "wrong";
                             }
 
                             return (
                                 <button 
                                     key={i} 
                                     onClick={() => handleAnswerClick(i, i === currentQ.correctAnswer)}
-                                    style={dynamicStyle}
+                                    className={`option-btn ${statusClass}`}
                                     disabled={selectedAnswer !== null}
                                 >
                                     {opt}
@@ -157,28 +178,6 @@ const QuizPage = () => {
             )}
         </div>
     );
-};
-
-const styles = {
-    container: { 
-        display: 'flex', 
-        justifyContent: 'center', 
-        padding: '40px', 
-        backgroundColor: 'transparent',
-        width: '100%',
-        boxSizing: 'border-box'
-    },
-    card: { backgroundColor: '#fff', padding: '30px', borderRadius: '15px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)', width: '100%', maxWidth: '600px', textAlign: 'center', color: '#333' },
-    header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
-    progress: { width: '100%', height: '8px', backgroundColor: '#eee', borderRadius: '4px', marginBottom: '25px', overflow: 'hidden' },
-    progressBar: { height: '100%', backgroundColor: '#3498db', transition: 'width 0.3s ease' },
-    questionImage: { width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '10px', border: '1px solid #eee' },
-    questionText: { marginBottom: '25px', fontSize: '22px' },
-    optionsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
-    optionButton: { padding: '15px', fontSize: '16px', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', backgroundColor: '#fff' },
-    resultCircle: { width: '100px', height: '100px', borderRadius: '50%', backgroundColor: '#3498db', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px auto', color: '#fff', fontSize: '24px' },
-    backButton: { marginTop: '20px', padding: '12px 25px', backgroundColor: '#00c1abff', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' },
-    loading: { textAlign: 'center', marginTop: '50px', fontSize: '20px' }
 };
 
 export default QuizPage;

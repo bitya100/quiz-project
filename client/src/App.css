@@ -348,3 +348,343 @@ body {
 body {
     background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
 }
+
+/* --- עיצוב דף החידון (Quiz Page) --- */
+
+/* הקונטיינר הראשי של השאלה */
+.quiz-container {
+    background: rgba(22, 22, 26, 0.8) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    border-radius: 25px;
+    padding: 40px;
+    max-width: 800px;
+    margin: 50px auto;
+    color: white;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* כותרת השאלה */
+.question-text {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-align: center;
+    color: var(--neon-blue);
+    text-shadow: 0 0 10px rgba(64, 224, 208, 0.5);
+}
+
+/* כפתורי התשובות */
+.answer-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    font-size: 1.2rem;
+    transition: 0.3s all ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.answer-button:hover {
+    background: rgba(64, 224, 208, 0.1);
+    border-color: var(--neon-blue);
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
+}
+
+/* פס התקדמות */
+.progress-bar-inner {
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
+    box-shadow: 0 0 15px var(--neon-blue);
+    height: 10px;
+    border-radius: 10px;
+}
+
+/* --- עיצוב דף תוצאות (Result Page) --- */
+
+.results-card {
+    background: rgba(22, 22, 26, 0.9) !important;
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+    border: 2px solid var(--neon-purple);
+    padding: 50px;
+    text-align: center;
+    max-width: 600px;
+    margin: 80px auto;
+    box-shadow: 0 0 50px rgba(188, 19, 254, 0.2);
+}
+
+.score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 5px solid var(--neon-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 20px auto;
+    text-shadow: 0 0 15px var(--neon-blue);
+    box-shadow: inset 0 0 20px rgba(64, 224, 208, 0.4), 0 0 20px rgba(64, 224, 208, 0.4);
+}
+
+.result-btn-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.result-btn {
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--text-white);
+    color: var(--text-white);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 0 20px var(--neon-blue);
+    transform: translateY(-3px);
+}
+
+
+/* --- Quiz Page & Results Design --- */
+
+.quiz-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* הקומפוננטה המרכזית - מראה זכוכית כהה */
+.quiz-card-glow {
+    background: rgba(22, 22, 26, 0.8) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(64, 224, 208, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
+/* פס התקדמות ניאון */
+.quiz-progress-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    margin-bottom: 30px;
+    overflow: hidden;
+}
+
+.quiz-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
+    box-shadow: 0 0 15px var(--neon-blue);
+    transition: width 0.4s ease;
+}
+
+.question-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.question-img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: contain;
+    border-radius: 15px;
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    margin-bottom: 20px;
+}
+
+/* גריד התשובות */
+.quiz-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.option-btn {
+    padding: 18px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s all ease;
+    font-family: 'Assistant', sans-serif;
+}
+
+.option-btn:hover:not(:disabled) {
+    background: rgba(64, 224, 208, 0.1);
+    border-color: var(--neon-blue);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(64, 224, 208, 0.2);
+}
+
+/* מצבי הצלחה וכישלון */
+.option-btn.correct {
+    background-color: #27ae60 !important;
+    border-color: #2ecc71 !important;
+    box-shadow: 0 0 20px #27ae60;
+}
+
+.option-btn.wrong {
+    background-color: #e74c3c !important;
+    border-color: #ff4d4d !important;
+    box-shadow: 0 0 20px #e74c3c;
+}
+
+/* עיצוב התוצאה הסופית */
+.result-score-circle {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: transparent;
+    border: 4px solid var(--neon-blue);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px auto;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--neon-blue);
+    text-shadow: 0 0 15px var(--neon-blue);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3), inset 0 0 20px rgba(64, 224, 208, 0.3);
+}
+
+.result-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.back-to-scores-btn {
+    padding: 15px 30px;
+    font-weight: 800;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+}
+
+.back-to-scores-btn:hover {
+    box-shadow: 0 0 25px var(--neon-blue);
+    transform: scale(1.05);
+}
+
+@media (max-width: 600px) {
+    .quiz-options-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Quiz Page & Results Design - Updated Fonts --- */
+
+.quiz-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.quiz-card-glow {
+    background: rgba(10, 10, 12, 0.85) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    border-radius: 25px;
+    padding: 50px; /* הגדלת המרווח הפנימי */
+    width: 100%;
+    max-width: 850px; /* הגדלת רוחב הכרטיס */
+    text-align: center;
+    color: white;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+}
+
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    font-size: 1.3rem; /* אותיות גדולות יותר בטקסט העליון */
+    font-weight: 700;
+}
+
+.question-title {
+    font-size: 2.5rem !important; /* הגדלה משמעותית של השאלה */
+    font-weight: 800;
+    margin-bottom: 35px;
+    line-height: 1.3;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.option-btn {
+    padding: 22px; /* כפתורים עבים יותר */
+    font-size: 1.4rem !important; /* הגדלת האותיות בתוך הכפתורים */
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1); /* גבול עבה יותר */
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s all ease;
+    font-family: 'Assistant', sans-serif;
+}
+
+.result-score-circle {
+    width: 180px; /* הגדלת העיגול */
+    height: 180px;
+    border-radius: 50%;
+    border: 6px solid var(--neon-blue);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px auto;
+    font-size: 3.5rem; /* מספר ציון גדול מאוד */
+    font-weight: 900;
+}
+
+.back-to-scores-btn {
+    padding: 18px 40px;
+    font-size: 1.2rem; /* אותיות גדולות בכפתורי הסיום */
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+}
