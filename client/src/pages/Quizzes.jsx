@@ -67,7 +67,7 @@ const Quizzes = ({ searchTerm }) => {
                             className="admin-create-btn"
                             style={{ marginTop: '20px' }}
                         >
-                            ⚡ בלעדי: יצירת חידון חדש ⚡
+                            ⚡יצירת חידון חדש⚡
                         </button>
                     )}
                 </div>
