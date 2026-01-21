@@ -728,3 +728,10 @@ body {
         font-size: 1.1rem !important;
     }
 }
+
+/* אפקט מעבר עכבר על שורות הטבלה */
+tbody tr:hover {
+    background-color: #f8f9fa !important;
+    transition: background-color 0.2s ease;
+    cursor: default;
+}
