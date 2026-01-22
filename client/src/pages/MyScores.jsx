@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import '../App.css'; // חשוב לוודא שה-CSS מיובא כדי להשתמש ב-score-pass/fail
 
 const MyScores = ({ searchTerm }) => {
     const [allResults, setAllResults] = useState([]);
@@ -7,8 +8,6 @@ const MyScores = ({ searchTerm }) => {
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('date'); 
     const [sortOrder, setSortOrder] = useState('desc');
-    
-    // State לניהול שורה מודגשת
     const [hoveredRow, setHoveredRow] = useState(null);
 
     useEffect(() => {
@@ -58,7 +57,7 @@ const MyScores = ({ searchTerm }) => {
             <h1 style={{ textAlign: 'center', marginBottom: '30px', color: 'white' }}>היסטוריית הציונים שלי 🏆</h1>
             {filteredResults.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#333', borderRadius: '10px', color: 'white' }}>
-                    <p>{searchTerm ? 'לא נמצאו תוצאות' : 'עדיין לא פתרת חידונים-זמין למשתמש רשום בלבד.'}</p>
+                    <p>{searchTerm ? 'לא נמצאו תוצאות' : 'עדיין לא פתרת חידונים - זמין למשתמש רשום בלבד.'}</p>
                 </div>
             ) : (
                 <div style={{ overflowX: 'auto', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', borderRadius: '10px' }}>
@@ -89,8 +88,11 @@ const MyScores = ({ searchTerm }) => {
                                     }}
                                 >
                                     <td style={tdStyle}>{res.quizTitle}</td>
-                                    <td style={{ ...tdStyle, fontWeight: 'bold', color: res.score >= 60 ? '#27ae60' : '#e74c3c' }}>
-                                        {res.score}%
+                                    {/* עדכון כאן: שימוש ב-className מה-CSS שלך */}
+                                    <td style={tdStyle}>
+                                        <span className={res.score >= 60 ? 'score-pass' : 'score-fail'}>
+                                            {res.score}%
+                                        </span>
                                     </td>
                                     <td style={tdStyle}>{new Date(res.date).toLocaleDateString('he-IL')}</td>
                                 </tr>
