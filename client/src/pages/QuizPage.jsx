@@ -10,7 +10,7 @@ const QuizPage = () => {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [score, setScore] = useState(0);
     const [showScore, setShowScore] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(15);
+    const [timeLeft, setTimeLeft] = useState(20);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     // הוספת מצב לגודל המסך בשביל הקונפטי
     const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -89,11 +89,11 @@ const QuizPage = () => {
             if (nextQuestion < quiz.questions.length) {
                 setCurrentQuestion(nextQuestion);
                 setSelectedAnswer(null);
-                setTimeLeft(15);
+                setTimeLeft(20);
             } else {
                 finishQuiz(nextScore);
             }
-        }, 1500);
+        }, 2000);
     };
 
     if (!quiz) return <div className="center-message">טוען חידון...</div>;
@@ -136,7 +136,7 @@ const QuizPage = () => {
                 <div className="quiz-card-glow">
                     <div className="quiz-header">
                         <span>שאלה {currentQuestion + 1} / {quiz.questions.length}</span>
-                        <span style={{ color: timeLeft < 5 ? '#ff4d4d' : 'var(--neon-blue)', fontSize: '1.5rem' }}>
+                        <span style={{ color: timeLeft < 4 ? '#ff0000' : 'var(--neon-blue)', fontSize: '1.5rem' }}>
                              ⏳ {timeLeft} שניות
                         </span>
                     </div>

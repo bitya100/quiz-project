@@ -124,7 +124,7 @@ const styles = {
         paddingTop: '0', 
     },
     heroSection: {
-        height: '90vh', // תופס כמעט את כל גובה המסך
+        height: '100vh', // תופס את כל גובה המסך
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

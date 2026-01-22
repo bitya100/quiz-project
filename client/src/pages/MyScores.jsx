@@ -58,7 +58,7 @@ const MyScores = ({ searchTerm }) => {
             <h1 style={{ textAlign: 'center', marginBottom: '30px', color: 'white' }}>היסטוריית הציונים שלי 🏆</h1>
             {filteredResults.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#333', borderRadius: '10px', color: 'white' }}>
-                    <p>{searchTerm ? 'לא נמצאו תוצאות' : 'עדיין לא פתרת חידונים.'}</p>
+                    <p>{searchTerm ? 'לא נמצאו תוצאות' : 'עדיין לא פתרת חידונים-זמין למשתמש רשום בלבד.'}</p>
                 </div>
             ) : (
                 <div style={{ overflowX: 'auto', boxShadow: '0 4px 15px rgba(0,0,0,0.3)', borderRadius: '10px' }}>

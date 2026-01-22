@@ -217,7 +217,7 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
         <List><NavLinks isMobile /></List>
         
         <Box sx={{ mt: 'auto', textAlign: 'center', pb: 2 }}>
-           <Typography sx={{ mb: 2 }}>מחובר כ: <b style={neonGlow}>{userName || 'אורח'}</b></Typography>
+           <Typography sx={{ mb: 2 }}>שלום <b style={neonGlow}>{userName || 'אורח'}</b></Typography>
            {token && <Button fullWidth color="danger" variant="soft" onClick={handleLogout}>התנתק מהמערכת</Button>}
         </Box>
       </Drawer>
