@@ -736,3 +736,148 @@ tbody tr:hover {
     cursor: default;
 }
 
+
+/* קונטיינר ראשי לתוצאות בסיום */
+.result-actions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* ממרכז את הכפתור מבלי למתוח אותו */
+    gap: 20px;
+    margin-top: 30px;
+}
+
+/* כפתור בצע שוב - עיצוב ייחודי */
+.restart-btn {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border-radius: 50px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    width: fit-content; /* מונע התפרסות לרוחב */
+}
+
+.restart-btn:hover {
+    background: white;
+    color: black;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+/* קונטיינר לכפתורים המשניים (ציונים וחזרה) */
+.secondary-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap; /* תמיכה במובייל */
+}
+
+/* כפתור מסגרת בלבד (לחזור לחידונים) */
+.outline-btn {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.outline-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+/* התאמה למובייל */
+@media (max-width: 600px) {
+    .secondary-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .secondary-actions button, .restart-btn {
+        width: 100%; /* במובייל דווקא כן נרצה שהם יהיו רחבים ונוחים ללחיצה */
+        max-width: 300px;
+    }
+}
+
+/* --- עדכון כפתורי סיום חידון --- */
+
+/* כפתור בצע שוב */
+.restart-btn {
+    /* padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border-radius: 50px;
+    background: transparent;
+    color: white;
+    cursor: pointer; */
+    /* transition: all 0.3s ease;  */
+    /* הוספת ease למעבר חלק */
+    /* width: fit-content; */
+    /* הוספת הגדלה והילה כחולה/לבנה עדינה */
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.4); 
+    border-color: var(--neon-blue); /* הופך את המסגרת לכחולה במעבר */
+     
+      padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.restart-btn:hover {
+transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.4); 
+    border-color: var(--neon-blue); /* הופך את המסגרת לכחולה במעבר */
+}
+
+/* כפתור חזור לחידונים (outline-btn) */
+.outline-btn {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.outline-btn:hover {
+    /* הוספת הגדלה והילה כחולה/לבנה עדינה */
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.4); 
+    border-color: var(--neon-blue); /* הופך את המסגרת לכחולה במעבר */
+    
+}
+
+/* כפתור לצפייה בציונים (back-to-scores-btn) */
+.back-to-scores-btn {
+    padding: 18px 40px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border-radius: 50px;
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-to-scores-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px var(--neon-blue);
+    /* הוספת הגדלה והילה כחולה/לבנה עדינה */
+    transform: scale(1.1);
+    border-color: white; /* הופך את המסגרת לכחולה במעבר */
+}

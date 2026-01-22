@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import Confetti from 'react-confetti'; // ייבוא הקונפטי
+import Confetti from 'react-confetti';
 
 const QuizPage = () => {
     const { id } = useParams();
@@ -12,8 +12,17 @@ const QuizPage = () => {
     const [showScore, setShowScore] = useState(false);
     const [timeLeft, setTimeLeft] = useState(20);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
-    // הוספת מצב לגודל המסך בשביל הקונפטי
     const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+    // פונקציה לאיפוס החידון
+    const restartQuiz = () => {
+        setScore(0);
+        setCurrentQuestion(0);
+        setShowScore(false);
+        setTimeLeft(20);
+        setSelectedAnswer(null);
+        window.scrollTo(0, 0);
+    };
 
     useEffect(() => {
         const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -103,12 +112,11 @@ const QuizPage = () => {
 
     return (
         <div className="quiz-wrapper">
-            {/* הצגת קונפטי רק בציון 100 ובסיום המשחק */}
             {showScore && finalScorePercent === 100 && (
                 <Confetti
                     width={windowSize.width}
                     height={windowSize.height}
-                    recycle={false} // יתפוצץ פעם אחת ולא יחזור על עצמו לנצח
+                    recycle={false}
                     numberOfPieces={500}
                 />
             )}
@@ -123,14 +131,21 @@ const QuizPage = () => {
                         צברת {score} תשובות נכונות מתוך {quiz.questions.length}
                     </p>
                     
-                    <div className="result-actions">
-                        <button onClick={() => navigate('/my-scores')} className="back-to-scores-btn">
-                            לצפייה בציונים שלי
-                        </button>
-                        <button onClick={() => navigate('/quizzes')} className="back-to-scores-btn" style={{backgroundColor: 'transparent', border: '2px solid white', color: 'white'}}>
-                            חזור לחידונים
-                        </button>
-                    </div>
+                    {/* בתוך ה-showScore block */}
+<div className="result-actions-container">
+    <button onClick={restartQuiz} className="restart-btn">
+        בצע את החידון שוב
+    </button>
+    
+    <div className="secondary-actions">
+        <button onClick={() => navigate('/my-scores')} className="back-to-scores-btn">
+            לצפייה בציונים שלי
+        </button>
+        <button onClick={() => navigate('/quizzes')} className="outline-btn">
+            חזור לחידונים
+        </button>
+    </div>
+</div>
                 </div>
             ) : (
                 <div className="quiz-card-glow">
