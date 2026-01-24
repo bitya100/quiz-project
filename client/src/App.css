@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap');
+
 :root {
     --bg-dark: #0a0a0c;
     --card-bg: #16161a;
@@ -6,6 +7,7 @@
     --neon-blue: #40e0d0;
     --text-white: #e0e0e0;
 }
+
 body {
     margin: 0;
     font-family: 'Assistant', sans-serif;
@@ -13,6 +15,7 @@ body {
     direction: rtl;
     min-height: 100vh;
 }
+
 .navbar {
     background: #000000 !important;
     border-bottom: 2px solid var(--neon-blue);
@@ -176,7 +179,7 @@ body {
     border-radius: 20px;
 }
 
-/* --- טבלאות (תיקון מרכזי למניעת בריחה) --- */
+/* --- טבלאות --- */
 .table-wrapper, .table-container, .scores-table-container {
     background-color: white !important;
     border-radius: 12px !important;
@@ -184,15 +187,14 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     margin: 40px auto !important;
     max-width: 95% !important;
-    width: 100% !important; /* שינוי מ-1200px ל-100% כדי שיתאים לקונטיינר האב */
+    width: 100% !important;
     overflow-x: auto !important;
     direction: rtl !important;
 }
 
-/* הגבלת רוחב למסכים רחבים מאוד דרך ה-Container ב-React */
 @media (min-width: 1200px) {
     .table-wrapper, .table-container, .scores-table-container {
-        width: 1100px !important; /* רוחב אופטימלי למסך גדול */
+        width: 1100px !important;
     }
 }
 
@@ -218,52 +220,9 @@ td {
     vertical-align: middle !important;
 }
 
-/* תיקון ספציפי לכפתורים בתוך טבלה */
 td button, td .MuiButton-root {
     margin: 2px auto !important;
     display: inline-flex !important;
-}
-
-/* --- רספונסיביות למובייל (768px ומטה) --- */
-@media (max-width: 768px) {
-    .hamburger {
-        display: block;
-    }
-
-    .nav-links {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: #0a0a0c;
-        padding: 30px 0;
-        gap: 25px;
-        z-index: 2100;
-        align-items: center;
-        border-bottom: 2px solid var(--neon-blue);
-    }
-
-    .nav-links.open {
-        display: flex;
-    }
-
-    .main-title { font-size: 2.8rem; }
-
-    .table-wrapper, .table-container, .scores-table-container {
-        max-width: 98% !important;
-        margin: 20px auto !important;
-    }
-    
-    td, th {
-        padding: 10px 5px !important;
-        font-size: 0.85rem !important;
-    }
-
-    .admin-page-title {
-        font-size: 2rem !important;
-    }
 }
 
 /* צבעי ציונים */
@@ -274,7 +233,6 @@ td button, td .MuiButton-root {
 .center-message { text-align: center; margin-top: 100px; font-size: 20px; color: white; }
 .error-message { color: #ff4d4d; }
 
-/* מחלקה אחידה לכותרות דפי ניהול */
 .admin-page-title {
     text-align: center !important;
     color: #2c3e50 !important;
@@ -293,20 +251,19 @@ td button, td .MuiButton-root {
     border-color: #34495e !important;
 }
 
-/* הבטחת גופן אחיד לחיפוש */
 .MuiInputBase-input::placeholder {
     font-family: 'Assistant', sans-serif !important;
     opacity: 0.7 !important;
 }
 
 .main-footer {
-    background-color: #000000; /* צבע שחור שמתאים לנאבבאר שלך */
+    background-color: #000000;
     color: #e0e0e0;
     text-align: center;
     padding: 20px 0;
-    border-top: 2px solid #40e0d0; /* פס בצבע ניאון-כחול כמו בנאבבאר */
+    border-top: 2px solid #40e0d0;
     width: 100%;
-    margin-top: auto; /* דוחף את הפוטר לתחתית הקונטיינר */
+    margin-top: auto;
     font-family: 'Assistant', sans-serif;
 }
 
@@ -317,37 +274,31 @@ td button, td .MuiButton-root {
     opacity: 0.8;
 }
 
+/* --- שינויים מחלק 2 שדורסים הגדרות קיימות --- */
 
-
-/* עדכון ב-body */
 body {
-    margin: 0;
-    font-family: 'Assistant', sans-serif;
-    background-color: #050505; /* רקע שחור עמוק כדי שהניאון יבלוט */
-    direction: rtl;
-    min-height: 100vh;
+    background-color: #050505;
+    background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
     overflow-x: hidden;
 }
 
-/* הבטחת שקיפות מסוימת לקונטיינר התוכן כדי לראות את החלקיקים */
 .app-content-wrapper {
     background: transparent;
 }
 
-/* מניעת הסתרת החלקיקים על ידי כרטיסים (אופציונלי) */
 .quiz-card {
-    background: rgba(0, 0, 0, 0.402) !important; /* כרטיס חצי שקוף */
-    backdrop-filter: blur(5px); /* אפקט זכוכית יפה */
+    background: rgba(0, 0, 0, 0.402) !important;
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(64, 224, 208, 0.3);
 }
 
-body {
-    background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
+.main-title {
+    font-size: 3.5rem; 
+    margin-top: 30px;
 }
 
 /* --- עיצוב דף החידון (Quiz Page) --- */
 
-/* הקונטיינר הראשי של השאלה */
 .quiz-container {
     background: rgba(22, 22, 26, 0.8) !important;
     backdrop-filter: blur(15px);
@@ -360,7 +311,6 @@ body {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* כותרת השאלה */
 .question-text {
     font-size: 2rem;
     font-weight: 800;
@@ -370,7 +320,6 @@ body {
     text-shadow: 0 0 10px rgba(64, 224, 208, 0.5);
 }
 
-/* כפתורי התשובות */
 .answer-button {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -390,7 +339,7 @@ body {
     box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
 }
 
-/* פס התקדמות */
+/* פס התקדמות (חלק ראשון) */
 .progress-bar-inner {
     background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
     box-shadow: 0 0 15px var(--neon-blue);
@@ -459,8 +408,7 @@ body {
     transform: translateY(-3px);
 }
 
-
-/* --- Quiz Page & Results Design --- */
+/* --- Quiz Page & Results Design (הגדרות נוספות) --- */
 
 .quiz-wrapper {
     display: flex;
@@ -470,7 +418,6 @@ body {
     box-sizing: border-box;
 }
 
-/* הקומפוננטה המרכזית - מראה זכוכית כהה */
 .quiz-card-glow {
     background: rgba(22, 22, 26, 0.8) !important;
     backdrop-filter: blur(12px);
@@ -484,15 +431,7 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.quiz-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    font-weight: 700;
-    color: var(--text-white);
-}
-
-/* פס התקדמות ניאון */
+/* פס התקדמות ניאון (חלק שני) */
 .quiz-progress-container {
     width: 100%;
     height: 10px;
@@ -509,6 +448,15 @@ body {
     transition: width 0.4s ease;
 }
 
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-white);
+}
+
 .question-title {
     font-size: 1.8rem;
     font-weight: 800;
@@ -517,15 +465,16 @@ body {
 }
 
 .question-img {
-    width: 100%;
-    max-height: 280px;
+    width: auto;
+    max-width: 100%;
+    max-height: 200px;
     object-fit: contain;
     border-radius: 15px;
     border: 1px solid rgba(64, 224, 208, 0.3);
-    margin-bottom: 20px;
+    margin: 0 auto 15px auto;
+    display: block;
 }
 
-/* גריד התשובות */
 .quiz-options-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -533,12 +482,12 @@ body {
 }
 
 .option-btn {
-    padding: 18px;
-    font-size: 1.1rem;
+    padding: 15px;
+    font-size: 1.1rem !important;
     font-weight: 700;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
     color: white;
     cursor: pointer;
     transition: 0.3s all ease;
@@ -552,7 +501,6 @@ body {
     box-shadow: 0 5px 15px rgba(64, 224, 208, 0.2);
 }
 
-/* מצבי הצלחה וכישלון */
 .option-btn.correct {
     background-color: #27ae60 !important;
     border-color: #2ecc71 !important;
@@ -565,17 +513,16 @@ body {
     box-shadow: 0 0 20px #e74c3c;
 }
 
-/* עיצוב התוצאה הסופית */
 .result-score-circle {
-    width: 140px;
-    height: 140px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     background: transparent;
-    border: 4px solid var(--neon-blue);
+    border: 5px solid var(--neon-blue);
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 30px auto;
+    margin: 20px auto;
     font-size: 2.5rem;
     font-weight: 900;
     color: var(--neon-blue);
@@ -583,481 +530,6 @@ body {
     box-shadow: 0 0 20px rgba(64, 224, 208, 0.3), inset 0 0 20px rgba(64, 224, 208, 0.3);
 }
 
-.result-actions {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 30px;
-}
-
-.back-to-scores-btn {
-    padding: 15px 30px;
-    font-weight: 800;
-    border-radius: 50px;
-    border: none;
-    cursor: pointer;
-    transition: 0.3s;
-    background: var(--neon-blue);
-    color: var(--bg-dark);
-}
-
-.back-to-scores-btn:hover {
-    box-shadow: 0 0 25px var(--neon-blue);
-    transform: scale(1.05);
-}
-
-@media (max-width: 600px) {
-    .quiz-options-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* --- Quiz Page & Results Design - Updated Fonts --- */
-
-.quiz-wrapper {
-    display: flex;
-    justify-content: center;
-    padding: 40px 20px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.quiz-card-glow {
-    background: rgba(10, 10, 12, 0.85) !important;
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    border-radius: 25px;
-    padding: 50px; /* הגדלת המרווח הפנימי */
-    width: 100%;
-    max-width: 850px; /* הגדלת רוחב הכרטיס */
-    text-align: center;
-    color: white;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
-}
-
-.quiz-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 25px;
-    font-size: 1.3rem; /* אותיות גדולות יותר בטקסט העליון */
-    font-weight: 700;
-}
-
-.question-title {
-    font-size: 2.5rem !important; /* הגדלה משמעותית של השאלה */
-    font-weight: 800;
-    margin-bottom: 35px;
-    line-height: 1.3;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
-.option-btn {
-    padding: 22px; /* כפתורים עבים יותר */
-    font-size: 1.4rem !important; /* הגדלת האותיות בתוך הכפתורים */
-    font-weight: 700;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1); /* גבול עבה יותר */
-    border-radius: 15px;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s all ease;
-    font-family: 'Assistant', sans-serif;
-}
-
-.result-score-circle {
-    width: 180px; /* הגדלת העיגול */
-    height: 180px;
-    border-radius: 50%;
-    border: 6px solid var(--neon-blue);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 30px auto;
-    font-size: 3.5rem; /* מספר ציון גדול מאוד */
-    font-weight: 900;
-}
-
-.back-to-scores-btn {
-    padding: 18px 40px;
-    font-size: 1.2rem; /* אותיות גדולות בכפתורי הסיום */
-    font-weight: 800;
-    border-radius: 50px;
-    cursor: pointer;
-}
-
-/* הגבלת גובה התמונה כדי שלא תתפוס את כל המסך */
-.question-img {
-    width: auto;             /* מאפשר לתמונה לשמור על פרופורציות */
-    max-width: 100%;         /* שלא תצא מהצדדים */
-    max-height: 200px;       /* הגבלה קריטית: גובה מקסימלי קטן יותר */
-    object-fit: contain;     /* מבטיח שהתמונה לא תתעוות */
-    border-radius: 15px;
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    margin: 0 auto 15px auto; /* מרכז את התמונה ומוסיף מרווח תחתון */
-    display: block;          /* מבטיח שהמרכז יעבוד */
-}
-
-/* התאמת הכרטיס למסכים קטנים כשיש תמונה */
-.quiz-card-glow {
-    padding: 30px;           /* צמצום מעט של ה-padding כדי לחסוך מקום */
-    max-height: 95vh;        /* הגבלה שלא יעבור את גובה המסך */
-    overflow-y: auto;        /* אם בכל זאת חסר מקום, תהיה גלילה פנימית בתוך הכרטיס */
-}
-
-/* צמצום מרווחים בין אלמנטים כשיש תמונה */
-.question-title {
-    font-size: 1.8rem !important; /* הקטנה קלה של השאלה כדי לפנות מקום */
-    margin-bottom: 20px;
-    line-height: 1.2;
-}
-
-/* התאמת כפתורי התשובות למובייל/מסכים קטנים */
-@media (max-height: 700px) {
-    .question-img {
-        max-height: 150px; /* תמונה קטנה עוד יותר במסכים נמוכים */
-    }
-    .question-title {
-        font-size: 1.5rem !important;
-    }
-    .option-btn {
-        padding: 12px;
-        font-size: 1.1rem !important;
-    }
-}
-
-/* אפקט מעבר עכבר על שורות הטבלה */
-tbody tr:hover {
-    background-color: #f8f9fa !important;
-    transition: background-color 0.2s ease;
-    cursor: default;
-}
-
-
-/* קונטיינר ראשי לתוצאות בסיום */
-.result-actions-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* ממרכז את הכפתור מבלי למתוח אותו */
-    gap: 20px;
-    margin-top: 30px;
-}
-
-/* --- עיצוב כפתורי סיום חידון --- */
-
-/* כפתור בצע שוב - עיצוב ייחודי */
-.restart-btn {
-    padding: 15px 40px;
-    font-size: 1.2rem;
-    font-weight: 800;
-    border-radius: 50px;
-    border: 2px solid white;
-    background: transparent;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: fit-content;
-}
-
-.restart-btn:hover {
-    background: white;
-    color: black;
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(64, 224, 208, 0.4);
-    border-color: var(--neon-blue);
-}
-
-/* קונטיינר לכפתורים המשניים (ציונים וחזרה) */
-.secondary-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* כפתור מסגרת בלבד (לחזור לחידונים) */
-.outline-btn {
-    padding: 15px 30px;
-    font-size: 1.1rem;
-    font-weight: 800;
-    border-radius: 50px;
-    border: 2px solid white;
-    background: transparent;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.outline-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgb(64, 224, 208);
-    border-color: var(--neon-blue);
-}
-
-/* כפתור לצפייה בציונים */
-.back-to-scores-btn {
-    padding: 18px 40px;
-    font-size: 1.2rem;
-    font-weight: 800;
-    border-radius: 50px;
-    background: var(--neon-blue);
-    color: var(--bg-dark);
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.back-to-scores-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 30px var(--neon-blue);
-    border-color: white;
-}
-
-/* התאמה למובייל */
-@media (max-width: 600px) {
-    .secondary-actions {
-        flex-direction: column;
-        width: 100%;
-        align-items: center;
-    }
-    .secondary-actions button, .restart-btn, .back-to-scores-btn, .outline-btn {
-        width: 100%;
-        max-width: 300px;
-    }
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap');
-
-:root {
-    --bg-dark: #0a0a0c;
-    --card-bg: #16161a;
-    --neon-purple: #bc13fe;
-    --neon-blue: #40e0d0;
-    --text-white: #e0e0e0;
-}
-
-body {
-    margin: 0;
-    font-family: 'Assistant', sans-serif;
-    background-color: #050505;
-    background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
-    direction: rtl;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* --- נאבבאר --- */
-.navbar {
-    background: #000000 !important;
-    border-bottom: 2px solid var(--neon-blue);
-    padding: 10px 5%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 2000;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.nav-logo {
-    font-size: 2.2rem;
-    font-weight: 900;
-    color: #fff !important;
-    text-shadow: 0 0 10px var(--neon-blue);
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.nav-links {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    gap: 20px;
-    margin: 0;
-    padding: 0;
-    flex-grow: 1;
-    justify-content: space-evenly;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: var(--text-white);
-    font-weight: 700;
-    transition: 0.3s;
-    white-space: nowrap;
-}
-
-.nav-link:hover {
-    color: var(--neon-blue);
-    text-shadow: 0 0 12px var(--neon-blue);
-}
-
-.user-greeting-text {
-    color: white;
-    cursor: default;
-    font-weight: 700;
-}
-
-.hamburger {
-    display: none;
-    font-size: 2.2rem;
-    color: white;
-    cursor: pointer;
-    z-index: 2101;
-}
-
-/* --- כותרות ועיצוב דף --- */
-.main-title {
-    font-size: 3.5rem; /* הוקטן מ-4.5 */
-    font-weight: 900;
-    text-align: center;
-    color: #ffffff;
-    text-shadow: 0 0 15px var(--neon-blue), 0 0 30px rgba(64, 224, 208, 0.4);
-    margin-top: 30px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-}
-
-/* --- כרטיסי חידונים --- */
-.quizzes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 40px;
-    padding: 20px 5%;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.quiz-card {
-    background: rgba(0, 0, 0, 0.4) !important;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    border-radius: 20px;
-    padding: 30px;
-    transition: 0.4s ease;
-    text-align: center;
-}
-
-.quiz-card:hover {
-    transform: translateY(-10px);
-    border-color: var(--neon-blue);
-    box-shadow: 0 0 25px rgba(64, 224, 208, 0.2);
-}
-
-.play-btn {
-    width: 100%;
-    padding: 15px;
-    background: transparent;
-    color: var(--neon-blue);
-    border: 2px solid var(--neon-blue);
-    border-radius: 10px;
-    font-size: 1.2rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.play-btn:hover {
-    background: var(--neon-blue);
-    color: var(--bg-dark);
-    box-shadow: 0 0 30px var(--neon-blue);
-}
-
-/* --- טבלאות --- */
-.table-wrapper, .table-container, .scores-table-container {
-    background-color: white !important;
-    border-radius: 12px !important;
-    padding: 0 !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    margin: 40px auto !important;
-    max-width: 95% !important;
-    width: 100% !important;
-    overflow-x: auto !important;
-    direction: rtl !important;
-}
-
-@media (min-width: 1200px) {
-    .table-wrapper, .table-container, .scores-table-container {
-        width: 1100px !important;
-    }
-}
-
-table { width: 100% !important; border-collapse: collapse !important; }
-th { background-color: #34495e !important; color: #ffffff !important; padding: 18px 15px !important; text-align: center !important; }
-td { padding: 15px !important; border-bottom: 1px solid #eee !important; color: #333 !important; text-align: center !important; }
-
-/* --- Quiz Page & Results (הקטנה מסיבית) --- */
-
-.quiz-wrapper {
-    display: flex;
-    justify-content: center;
-    padding: 20px; /* הוקטן מ-40 */
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.quiz-card-glow {
-    background: rgba(10, 10, 12, 0.85) !important;
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(64, 224, 208, 0.3);
-    border-radius: 25px;
-    padding: 30px; /* הוקטן מ-50 */
-    width: 100%;
-    max-width: 700px; /* הוקטן מ-850 */
-    text-align: center;
-    color: white;
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
-}
-
-.question-title {
-    font-size: 1.8rem !important; /* הוקטן מ-2.5 */
-    font-weight: 800;
-    margin-bottom: 25px;
-    line-height: 1.2;
-}
-
-.option-btn {
-    padding: 15px; /* הוקטן מ-22 */
-    font-size: 1.1rem !important; /* הוקטן מ-1.4 */
-    font-weight: 700;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s all ease;
-}
-
-.option-btn:hover:not(:disabled) {
-    background: rgba(64, 224, 208, 0.1);
-    border-color: var(--neon-blue);
-    transform: translateY(-3px);
-}
-
-.option-btn.correct { background-color: #27ae60 !important; border-color: #2ecc71 !important; }
-.option-btn.wrong { background-color: #e74c3c !important; border-color: #ff4d4d !important; }
-
-/* תוצאה סופית מעודנת */
-.result-score-circle {
-    width: 130px; /* הוקטן מ-180 */
-    height: 130px;
-    border-radius: 50%;
-    border: 5px solid var(--neon-blue);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px auto;
-    font-size: 2.5rem; /* הוקטן מ-3.5 */
-    font-weight: 900;
-    color: var(--neon-blue);
-    text-shadow: 0 0 15px var(--neon-blue);
-    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
-}
-
-/* כפתורי סיום - עיצוב שביקשת */
 .result-actions-container {
     display: flex;
     flex-direction: column;
@@ -1109,7 +581,7 @@ td { padding: 15px !important; border-bottom: 1px solid #eee !important; color: 
 .outline-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(64, 224, 208, 1);
+    box-shadow: 0 0 20px rgb(64, 224, 208);
     border-color: var(--neon-blue);
 }
 
@@ -1130,31 +602,38 @@ td { padding: 15px !important; border-bottom: 1px solid #eee !important; color: 
     box-shadow: 0 0 30px var(--neon-blue);
 }
 
-/* תמונות שאלה */
-.question-img {
-    max-height: 180px; /* הוקטן מ-200 */
-    width: auto;
-    max-width: 100%;
-    object-fit: contain;
-    border-radius: 12px;
-    margin: 0 auto 15px auto;
-    display: block;
-}
-
-/* --- פוטר --- */
-.main-footer {
-    background-color: #000000;
-    color: #e0e0e0;
-    text-align: center;
-    padding: 15px 0;
-    border-top: 2px solid #40e0d0;
-    width: 100%;
-}
-
+/* --- רספונסיביות למובייל --- */
 @media (max-width: 768px) {
+    .hamburger { display: block; }
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #0a0a0c;
+        padding: 30px 0;
+        gap: 25px;
+        z-index: 2100;
+        align-items: center;
+        border-bottom: 2px solid var(--neon-blue);
+    }
+    .nav-links.open { display: flex; }
     .main-title { font-size: 2.5rem; }
-    .quiz-card-glow { padding: 20px; }
-    .question-title { font-size: 1.5rem !important; }
+    .quiz-options-grid { grid-template-columns: 1fr; }
     .secondary-actions { flex-direction: column; width: 100%; align-items: center; }
-    .secondary-actions button, .restart-btn { width: 100%; max-width: 280px; }
+    .secondary-actions button, .restart-btn, .back-to-scores-btn, .outline-btn { width: 100%; max-width: 280px; }
+    
+    .table-wrapper, .table-container, .scores-table-container {
+        max-width: 98% !important;
+        margin: 20px auto !important;
+    }
+    td, th { padding: 10px 5px !important; font-size: 0.85rem !important; }
+}
+
+@media (max-height: 700px) {
+    .question-img { max-height: 150px; }
+    .question-title { font-size: 1.5rem !important; }
+    .option-btn { padding: 12px; font-size: 1.1rem !important; }
 }
