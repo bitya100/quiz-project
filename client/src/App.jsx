@@ -44,59 +44,56 @@ function App() {
       <Router>
         <ScrollToTop />
         
-        {/* --- רקע חלקיקים אופטימלי --- */}
+        {/* --- רקע "הילה" (Aura Gradient) רגוע ומרשים --- */}
         <Particles
           id="tsparticles"
           init={particlesInit}
           options={{
             fullScreen: { enable: true, zIndex: -1 },
             background: {
-              color: { value: "transparent" },
+              color: { value: "#020617" }, // כחול נייבי עמוק מאוד
             },
-            fpsLimit: 120,
-            interactivity: {
-              events: {
-                // ביטלנו את ה-push בלחיצה כדי למנוע הצפה של חלקיקים ואיטיות
-                onClick: { enable: false }, 
-                onHover: {
-                  enable: true,
-                  mode: "repulse", 
-                },
-                resize: true,
-              },
-              modes: {
-                repulse: {
-                  distance: 120,
-                  duration: 0.4,
-                },
-              },
-            },
+            fpsLimit: 60,
             particles: {
-              color: { value: "#40e0d0" },
-              links: {
-                color: "#40e0d0",
-                distance: 150,
-                enable: true,
-                opacity: 0.3,
-                width: 1,
+              number: {
+                value: 5, // רק 5 חלקיקים ענקיים! זה הסוד לרגיעה
+                density: { enable: false }
+              },
+              color: {
+                value: ["#00c1ab", "#1e90ff", "#7000ff", "#40e0d0"] // צבעי מותג רכים
+              },
+              shape: {
+                type: "circle"
+              },
+              opacity: {
+                value: 0.15, // שקוף מאוד, כמעט לא מורגש
+              },
+              size: {
+                value: { min: 300, max: 500 } // חלקיקים ענקיים שיוצרים "כתמי אור"
               },
               move: {
                 enable: true,
-                speed: 2,
+                speed: 0.5, // תנועה איטית ברמה של בקושי להבחין בה
                 direction: "none",
-                random: false,
+                random: true,
                 straight: false,
                 outModes: { default: "out" },
+                attract: { enable: true, rotateX: 600, rotateY: 1200 }
               },
-              number: {
-                density: { enable: true, area: 800 },
-                value: 80, // הורדנו מעט ל-80 כדי להבטיח ביצועים חלקים גם במובייל
-              },
-              opacity: { value: 0.5 },
-              shape: { type: "circle" },
-              size: { value: { min: 1, max: 3 } },
+              // הוספת טשטוש (Blur) דרך ה-Canvas
+              shadow: {
+                enable: true,
+                color: "inherit",
+                blur: 50 // יוצר מראה של ענן ולא עיגול חד
+              }
             },
-            detectRetina: true,
+            interactivity: {
+              detectsOn: "window",
+              events: {
+                resize: true
+              }
+            },
+            detectRetina: true
           }}
         />
 

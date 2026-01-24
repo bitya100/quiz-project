@@ -9,3 +9,7 @@
 .answer-btn:disabled {
     cursor: not-allowed;
 }
+/* לעיצוב רקע טשטוש הכדורים */
+#tsparticles canvas {
+  filter: blur(10px);
+}
