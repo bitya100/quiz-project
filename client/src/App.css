@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap');
-
 :root {
     --bg-dark: #0a0a0c;
     --card-bg: #16161a;
@@ -7,7 +6,6 @@
     --neon-blue: #40e0d0;
     --text-white: #e0e0e0;
 }
-
 body {
     margin: 0;
     font-family: 'Assistant', sans-serif;
@@ -15,8 +13,6 @@ body {
     direction: rtl;
     min-height: 100vh;
 }
-
-/* --- נאבבאר  --- */
 .navbar {
     background: #000000 !important;
     border-bottom: 2px solid var(--neon-blue);
@@ -828,4 +824,337 @@ tbody tr:hover {
         width: 100%;
         max-width: 300px;
     }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap');
+
+:root {
+    --bg-dark: #0a0a0c;
+    --card-bg: #16161a;
+    --neon-purple: #bc13fe;
+    --neon-blue: #40e0d0;
+    --text-white: #e0e0e0;
+}
+
+body {
+    margin: 0;
+    font-family: 'Assistant', sans-serif;
+    background-color: #050505;
+    background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
+    direction: rtl;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- נאבבאר --- */
+.navbar {
+    background: #000000 !important;
+    border-bottom: 2px solid var(--neon-blue);
+    padding: 10px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.nav-logo {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #fff !important;
+    text-shadow: 0 0 10px var(--neon-blue);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    justify-content: space-evenly;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-white);
+    font-weight: 700;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    color: var(--neon-blue);
+    text-shadow: 0 0 12px var(--neon-blue);
+}
+
+.user-greeting-text {
+    color: white;
+    cursor: default;
+    font-weight: 700;
+}
+
+.hamburger {
+    display: none;
+    font-size: 2.2rem;
+    color: white;
+    cursor: pointer;
+    z-index: 2101;
+}
+
+/* --- כותרות ועיצוב דף --- */
+.main-title {
+    font-size: 3.5rem; /* הוקטן מ-4.5 */
+    font-weight: 900;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 0 15px var(--neon-blue), 0 0 30px rgba(64, 224, 208, 0.4);
+    margin-top: 30px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+/* --- כרטיסי חידונים --- */
+.quizzes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 40px;
+    padding: 20px 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.quiz-card {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    border-radius: 20px;
+    padding: 30px;
+    transition: 0.4s ease;
+    text-align: center;
+}
+
+.quiz-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 25px rgba(64, 224, 208, 0.2);
+}
+
+.play-btn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    color: var(--neon-blue);
+    border: 2px solid var(--neon-blue);
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.play-btn:hover {
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    box-shadow: 0 0 30px var(--neon-blue);
+}
+
+/* --- טבלאות --- */
+.table-wrapper, .table-container, .scores-table-container {
+    background-color: white !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    margin: 40px auto !important;
+    max-width: 95% !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    direction: rtl !important;
+}
+
+@media (min-width: 1200px) {
+    .table-wrapper, .table-container, .scores-table-container {
+        width: 1100px !important;
+    }
+}
+
+table { width: 100% !important; border-collapse: collapse !important; }
+th { background-color: #34495e !important; color: #ffffff !important; padding: 18px 15px !important; text-align: center !important; }
+td { padding: 15px !important; border-bottom: 1px solid #eee !important; color: #333 !important; text-align: center !important; }
+
+/* --- Quiz Page & Results (הקטנה מסיבית) --- */
+
+.quiz-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 20px; /* הוקטן מ-40 */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.quiz-card-glow {
+    background: rgba(10, 10, 12, 0.85) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(64, 224, 208, 0.3);
+    border-radius: 25px;
+    padding: 30px; /* הוקטן מ-50 */
+    width: 100%;
+    max-width: 700px; /* הוקטן מ-850 */
+    text-align: center;
+    color: white;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+}
+
+.question-title {
+    font-size: 1.8rem !important; /* הוקטן מ-2.5 */
+    font-weight: 800;
+    margin-bottom: 25px;
+    line-height: 1.2;
+}
+
+.option-btn {
+    padding: 15px; /* הוקטן מ-22 */
+    font-size: 1.1rem !important; /* הוקטן מ-1.4 */
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s all ease;
+}
+
+.option-btn:hover:not(:disabled) {
+    background: rgba(64, 224, 208, 0.1);
+    border-color: var(--neon-blue);
+    transform: translateY(-3px);
+}
+
+.option-btn.correct { background-color: #27ae60 !important; border-color: #2ecc71 !important; }
+.option-btn.wrong { background-color: #e74c3c !important; border-color: #ff4d4d !important; }
+
+/* תוצאה סופית מעודנת */
+.result-score-circle {
+    width: 130px; /* הוקטן מ-180 */
+    height: 130px;
+    border-radius: 50%;
+    border: 5px solid var(--neon-blue);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px auto;
+    font-size: 2.5rem; /* הוקטן מ-3.5 */
+    font-weight: 900;
+    color: var(--neon-blue);
+    text-shadow: 0 0 15px var(--neon-blue);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
+}
+
+/* כפתורי סיום - עיצוב שביקשת */
+.result-actions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.restart-btn {
+    padding: 12px 35px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: fit-content;
+}
+
+.restart-btn:hover {
+    background: white;
+    color: black;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.4);
+    border-color: var(--neon-blue);
+}
+
+.secondary-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.outline-btn {
+    padding: 12px 25px;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.outline-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 1);
+    border-color: var(--neon-blue);
+}
+
+.back-to-scores-btn {
+    padding: 14px 35px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 50px;
+    background: var(--neon-blue);
+    color: var(--bg-dark);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-to-scores-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px var(--neon-blue);
+}
+
+/* תמונות שאלה */
+.question-img {
+    max-height: 180px; /* הוקטן מ-200 */
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    margin: 0 auto 15px auto;
+    display: block;
+}
+
+/* --- פוטר --- */
+.main-footer {
+    background-color: #000000;
+    color: #e0e0e0;
+    text-align: center;
+    padding: 15px 0;
+    border-top: 2px solid #40e0d0;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .main-title { font-size: 2.5rem; }
+    .quiz-card-glow { padding: 20px; }
+    .question-title { font-size: 1.5rem !important; }
+    .secondary-actions { flex-direction: column; width: 100%; align-items: center; }
+    .secondary-actions button, .restart-btn { width: 100%; max-width: 280px; }
 }

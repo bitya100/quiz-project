@@ -45,8 +45,9 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
 
   const NavLinks = ({ isMobile = false }) => (
     <>
+    
       <ListItem>
-        <ListItemButton component={Link} to="/quizzes" onClick={() => setIsMenuOpen(false)}>
+        <ListItemButton component={Link} to="/quizzes"  onClick={() => setIsMenuOpen(false)}>
           <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...neonGlow, fontWeight: 'bold' }}>
             חידונים
           </ListItemContent>

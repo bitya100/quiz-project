@@ -7,6 +7,11 @@ import '../App.css';
 const Quizzes = ({ searchTerm }) => {
     const { quizzes, loading, refreshQuizzes } = useQuizzes();
     const [filteredQuizzes, setFilteredQuizzes] = useState([]);
+    
+    // States לניהול מודאל המחיקה המעוצב
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [quizToDelete, setQuizToDelete] = useState(null);
+
     const navigate = useNavigate();
     const userRole = localStorage.getItem('role');
     const token = localStorage.getItem('token');
@@ -22,13 +27,21 @@ const Quizzes = ({ searchTerm }) => {
         setFilteredQuizzes(results);
     }, [searchTerm, quizzes]);
 
-    const deleteQuiz = async (id) => {
-        if (!window.confirm("בטוח שברצונך למחוק את החידון לצמיתות?")) return;
+    // פונקציה לפתיחת המודאל במקום ה-Confirm המובנה
+    const openDeleteModal = (quiz) => {
+        setQuizToDelete(quiz);
+        setIsModalOpen(true);
+    };
+
+    const deleteQuiz = async () => {
+        if (!quizToDelete) return;
         try {
-            await axios.delete(`http://localhost:3001/api/quizzes/${id}`, {
+            await axios.delete(`http://localhost:3001/api/quizzes/${quizToDelete._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             refreshQuizzes();
+            setIsModalOpen(false); // סגירת המודאל בסיום
+            setQuizToDelete(null);
         } catch (err) { 
             console.error(err);
             alert("שגיאה במערכת - ודא שהשרת מחובר"); 
@@ -50,6 +63,34 @@ const Quizzes = ({ searchTerm }) => {
     return (
         <div className="page-wrapper" style={styles.pageWrapper}>
             
+            {/* --- מודאל אישור מחיקה מעוצב --- */}
+            {isModalOpen && (
+                <div style={styles.modalOverlay}>
+                    <div className="quiz-card-glow" style={styles.modalContent}>
+                        <h2 style={{ color: '#ff4d4d', marginBottom: '15px' }}>אישור מחיקה</h2>
+                        <p style={{ fontSize: '1.2rem', marginBottom: '30px' }}>
+                            האם אתה בטוח שברצונך למחוק את החידון <strong>"{quizToDelete?.title}"</strong>? 
+                            לא ניתן לבטל פעולה זו.
+                        </p>
+                        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                            <button 
+                                onClick={deleteQuiz} 
+                                className="back-to-scores-btn" 
+                                style={{ background: '#ff4d4d', border: 'none', color: 'white' }}
+                            >
+                                מחק לצמיתות
+                            </button>
+                            <button 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="restart-btn"
+                            >
+                                ביטול
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* --- Hero Section: מסך קבלת הפנים החדש --- */}
             <section style={styles.heroSection}>
                 <div style={styles.heroContent}>
@@ -101,7 +142,7 @@ const Quizzes = ({ searchTerm }) => {
                                                 עריכה ✏️
                                             </button>
                                             <button 
-                                                onClick={() => deleteQuiz(quiz._id)} 
+                                                onClick={() => openDeleteModal(quiz)} 
                                                 style={styles.deleteBtn}
                                             >
                                                 מחיקה 🗑️
@@ -120,11 +161,31 @@ const Quizzes = ({ searchTerm }) => {
 
 // --- סטיילים משלימים ---
 const styles = {
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 3000,
+        backdropFilter: 'blur(8px)'
+    },
+    modalContent: {
+        maxWidth: '500px',
+        padding: '40px',
+        textAlign: 'center',
+        border: '2px solid #ff4d4d',
+        boxShadow: '0 0 30px rgba(255, 77, 77, 0.2)'
+    },
     pageWrapper: {
         paddingTop: '0', 
     },
     heroSection: {
-        height: '100vh', // תופס את כל גובה המסך
+        height: '90vh', // תופס כמעט את כל גובה המסך
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
