@@ -151,7 +151,7 @@ const QuizPage = () => {
                 <div className="quiz-card-glow">
                     <div className="quiz-header">
                         <span>שאלה {currentQuestion + 1} / {quiz.questions.length}</span>
-                        <span style={{ color: timeLeft < 4 ? '#ff0000' : 'var(--neon-blue)', fontSize: '1.5rem' }}>
+                        <span style={{ color: timeLeft < 6 ? '#ff0000' : 'var(--neon-blue)', fontSize: '1.5rem' }}>
                              ⏳ {timeLeft} שניות
                         </span>
                     </div>
