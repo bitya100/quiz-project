@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react"; // הוספנו useCallback
+import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QuizProvider } from "./context/QuizContext";
-import Particles from "react-tsparticles"; // ייבוא חלקיקים
-import { loadSlim } from "tsparticles-slim"; // ייבוא המנוע הקל
+import Particles from "react-tsparticles"; 
+import { loadSlim } from "tsparticles-slim"; 
 
-// ייבוא קומפוננטות (נשאר ללא שינוי)
+// ייבוא קומפוננטות
 import Navbar from "./components/Navbar";
 import Quizzes from "./pages/Quizzes";
 import QuizPage from "./pages/QuizPage";
@@ -35,7 +35,6 @@ const Footer = () => {
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // פונקציית אתחול לחלקיקים
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine);
   }, []);
@@ -45,34 +44,35 @@ function App() {
       <Router>
         <ScrollToTop />
         
-        {/* --- רקע חלקיקים אינטראקטיבי --- */}
+        {/* --- רקע חלקיקים אופטימלי --- */}
         <Particles
           id="tsparticles"
           init={particlesInit}
           options={{
-            fullScreen: { enable: true, zIndex: -1 }, // דואג שיהיה ברקע מאחור
+            fullScreen: { enable: true, zIndex: -1 },
             background: {
-              color: { value: "transparent" }, // משתמש ברקע שנגדיר ב-CSS
+              color: { value: "transparent" },
             },
             fpsLimit: 120,
             interactivity: {
               events: {
-                onClick: { enable: true, mode: "push" },
+                // ביטלנו את ה-push בלחיצה כדי למנוע הצפה של חלקיקים ואיטיות
+                onClick: { enable: false }, 
                 onHover: {
                   enable: true,
-                  mode: "repulse", // אפקט בריחה מהעכבר
+                  mode: "repulse", 
                 },
                 resize: true,
               },
               modes: {
                 repulse: {
-                  distance: 120, // מרחק הבריחה
+                  distance: 120,
                   duration: 0.4,
                 },
               },
             },
             particles: {
-              color: { value: "#40e0d0" }, // צבע טורקיז ניאון
+              color: { value: "#40e0d0" },
               links: {
                 color: "#40e0d0",
                 distance: 150,
@@ -90,12 +90,10 @@ function App() {
               },
               number: {
                 density: { enable: true, area: 800 },
-                value: 100, // כמות החלקיקים
+                value: 80, // הורדנו מעט ל-80 כדי להבטיח ביצועים חלקים גם במובייל
               },
               opacity: { value: 0.5 },
               shape: { type: "circle" },
-          //  shape: { type: "triangle" },
-
               size: { value: { min: 1, max: 3 } },
             },
             detectRetina: true,
@@ -104,7 +102,6 @@ function App() {
 
         <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         
-        {/* הוספנו className כדי לשלוט בשקיפות התוכן מעל הרקע */}
         <div className="app-content-wrapper" style={{ 
           minHeight: '100vh', 
           display: 'flex',

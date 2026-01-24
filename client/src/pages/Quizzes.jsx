@@ -16,7 +16,6 @@ const Quizzes = ({ searchTerm }) => {
     const userRole = localStorage.getItem('role');
     const token = localStorage.getItem('token');
     
-    // רפרנס כדי שנוכל לגלול אל החידונים בלחיצת כפתור
     const quizGridRef = useRef(null);
 
     useEffect(() => {
@@ -27,7 +26,6 @@ const Quizzes = ({ searchTerm }) => {
         setFilteredQuizzes(results);
     }, [searchTerm, quizzes]);
 
-    // פונקציה לפתיחת המודאל במקום ה-Confirm המובנה
     const openDeleteModal = (quiz) => {
         setQuizToDelete(quiz);
         setIsModalOpen(true);
@@ -40,7 +38,7 @@ const Quizzes = ({ searchTerm }) => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             refreshQuizzes();
-            setIsModalOpen(false); // סגירת המודאל בסיום
+            setIsModalOpen(false);
             setQuizToDelete(null);
         } catch (err) { 
             console.error(err);
@@ -48,7 +46,6 @@ const Quizzes = ({ searchTerm }) => {
         }
     };
 
-    // פונקציה לגלילה חלקה לחידונים
     const scrollToQuizzes = () => {
         quizGridRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -63,10 +60,20 @@ const Quizzes = ({ searchTerm }) => {
     return (
         <div className="page-wrapper" style={styles.pageWrapper}>
             
-            {/* --- מודאל אישור מחיקה מעוצב --- */}
+            {/* הזרקת האנימציה למסמך */}
+            <style>
+                {`
+                @keyframes modalShow {
+                    from { opacity: 0; transform: scale(0.9); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+                `}
+            </style>
+
+            {/* --- מודאל אישור מחיקה מעוצב עם אנימציה --- */}
             {isModalOpen && (
                 <div style={styles.modalOverlay}>
-                    <div className="quiz-card-glow" style={styles.modalContent}>
+                    <div className="quiz-card-glow" style={{...styles.modalContent, animation: 'modalShow 0.3s ease-out'}}>
                         <h2 style={{ color: '#ff4d4d', marginBottom: '15px' }}>אישור מחיקה</h2>
                         <p style={{ fontSize: '1.2rem', marginBottom: '30px' }}>
                             האם אתה בטוח שברצונך למחוק את החידון <strong>"{quizToDelete?.title}"</strong>? 
@@ -91,7 +98,7 @@ const Quizzes = ({ searchTerm }) => {
                 </div>
             )}
 
-            {/* --- Hero Section: מסך קבלת הפנים החדש --- */}
+            {/* --- Hero Section --- */}
             <section style={styles.heroSection}>
                 <div style={styles.heroContent}>
                     <h1 className="main-title" style={styles.heroTitle}>QUIZ ZONE</h1>
@@ -159,7 +166,6 @@ const Quizzes = ({ searchTerm }) => {
     );
 };
 
-// --- סטיילים משלימים ---
 const styles = {
     modalOverlay: {
         position: 'fixed',
@@ -179,33 +185,21 @@ const styles = {
         padding: '40px',
         textAlign: 'center',
         border: '2px solid #ff4d4d',
-        boxShadow: '0 0 30px rgba(255, 77, 77, 0.2)'
+        boxShadow: '0 0 30px rgba(255, 77, 77, 0.2)',
+        borderRadius: '25px'
     },
-    pageWrapper: {
-        paddingTop: '0', 
-    },
+    pageWrapper: { paddingTop: '0' },
     heroSection: {
-        height: '90vh', // תופס כמעט את כל גובה המסך
+        height: '90vh',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         background: 'radial-gradient(circle, rgba(22,22,26,1) 0%, rgba(10,10,12,1) 100%)',
         borderBottom: '2px solid var(--neon-blue)',
     },
-    heroContent: {
-        textAlign: 'center',
-        padding: '20px',
-    },
-    heroTitle: {
-        fontSize: '5rem',
-        marginBottom: '10px',
-        letterSpacing: '5px',
-    },
-    heroSubtitle: {
-        fontSize: '1.8rem',
-        marginBottom: '40px',
-        color: '#ccc',
-    },
+    heroContent: { textAlign: 'center', padding: '20px' },
+    heroTitle: { fontSize: '5rem', marginBottom: '10px', letterSpacing: '5px' },
+    heroSubtitle: { fontSize: '1.8rem', marginBottom: '40px', color: '#ccc' },
     heroBtn: {
         padding: '15px 40px',
         fontSize: '1.4rem',
@@ -218,10 +212,7 @@ const styles = {
         transition: '0.3s ease',
         boxShadow: '0 0 15px rgba(64, 224, 208, 0.4)',
     },
-    gridContainer: {
-        padding: '80px 5%',
-        minHeight: '100vh',
-    },
+    gridContainer: { padding: '80px 5%', minHeight: '100vh' },
     sectionDivider: {
         textAlign: 'center',
         color: 'white',
@@ -229,23 +220,10 @@ const styles = {
         marginBottom: '50px',
         textDecoration: 'underline var(--neon-blue)',
     },
-    loaderTitle: {
-        fontSize: '2rem'
-    },
-    noResults: {
-        gridColumn: '1/-1', 
-        fontSize: '2rem',
-        textAlign: 'center'
-    },
-    cardFooter: {
-        width: '100%'
-    },
-    adminActions: {
-        display: 'flex', 
-        gap: '15px', 
-        marginTop: '20px', 
-        justifyContent: 'center'
-    },
+    loaderTitle: { fontSize: '2rem' },
+    noResults: { gridColumn: '1/-1', fontSize: '2rem', textAlign: 'center' },
+    cardFooter: { width: '100%' },
+    adminActions: { display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center' },
     editBtn: {
         color: 'var(--neon-blue)', 
         background: 'none', 
