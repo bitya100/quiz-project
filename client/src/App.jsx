@@ -27,7 +27,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   return (
     <footer className="main-footer">
-      <p> כל הזכויות שמורות &copy; {currentYear} </p>
+      <p> ביתיה. כל הזכויות שמורות &copy; {currentYear} </p>
     </footer>
   );
 };

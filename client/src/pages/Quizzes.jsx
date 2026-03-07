@@ -106,7 +106,7 @@ const Quizzes = ({ searchTerm }) => {
                         המקום שבו ידע הופך לציון. מוכנים לאתגר?
                     </p>
                     <button onClick={scrollToQuizzes} className="hero-btn" style={styles.heroBtn}>
-                        גלו את החידונים ↓
+                     לחידונים   ↓
                     </button>
                     
                     {userRole === 'admin' && (
@@ -115,7 +115,7 @@ const Quizzes = ({ searchTerm }) => {
                             className="admin-create-btn"
                             style={{ marginTop: '20px' }}
                         >
-                            ⚡יצירת חידון חדש⚡
+                        צור חידון חדש
                         </button>
                     )}
                 </div>
@@ -190,7 +190,7 @@ const styles = {
     },
     pageWrapper: { paddingTop: '0' },
     heroSection: {
-        height: '90vh',
+        height: '99vh',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

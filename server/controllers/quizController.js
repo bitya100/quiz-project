@@ -20,23 +20,31 @@ exports.getQuizById = async (req, res) => {
         res.status(500).json({ message: "שגיאה בטעינת החידון" });
     }
 };
-
 // 3. יצירת חידון חדש - מנהל בלבד
 exports.createQuiz = async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: "גישה נדחתה: מנהלים בלבד" });
     }
+
+    // בדיקה שיש לפחות שאלה אחת
+    if (!req.body.questions || req.body.questions.length === 0) {
+        return res.status(400).json({ message: "חידון חייב להכיל לפחות שאלה אחת" });
+    }
+
     try {
         const newQuiz = new Quiz({
             ...req.body,
             creator: req.user._id 
         });
+
         const savedQuiz = await newQuiz.save();
         res.status(201).json(savedQuiz);
+
     } catch (err) {
         res.status(400).json({ message: "שגיאה ביצירת החידון: " + err.message });
     }
 };
+
 
 // 4. עדכון חידון קיים - מנהל בלבד
 exports.updateQuiz = async (req, res) => {
