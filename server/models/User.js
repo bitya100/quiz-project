@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
-// תיקון קריטי: שימוש ב-function רגילה כדי ש-this יעבוד
+// שימוש ב-function רגילה כדי ש-this יעבוד
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
 

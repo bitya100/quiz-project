@@ -1,111 +1,151 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, 
-    TableRow, Paper, Typography, Container, Box, CircularProgress 
-} from '@mui/material';
-// תיקון נתיב ה-CSS כדי לצאת מתיקיית pages לתיקיית src
-import '../App.css'; 
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Container, Typography, Box, Paper, CircularProgress,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel
+} from "@mui/material";
 
-const AllScores = ({ searchTerm }) => { // קבלת החיפוש מה-Navbar דרך App.js
-    const [allResults, setAllResults] = useState([]);
-    const [filteredResults, setFilteredResults] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+const AllScores = () => {
+  const [allScores, setAllScores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // משתני מצב לניהול המיון
+  const [order, setOrder] = useState('desc'); 
+  const [orderBy, setOrderBy] = useState('date'); 
 
-    useEffect(() => {
-        const fetchAllScores = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:3001/api/results/admin/all', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setAllResults(response.data);
-                setFilteredResults(response.data);
-                setLoading(false);
-            } catch (err) {
-                console.error("Error fetching all scores:", err);
-                setError('שגיאה בטעינת הנתונים. וודא שאתה מחובר כמנהל.');
-                setLoading(false);
-            }
-        };
-        fetchAllScores();
-    }, []);
-
-    // לוגיקת הסינון - מגיבה לשינויים ב-searchTerm שמגיע מה-Navbar
-    useEffect(() => {
-        const results = allResults.filter(result => {
-            const quizTitle = result.quizTitle?.toLowerCase() || '';
-            const userName = result.userId?.userName?.toLowerCase() || '';
-            const search = searchTerm?.toLowerCase() || '';
-            
-            return quizTitle.includes(search) || userName.includes(search);
+  useEffect(() => {
+    const fetchAllScores = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:3001/api/results/admin/all', {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        setFilteredResults(results);
-    }, [searchTerm, allResults]);
+        
+        // חישוב אחוזים והכנת הנתונים
+        const processedData = res.data.map(item => ({
+            ...item,
+            percentage: Math.round((item.score / item.totalQuestions) * 100) || 0,
+            // מניעת קריסה במקרה שהמשתמש נמחק ממסד הנתונים אך הציון שלו נשאר
+            userName: item.userId?.userName || 'משתמש נמחק' 
+        }));
+        
+        setAllScores(processedData);
+      } catch (err) {
+        console.error("Error fetching all scores", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllScores();
+  }, []);
 
-    if (loading) return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-            <CircularProgress sx={{ color: '#00c1ab' }} />
-        </Box>
-    );
+  // פונקציה לשינוי סדר וסוג המיון בלחיצה על כותרת
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
 
-    if (error) return <div className="center-message error-message">{error}</div>;
+  // הלוגיקה שממיינת את המערך
+  const sortedScores = [...allScores].sort((a, b) => {
+    let valA = a[orderBy];
+    let valB = b[orderBy];
 
-    return (
-        <Container maxWidth="lg" sx={{ py: 4 }} dir="rtl">
-            <Typography 
-                variant="h3" 
-                className="admin-page-title" 
-                sx={{ mb: 4, fontFamily: 'Assistant', fontWeight: 800 }}
-            >
-                ניהול ציוני מערכת 🛠️
-            </Typography>
+    // התאמות ספציפיות לפי סוג העמודה
+    if (orderBy === 'date') {
+      valA = new Date(a.date).getTime();
+      valB = new Date(b.date).getTime();
+    } else if (orderBy === 'quizTitle') {
+      valA = a.quizTitle.toLowerCase();
+      valB = b.quizTitle.toLowerCase();
+    } else if (orderBy === 'userName') {
+      valA = a.userName.toLowerCase();
+      valB = b.userName.toLowerCase();
+    }
 
-            <TableContainer component={Paper} className="scores-table-container" elevation={5}>
-                <Table sx={{ minWidth: 650 }}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>שם המשתמש</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>חידון</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>ציון</TableCell>
-                            <TableCell align="right" sx={{ fontFamily: 'Assistant', fontWeight: 'bold' }}>תאריך</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredResults.length > 0 ? (
-                            filteredResults.map((result) => (
-                                <TableRow key={result._id} className="user-row" hover>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>
-                                        {result.userId ? result.userId.userName : 'אורח'}
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>
-                                        {result.quizTitle}
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>
-                                        <span className={result.score >= 60 ? 'score-pass' : 'score-fail'}>
-                                            {result.score}%
-                                        </span>
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: 'Assistant' }}>
-                                        {new Date(result.date).toLocaleString('he-IL')}
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
-                                    <Typography variant="body1" sx={{ fontFamily: 'Assistant', color: '#666' }}>
-                                        לא נמצאו תוצאות התואמות לחיפוש: "{searchTerm}"
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Container>
-    );
+    if (valA < valB) return order === 'asc' ? -1 : 1;
+    if (valA > valB) return order === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>
+      <Typography variant="h3" sx={{ mb: 4, textAlign: 'center', color: '#40e0d0', fontWeight: 'bold' }}>
+        כל הציונים במערכת (ניהול)
+      </Typography>
+      
+      {allScores.length === 0 ? (
+        <Typography variant="h5" sx={{ textAlign: 'center', color: 'white', mt: 5 }}>
+          אין עדיין ציונים במערכת.
+        </Typography>
+      ) : (
+        <TableContainer component={Paper} sx={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)', borderRadius: 3 }}>
+          <Table sx={{ minWidth: 650 }} dir="rtl">
+            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
+              <TableRow>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={orderBy === 'userName'}
+                    direction={orderBy === 'userName' ? order : 'asc'}
+                    onClick={() => handleRequestSort('userName')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    שם משתמש
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={orderBy === 'quizTitle'}
+                    direction={orderBy === 'quizTitle' ? order : 'asc'}
+                    onClick={() => handleRequestSort('quizTitle')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    שם החידון
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="center">
+                  <TableSortLabel
+                    active={orderBy === 'percentage'}
+                    direction={orderBy === 'percentage' ? order : 'asc'}
+                    onClick={() => handleRequestSort('percentage')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    ציון (%)
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell align="left">
+                  <TableSortLabel
+                    active={orderBy === 'date'}
+                    direction={orderBy === 'date' ? order : 'asc'}
+                    onClick={() => handleRequestSort('date')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    תאריך
+                  </TableSortLabel>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedScores.map((row) => (
+                <TableRow key={row._id} sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+                  <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>{row.userName}</TableCell>
+                  <TableCell align="right" sx={{ color: 'white' }}>{row.quizTitle}</TableCell>
+                  <TableCell align="center" sx={{ color: row.percentage >= 60 ? '#4caf50' : '#f44336', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                    {row.percentage}%
+                  </TableCell>
+                  <TableCell align="left" sx={{ color: 'white', opacity: 0.8 }}>
+                    {new Date(row.date).toLocaleDateString('he-IL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Container>
+  );
 };
 
 export default AllScores;

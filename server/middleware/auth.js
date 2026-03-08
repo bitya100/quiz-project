@@ -1,25 +1,20 @@
 const jwt = require('jsonwebtoken');
 
 const auth = (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: "גישה נדחתה, לא נמצא טוקן" });
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+        return res.status(401).json({ message: "גישה נדחתה, חסר טוקן" });
+    }
 
     try {
-        const verified = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-        req.user = verified; 
-        next();
-    } catch (err) {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
+        req.user = decoded;
+        next(); // ממשיך לפונקציה הבאה בראוטר
+    } catch (ex) {
         res.status(400).json({ message: "טוקן לא תקין" });
     }
 };
 
-// פונקציה לבדיקה אם המשתמש מנהל
-const adminOnly = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-        next();
-    } else {
-        res.status(403).json({ message: "גישה נדחתה: דרושות הרשאות מנהל" });
-    }
-};
-
-module.exports = { auth, adminOnly };
+// השורה הכי חשובה - בלי זה הכל קורס!
+module.exports = auth;

@@ -204,12 +204,18 @@ table {
     table-layout: auto !important;
 }
 
+/* התיקון כאן: הסרנו את ה-padding הקשיח והוספנו תמיכה במיון */
 th {
     background-color: #34495e !important;
     color: #ffffff !important;
-    padding: 18px 15px !important;
     text-align: center !important;
     white-space: nowrap !important;
+    padding: 0 !important; /* מאפשר ללחצן למלא את כל התא */
+}
+
+/* עיצוב ספציפי לטקסט בתוך th שאינו כפתור */
+th:not(:has(button)):not(:has(.MuiTableSortLabel-root)) {
+    padding: 18px 15px !important;
 }
 
 td {
@@ -636,5 +642,48 @@ body {
     .question-img { max-height: 150px; }
     .question-title { font-size: 1.5rem !important; }
     .option-btn { padding: 12px; font-size: 1.1rem !important; }
+}
+
+/* src/index.css */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; 
+  width: 100%;
+}
+
+#root {
+  width: 100%;
+}
+
+.app-content-wrapper {
+  padding: 10px;
+}
+
+/* התאמת גדלי טקסט בסיסיים לנייד */
+@media (max-width: 600px) {
+  h1, h2, h3 {
+    font-size: 1.5rem !important;
+  }
+}
+
+.main-footer {
+  background: rgba(2, 6, 23, 0.8); /* רקע כהה מעט שקוף */
+  backdrop-filter: blur(10px); /* טשטוש יפה */
+  border-top: 1px solid rgba(64, 224, 208, 0.3); /* קו טורקיז עדין למעלה */
+  color: #40e0d0; /* טקסט בצבע טורקיז */
+  padding: 20px 0;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* מונע מההילה ליצור פס גלילה לצדדים */
+  background-color: #020617; /* מוודא שהצבע של הדפדפן תואם לאתר */
 }
 

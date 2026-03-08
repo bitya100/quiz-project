@@ -1,4 +1,32 @@
 
+
+/* מאפס את כל הרווחים של כל האלמנטים */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden; /* מונע גלילה ימינה-שמאלה בגלל האנימציה */
+  background-color: #414f918b; /* צבע הרקע של האתר שלנו */
+}
+
+/* מאפס את אלמנט השורש של React שתמיד מקבל רווחים בברירת מחדל */
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+
+
 /* עיצוב לתשובה שגויה - אדום */
 .answer-btn.wrong {
     background-color: #f44336 !important;
@@ -11,5 +39,5 @@
 }
 /* לעיצוב רקע טשטוש הכדורים */
 #tsparticles canvas {
-  filter: blur(10px);
+  filter: blur(1px);
 }

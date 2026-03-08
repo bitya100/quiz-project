@@ -1,161 +1,141 @@
-import React, { useEffect, useState, forwardRef } from 'react';
-import axios from 'axios';
-import { 
-    Table, TableBody, TableCell, TableContainer, TableHead, 
-    TableRow, Paper, Button, Typography, Container, Box, CircularProgress,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fade
-} from '@mui/material';
-import './ManageUsers.css';
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
+import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Tooltip, Box, CircularProgress, Select, MenuItem } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import adminService from "../services/adminService";
 
-// הגדרת אנימציית המעבר (Fade/Pop-in)
-const Transition = forwardRef(function Transition(props, ref) {
-    return <Fade ref={ref} {...props} timeout={400} />;
-});
+// הגדרת מנהל העל של המערכת לפי אימייל
+const SUPER_ADMIN_EMAIL = "mmm@gmail.com"; 
 
 const ManageUsers = ({ searchTerm }) => {
-    const [users, setUsers] = useState([]);
-    const [filteredUsers, setFilteredUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    
-    // State לניהול חלונית האישור
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // משיכת פרטי המשתמש המחובר מה-Redux כדי לדעת מי מנסה למחוק
+  const { user: currentUser } = useSelector((state) => state.auth);
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+  const loadUsers = async () => {
+    try {
+      const data = await adminService.getAllUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error("Failed to load users", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-        const results = users.filter(user => 
-            user.userName?.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
-            user.email?.toLowerCase().includes(searchTerm?.toLowerCase() || "")
-        );
-        setFilteredUsers(results);
-    }, [searchTerm, users]);
+  // פונקציה לשינוי תפקיד המשתמש
+  const handleRoleChange = async (userId, newRole, userEmail) => {
+    if (userEmail === SUPER_ADMIN_EMAIL) {
+      return alert("לא ניתן לשנות את ההרשאה של מנהל העל!");
+    }
 
-    const fetchUsers = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get(`${API_URL}/users/all`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setUsers(res.data);
-            setFilteredUsers(res.data);
-            setLoading(false);
-        } catch (err) {
-            console.error("שגיאה בטעינת משתמשים", err);
-            setLoading(false);
-        }
-    };
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(`http://localhost:3001/api/users/${userId}/role`, { role: newRole }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+    } catch (err) {
+      alert("שגיאה בעדכון הרשאה. ודא שהוספת את הראוט בשרת.");
+      console.error(err);
+    }
+  };
 
-    const openConfirmDialog = (userId, newRole, userName) => {
-        setPendingAction({ userId, newRole, userName });
-        setConfirmOpen(true);
-    };
+  const handleDelete = async (userObj) => {
+    // 1. הגנה על מנהל העל
+    if (userObj.email === SUPER_ADMIN_EMAIL) {
+      return alert("לא ניתן למחוק את מנהל העל של המערכת!");
+    }
 
-    const handleConfirmAction = async () => {
-        if (!pendingAction) return;
-        try {
-            const token = localStorage.getItem('token');
-            await axios.put(`${API_URL}/users/update-role/${pendingAction.userId}`, 
-                { role: pendingAction.newRole },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setConfirmOpen(false);
-            fetchUsers();
-        } catch (err) {
-            console.error("שגיאה בעדכון", err);
-            setConfirmOpen(false);
-        }
-    };
+    // 2. בדיקה האם מי שלחץ על הכפתור הוא מנהל העל בעצמו
+    const currentUserData = users.find(u => u._id === currentUser?.userId);
+    const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL;
 
-    if (loading) return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-            <CircularProgress sx={{ color: '#00c1ab' }} />
-        </Box>
-    );
+    if (!isSuperAdmin) {
+      return alert("פעולה נדחתה: רק מנהל-על מורשה למחוק משתמשים. באפשרותך לשנות הרשאות חשבון בלבד.");
+    }
 
-    return (
-        <Container maxWidth="lg" sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }} dir="rtl">
-            <Typography variant="h3" component="h1" className="admin-page-title" sx={{ mb: 4 }}>
-                ניהול משתמשים 👥
-            </Typography>
+    // 3. מחיקה בפועל
+    if (window.confirm(`האם אתה בטוח שברצונך למחוק את ${userObj.userName}?`)) {
+      try {
+        await adminService.deleteUser(userObj._id);
+        setUsers(users.filter(u => u._id !== userObj._id));
+      } catch (err) {
+        alert("שגיאה במחיקת משתמש");
+      }
+    }
+  };
 
-            <TableContainer component={Paper} className="scores-table-container" elevation={5}>
-                <Table sx={{ minWidth: 700 }}>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell align="right">שם משתמש</TableCell>
-                            <TableCell align="right">אימייל</TableCell>
-                            <TableCell align="right">תפקיד</TableCell>
-                            <TableCell align="center">פעולות</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {filteredUsers.length > 0 ? (
-                            filteredUsers.map((user) => (
-                                <TableRow key={user._id} className="user-row" hover>
-                                    <TableCell align="right">{user.userName}</TableCell>
-                                    <TableCell align="right">{user.email}</TableCell>
-                                    <TableCell align="right">
-                                        <span className={user.role === 'admin' ? 'role-admin' : 'role-user'}>
-                                            {user.role === 'admin' ? 'מנהל ⭐' : 'משתמש'}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Button 
-                                            variant="contained" 
-                                            className={user.role === 'admin' ? 'btn-to-user' : 'btn-to-admin'}
-                                            sx={{ fontWeight: 'bold', borderRadius: '8px', minWidth: '120px' }}
-                                            onClick={() => openConfirmDialog(user._id, user.role === 'admin' ? 'user' : 'admin', user.userName)}
-                                        >
-                                            {user.role === 'admin' ? 'הפוך למשתמש' : 'הפוך למנהל'}
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                                    לא נמצאו משתמשים
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+  const filteredUsers = users.filter(u => 
+    u.userName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-            {/* דיאלוג אישור מעוצב עם אנימציה */}
-            <Dialog 
-                open={confirmOpen} 
-                TransitionComponent={Transition}
-                keepMounted
-                onClose={() => setConfirmOpen(false)} 
-                className="dark-dialog"
-                dir="rtl"
-            >
-                <DialogTitle className="custom-dialog-title">
-                     אישור שינוי הרשאה
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText className="custom-dialog-text">
-                        האם אתה בטוח שברצונך לשנות את הסטטוס של <strong>{pendingAction?.userName}</strong> ל-
-                        <strong>{pendingAction?.newRole === 'admin' ? 'מנהל' : 'משתמש רגיל'}</strong>?
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions sx={{ justifyContent: 'center', pb: 3, gap: 2 }}>
-                    <Button onClick={() => setConfirmOpen(false)} className="dialog-cancel-btn">
-                        ביטול
-                    </Button>
-                    <Button onClick={handleConfirmAction} variant="contained" className="dialog-confirm-btn">
-                        כן, בצע שינוי
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Container>
-    );
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>
+      <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', color: '#40e0d0', fontWeight: 'bold' }}>
+        ניהול משתמשים במערכת
+      </Typography>
+
+      <TableContainer component={Paper} sx={{ background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)', color: 'white' }}>
+        <Table dir="rtl">
+          <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
+            <TableRow>
+              <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>שם משתמש</TableCell>
+              <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>אימייל</TableCell>
+              <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>תפקיד</TableCell>
+              <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredUsers.map((user) => (
+              <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+                <TableCell align="right" sx={{ color: 'white' }}>{user.userName}</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
+                
+                {/* תיבת בחירה לשינוי תפקיד */}
+                <TableCell align="right">
+                  <Select
+                    value={user.role}
+                    onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
+                    size="small"
+                    sx={{ 
+                      color: 'white', 
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
+                      '& .MuiSvgIcon-root': { color: 'white' }
+                    }}
+                  >
+                    <MenuItem value="user">משתמש (user)</MenuItem>
+                    <MenuItem value="admin">מנהל (admin)</MenuItem>
+                  </Select>
+                </TableCell>
+                
+                {/* כפתור מחיקה */}
+                <TableCell align="center">
+                  <Tooltip title="מחק משתמש (למנהל-על בלבד)">
+                    <IconButton onClick={() => handleDelete(user)} color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
+  );
 };
 
 export default ManageUsers;

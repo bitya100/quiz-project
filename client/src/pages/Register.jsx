@@ -1,64 +1,58 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import '../registerNlogin.css';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login as loginAction } from "../store";
+import authService from "../services/authService";
+import { Container, Paper, Typography, TextField, Button, Box, Alert, CircularProgress } from "@mui/material";
 
-function Register() {
-  const { register, handleSubmit, formState: { errors } } = useForm(); // שימוש ב-react-hook-form [cite: 72]
+const Register = () => {
+  const [formData, setFormData] = useState({ userName: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [status, setStatus] = useState({ type: '', message: '' });
+  const dispatch = useDispatch();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const onSubmit = async (data) => {
-    setStatus({ type: '', message: '' });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/users/register`, data);
-      
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('role', response.data.role);
-      localStorage.setItem('userName', response.data.userName);
-      localStorage.setItem('userId', response.data.userId);
-
-      setStatus({ type: 'success', message: 'נרשמת וחוברת בהצלחה!רק רגע...' });
-
-      setTimeout(() => {
-        window.location.href = '/quizzes'; 
-      }, 2000);
-
-    } catch (error) {
-      const errorMessage = error.response?.data || 'שגיאה בחיבור לשרת';
-      setStatus({ type: 'error', message: errorMessage });
+      const data = await authService.register(formData);
+      dispatch(loginAction({
+        user: { userId: data.userId, userName: data.userName, role: data.role },
+        token: data.token
+      }));
+      navigate("/quizzes");
+    } catch (err) {
+      setError(err.response?.data || "שגיאה ברישום.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page-wrapper">
-      <div className="auth-card">
-        <h2 className="main-title auth-header">הרשמה</h2>
-        {status.message && <div className={`auth-status-box ${status.type}`}>{status.message}</div>}
-        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-            <div className="auth-input-container">
-                <input {...register("userName", { required: true })} placeholder="שם משתמש" className="auth-input" />
-                {errors.userName && <span className="auth-error-text">שדה חובה</span>}
-            </div>
-            <div className="auth-input-container">
-                <input {...register("email", { required: true })} placeholder="אימייל" type="email" className="auth-input" />
-                {errors.email && <span className="auth-error-text">אימייל לא תקין</span>}
-            </div>
-            <div className="auth-input-container">
-                <input {...register("password", { required: true, minLength: 6 })} placeholder="סיסמה (6+ תווים)" type="password" className="auth-input" />
-                {errors.password && <span className="auth-error-text">סיסמה קצרה מדי</span>}
-            </div>
-            <button type="submit" className="play-btn">צור חשבון והיכנס</button>
-        </form>
-        <p className="auth-footer">
-            כבר יש לך חשבון? <span className="auth-link" onClick={() => navigate('/login')}>התחבר כאן</span>
-        </p>
-      </div>
-    </div>
+    <Container maxWidth="xs" sx={{ mt: 10 }}>
+      <Paper elevation={10} sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(64, 224, 208, 0.2)' }}>
+        <Typography variant="h4" align="center" sx={{ mb: 3, color: '#40e0d0', fontWeight: 'bold' }}>הרשמה</Typography>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <Box component="form" onSubmit={handleSubmit}>
+          <TextField fullWidth name="userName" label="שם משתמש" variant="outlined" margin="normal" value={formData.userName} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
+          <TextField fullWidth name="email" label="אימייל" variant="outlined" margin="normal" value={formData.email} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
+          <TextField fullWidth name="password" label="סיסמה" type="password" variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
+          <Button type="submit" fullWidth variant="contained" disabled={loading} sx={{ mt: 3, mb: 2, bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', py: 1.5 }}>
+            {loading ? <CircularProgress size={24} color="inherit" /> : "הרשמה"}
+          </Button>
+        </Box>
+        <Typography align="center">
+          כבר יש לך חשבון? <Link to="/login" style={{ color: '#40e0d0', textDecoration: 'none' }}>התחבר כאן</Link>
+        </Typography>
+      </Paper>
+    </Container>
   );
-}
+};
 
 export default Register;

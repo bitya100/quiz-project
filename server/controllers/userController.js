@@ -14,8 +14,6 @@ const register = async (req, res) => {
         if (user) return res.status(400).send('משתמש כבר רשום במערכת');
 
         // 3. יצירת משתמש חדש
-        // שים לב: אנחנו לא מצפינים כאן ידנית! 
-        // ה-pre('save') במודל User.js יטפל בהצפנה אוטומטית.
         const newUser = new User({
             userName: req.body.userName,
             email: req.body.email.toLowerCase(),
@@ -39,8 +37,8 @@ const register = async (req, res) => {
             userName: newUser.userName 
         });
     } catch (ex) {
-        console.error("Register Error Details:", ex); // מדפיס את השגיאה לטרמינל של השרת
-        return res.status(500).send('שגיאת שרת פנימית');
+        console.error("Register Error Details:", ex);
+        return res.status(500).send(ex.message || 'שגיאת שרת פנימית');
     }
 };
 
@@ -48,6 +46,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        
         const user = await User.findOne({ email: email.toLowerCase() });       
         if (!user) return res.status(400).send('אימייל או סיסמה שגויים');
 
@@ -67,7 +66,7 @@ const login = async (req, res) => {
         });
     } catch (ex) {
         console.error("Login Error Details:", ex);
-        res.status(500).send('שגיאה בתהליך ההתחברות');
+        res.status(500).send(ex.message || 'שגיאה בתהליך ההתחברות');
     }
 };
 

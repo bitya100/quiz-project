@@ -1,198 +1,237 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
-import Confetti from 'react-confetti';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Container, Typography, Button, Box, Paper, LinearProgress, Zoom, CardMedia } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
+import Confetti from "react-confetti"; // ייבוא הקונפטי החשוב!
+import quizService from "../services/quizService";
+import resultService from "../services/resultService";
+
+const audioCorrect = new Audio('/music/correct.mp3');
+const audioWrong = new Audio('/music/false.mp3');
+const audioVictory = new Audio('/music/applause.mp3');
+
+const playSound = (type) => {
+  try {
+    let audio;
+    if (type === 'correct') { audioCorrect.currentTime = 0; audio = audioCorrect; }
+    else if (type === 'wrong') { audioWrong.currentTime = 0; audio = audioWrong; }
+    else if (type === 'victory') { audioVictory.currentTime = 0; audio = audioVictory; }
+    if (audio) audio.play().catch(e => console.warn("Audio play blocked", e));
+  } catch (err) {
+    console.error("Audio error", err);
+  }
+};
 
 const QuizPage = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [quiz, setQuiz] = useState(null);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [score, setScore] = useState(0);
-    const [showScore, setShowScore] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(20);
-    const [selectedAnswer, setSelectedAnswer] = useState(null);
-    const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [quiz, setQuiz] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showScore, setShowScore] = useState(false);
+  
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [correctAnswerText, setCorrectAnswerText] = useState("");
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [isCorrect, setIsCorrect] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(20);
 
-    // פונקציה לאיפוס החידון
-    const restartQuiz = () => {
-        setScore(0);
-        setCurrentQuestion(0);
-        setShowScore(false);
-        setTimeLeft(20);
-        setSelectedAnswer(null);
-        window.scrollTo(0, 0);
+  const timerRef = useRef(null);
+  const delayRef = useRef(null);
+
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const data = await quizService.getQuizById(id);
+        setQuiz(data);
+      } catch (err) { console.error(err); }
     };
-
-    useEffect(() => {
-        const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, [id, currentQuestion, showScore]);
-
-    const playSound = (isCorrect) => {
-        const audioPath = isCorrect ? '/music/correct.mp3' : '/music/false.mp3';
-        const audio = new Audio(audioPath);
-        audio.play().catch(err => console.log("Audio play error:", err));
+    fetchQuiz();
+    
+    return () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (delayRef.current) clearTimeout(delayRef.current);
     };
+  }, [id]);
 
-    const playApplause = () => {
-        const audio = new Audio('/music/clapps3.mp3');
-        audio.play().catch(err => console.log("Applause audio error:", err));
-    };
+  useEffect(() => {
+    if (!quiz || showScore) return;
 
-    useEffect(() => {
-        axios.get(`http://localhost:3001/api/quizzes/${id}`)
-            .then(res => setQuiz(res.data))
-            .catch(err => console.error("Error loading quiz:", err));
-    }, [id]);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (delayRef.current) clearTimeout(delayRef.current);
 
-    const finishQuiz = useCallback(async (finalScore) => {
-        setShowScore(true);
-        playApplause(); 
-        
-        const token = localStorage.getItem('token');
-        const finalPercent = Math.round((finalScore / quiz.questions.length) * 100);
-
-        if (token) {
-            try {
-                await axios.post('http://localhost:3001/api/results/save', {
-                    quizId: id,
-                    quizTitle: quiz.title,
-                    score: finalPercent
-                }, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            } catch (err) {
-                console.error("Failed to save score:", err);
-            }
-        }
-    }, [id, quiz]);
-
-    useEffect(() => {
-        if (showScore || !quiz || selectedAnswer !== null) return;
-        if (timeLeft === 0) {
-            handleAnswerClick(null, false);
-            return;
-        }
-        const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-        return () => clearInterval(timer);
-    }, [timeLeft, showScore, quiz, selectedAnswer]);
-
-    const handleAnswerClick = (index, isCorrect) => {
-        if (selectedAnswer !== null) return;
-
-        setSelectedAnswer(index);
-        playSound(isCorrect);
-
-        let nextScore = score;
-        if (isCorrect) nextScore += 1;
-        setScore(nextScore);
-
-        setTimeout(() => {
-            const nextQuestion = currentQuestion + 1;
-            if (nextQuestion < quiz.questions.length) {
-                setCurrentQuestion(nextQuestion);
-                setSelectedAnswer(null);
-                setTimeLeft(20);
-            } else {
-                finishQuiz(nextScore);
-            }
-        }, 2000);
-    };
-
-    if (!quiz) return <div className="center-message">טוען חידון...</div>;
+    setSelectedAnswer(null);
+    setIsCorrect(null);
+    setTimeLeft(20);
 
     const currentQ = quiz.questions[currentQuestion];
-    const finalScorePercent = Math.round((score / quiz.questions.length) * 100);
+    if (currentQ) {
+      setCorrectAnswerText(currentQ.options[currentQ.correctAnswer]);
+      setShuffledOptions([...currentQ.options].sort(() => Math.random() - 0.5));
+    }
 
-    return (
-        <div className="quiz-wrapper">
-            {showScore && finalScorePercent === 100 && (
-                <Confetti
-                    width={windowSize.width}
-                    height={windowSize.height}
-                    recycle={false}
-                    numberOfPieces={500}
-                />
-            )}
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
 
-            {showScore ? (
-                <div className="quiz-card-glow">
-                    <h2 className="main-title" style={{fontSize: '3rem', marginTop: 0}}>כל הכבוד!</h2>
-                    <div className="result-score-circle">
-                        {finalScorePercent}%
-                    </div>
-                    <p style={{fontSize: '1.5rem', marginBottom: '30px'}}>
-                        צברת {score} תשובות נכונות מתוך {quiz.questions.length}
-                    </p>
-                    
-                    {/* בתוך ה-showScore block */}
-<div className="result-actions-container">
-    <button onClick={restartQuiz} className="restart-btn">
-        בצע את החידון שוב
-    </button>
+  }, [quiz, currentQuestion, showScore]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && selectedAnswer === null && !showScore) {
+      handleTimeOut();
+    }
+  }, [timeLeft, selectedAnswer, showScore]);
+
+  const handleTimeOut = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setSelectedAnswer(-1); 
+    setIsCorrect(false);
+    playSound('wrong');
     
-    <div className="secondary-actions">
-        <button onClick={() => navigate('/my-scores')} className="back-to-scores-btn">
-            לצפייה בציונים שלי
-        </button>
-        <button onClick={() => navigate('/quizzes')} className="outline-btn">
-            חזור לחידונים
-        </button>
-    </div>
-</div>
-                </div>
-            ) : (
-                <div className="quiz-card-glow">
-                    <div className="quiz-header">
-                        <span>שאלה {currentQuestion + 1} / {quiz.questions.length}</span>
-                        <span style={{ color: timeLeft < 6 ? '#ff0000' : 'var(--neon-blue)', fontSize: '1.5rem' }}>
-                             ⏳ {timeLeft} שניות
-                        </span>
-                    </div>
+    delayRef.current = setTimeout(() => {
+      advanceQuestion(score);
+    }, 2000);
+  };
 
-                    <div className="quiz-progress-container">
-                        <div 
-                            className="quiz-progress-bar" 
-                            style={{ width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%` }}
-                        ></div>
-                    </div>
-                    
-                    {currentQ.image && (
-                        <img src={currentQ.image} alt="שאלה" className="question-img" />
-                    )}
+  const handleAnswerClick = (index) => {
+    if (selectedAnswer !== null || timeLeft === 0) return; 
+    
+    if (timerRef.current) clearInterval(timerRef.current); 
 
-                    <h2 className="question-title">{currentQ.questionText}</h2>
-                    
-                    <div className="quiz-options-grid">
-                        {currentQ.options.map((opt, i) => {
-                            let statusClass = "";
-                            if (selectedAnswer !== null) {
-                                if (i === currentQ.correctAnswer) statusClass = "correct";
-                                else if (i === selectedAnswer) statusClass = "wrong";
-                            }
+    const clickedText = shuffledOptions[index];
+    const correct = clickedText === correctAnswerText;
 
-                            return (
-                                <button 
-                                    key={i} 
-                                    onClick={() => handleAnswerClick(i, i === currentQ.correctAnswer)}
-                                    className={`option-btn ${statusClass}`}
-                                    disabled={selectedAnswer !== null}
-                                >
-                                    {opt}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+    setSelectedAnswer(index);
+    setIsCorrect(correct);
+    
+    let newScore = score;
+    if (correct) {
+      newScore = score + 1;
+      setScore(newScore);
+      playSound('correct');
+    } else {
+      playSound('wrong'); 
+    }
+
+    delayRef.current = setTimeout(() => {
+      advanceQuestion(newScore);
+    }, 1500);
+  };
+
+  const advanceQuestion = (currentScore) => {
+    if (currentQuestion + 1 < quiz.questions.length) {
+      setCurrentQuestion(prev => prev + 1);
+    } else {
+      finishQuiz(currentScore);
+    }
+  };
+
+  const finishQuiz = async (finalScore) => {
+    setShowScore(true);
+    if (timerRef.current) clearInterval(timerRef.current);
+    playSound('victory'); 
+    try {
+      await resultService.saveResult({
+        quizId: quiz._id,
+        quizTitle: quiz.title,
+        score: finalScore,
+        totalQuestions: quiz.questions.length
+      });
+    } catch (err) { console.error("Error saving result", err); }
+  };
+
+  if (!quiz) return <LinearProgress sx={{ color: '#40e0d0', mt: 10 }} />;
+
+  // משתנה שבודק אם יש ציון מושלם
+  const isPerfectScore = score === quiz.questions.length;
+
+  return (
+    <Container maxWidth="sm" sx={{ mt: 8, textAlign: 'center', pb: 5 }}>
+      
+      {/* תצוגת הקונפטי - מופעלת רק כשיש מסך ציון וציון מושלם! */}
+      {showScore && isPerfectScore && (
+        <Confetti 
+          width={window.innerWidth} 
+          height={window.innerHeight} 
+          recycle={false} // עוצר אחרי כמה שניות כדי לא להציק
+          numberOfPieces={400} // הרבה קונפטי!
+        />
+      )}
+
+      {showScore ? (
+        <Zoom in={true}>
+          <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'white', backdropFilter: 'blur(10px)' }}>
+            <Typography variant="h3" gutterBottom sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
+              {isPerfectScore ? 'מושלם! 🏆' : 'סיימת!'}
+            </Typography>
+            <Typography variant="h2" sx={{ color: '#40e0d0', mb: 2 }}>{Math.round((score / quiz.questions.length) * 100)}%</Typography>
+            <Typography variant="h6" sx={{ mb: 4 }}>ענית נכון על {score} מתוך {quiz.questions.length}</Typography>
+            <Button variant="contained" fullWidth onClick={() => navigate('/quizzes')} sx={{ bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', '&:hover': { bgcolor: '#00c1ab' } }}>חזרה לתפריט</Button>
+          </Paper>
+        </Zoom>
+      ) : (
+        <Box>
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" sx={{ 
+              color: timeLeft <= 5 ? '#f44336' : '#40e0d0', 
+              fontWeight: 'bold',
+              background: 'rgba(0,0,0,0.5)',
+              px: 2, py: 0.5, borderRadius: 2,
+              border: `2px solid ${timeLeft <= 5 ? '#f44336' : '#40e0d0'}`
+            }}>
+              00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
+            </Typography>
+            
+            <Box sx={{ textAlign: 'right' }}>
+              <Typography variant="body2" sx={{ color: '#40e0d0', mb: 1 }}>שאלה {currentQuestion + 1} מתוך {quiz.questions.length}</Typography>
+              <LinearProgress variant="determinate" value={((currentQuestion + 1) / quiz.questions.length) * 100} sx={{ width: 150, height: 10, borderRadius: 5, bgcolor: 'rgba(255,255,255,0.1)', '& .MuiLinearProgress-bar': { bgcolor: '#40e0d0' } }} />
+            </Box>
+          </Box>
+
+          <Paper sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white' }}>
+            {quiz.questions[currentQuestion]?.image && <CardMedia component="img" image={quiz.questions[currentQuestion].image} sx={{ borderRadius: 2, mb: 3, maxHeight: 250, objectFit: 'contain' }} />}
+            <Typography variant="h5" sx={{ mb: 4, fontWeight: 'bold' }}>{quiz.questions[currentQuestion]?.questionText}</Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {shuffledOptions.map((option, index) => {
+                const isThisOptionCorrect = option === correctAnswerText;
+                let btnColor = 'rgba(64, 224, 208, 0.3)';
+                let bgColor = 'transparent';
+                let Icon = null;
+
+                if (selectedAnswer !== null) { 
+                  if (selectedAnswer === index) {
+                    btnColor = isCorrect ? '#4caf50' : '#f44336';
+                    bgColor = isCorrect ? 'rgba(76, 175, 80, 0.1)' : 'rgba(244, 67, 54, 0.1)';
+                    Icon = isCorrect ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />;
+                  } else if (isThisOptionCorrect) {
+                    btnColor = '#4caf50';
+                    bgColor = 'rgba(76, 175, 80, 0.1)';
+                    Icon = <CheckCircleIcon color="success" />;
+                  }
+                }
+
+                return (
+                  <Button key={index} variant="outlined" fullWidth onClick={() => handleAnswerClick(index)}
+                    disabled={selectedAnswer !== null} 
+                    sx={{ 
+                      p: 2, color: 'white', 
+                      borderColor: btnColor, 
+                      bgcolor: bgColor,
+                      '&:disabled': { color: 'white', opacity: selectedAnswer === index || isThisOptionCorrect ? 1 : 0.5 }
+                    }}
+                    startIcon={Icon}>
+                    {option}
+                  </Button>
+                );
+              })}
+            </Box>
+          </Paper>
+        </Box>
+      )}
+    </Container>
+  );
 };
 
 export default QuizPage;

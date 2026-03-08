@@ -1,228 +1,177 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Typography,
-  Button,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemContent,
-  Sheet,
-  Divider,
-  Stack,
-  Input
-} from '@mui/joy';
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../store";
+import { 
+  AppBar, Toolbar, Typography, Button, InputBase, Box, 
+  IconButton, Menu, MenuItem, useMediaQuery, useTheme 
+} from "@mui/material";
+import { styled, alpha } from "@mui/material/styles";
+import SearchIcon from "@mui/icons-material/Search";
+import MenuIcon from "@mui/icons-material/Menu";
+
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: "20px",
+  backgroundColor: alpha(theme.palette.common.white, 0.1),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+  },
+  marginLeft: theme.spacing(2),
+  marginRight: theme.spacing(2),
+  width: "auto",
+  [theme.breakpoints.up("sm")]: {
+    width: "250px",
+  },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  right: 0, 
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  width: "100%",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingRight: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    textAlign: "right",
+  },
+}));
 
 const Navbar = ({ searchTerm, setSearchTerm }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
-  const userName = localStorage.getItem('userName');
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleLogout = () => {
-    localStorage.clear();
-    setIsMenuOpen(false);
-    window.location.href = '/login';
+    dispatch(logout());
+    navigate("/login");
   };
 
-  const neonGlow = {
-    color: '#00c1ab',
-    textShadow: '0 0 8px rgba(0, 193, 171, 0.8), 0 0 15px rgba(0, 193, 171, 0.5)',
-  };
-
-  const adminGlow = {
-    color: '#bc13fe',
-    textShadow: '0 0 8px rgba(188, 19, 254, 0.8)',
-  };
-
-  const NavLinks = ({ isMobile = false }) => (
-    <>
-    
-      <ListItem>
-        <ListItemButton component={Link} to="/quizzes"  onClick={() => setIsMenuOpen(false)}>
-          <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...neonGlow, fontWeight: 'bold' }}>
-            חידונים
-          </ListItemContent>
-        </ListItemButton>
-      </ListItem>
-      
-      {token && (
-        <ListItem>
-          <ListItemButton component={Link} to="/my-scores" onClick={() => setIsMenuOpen(false)}>
-            <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...neonGlow, fontWeight: 'bold' }}>
-              הציונים שלי
-            </ListItemContent>
-          </ListItemButton>
-        </ListItem>
-      )}
-
-      {token && userRole === 'admin' && (
-        <>
-          <ListItem>
-            <ListItemButton component={Link} to="/admin/all-scores" onClick={() => setIsMenuOpen(false)}>
-              <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', ...adminGlow, fontWeight: 'bold' }}>
-                ניהול ציונים
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
-          <ListItem>
-            <ListItemButton component={Link} to="/admin/users" onClick={() => setIsMenuOpen(false)}>
-              <ListItemContent sx={{ textAlign: isMobile ? 'right' : 'center', color: 'orange', textShadow: '0 0 8px rgba(255, 165, 0, 0.7)', fontWeight: 'bold' }}>
-                ניהול משתמשים
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
-        </>
-      )}
-    </>
-  );
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
-    <Sheet
-      variant="solid"
-      invertedColors
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        p: 2,
-        backgroundColor: '#000',
-        borderBottom: '2px solid #00c1ab',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1100,
-        boxShadow: '0 4px 20px rgba(0, 193, 171, 0.2)'
-      }}
-    >
-      {/* לוגו */}
-      <Typography component={Link} to="/" level="h4" sx={{ textDecoration: 'none', fontWeight: 'bold', ...neonGlow, fontSize: '1.5rem', flexShrink: 0 }}>
-        QUIZ ZONE
-      </Typography>
-
-      {/* --- שורת חיפוש חכמה (מתרחבת בלחיצה) - דסקטופ --- */}
-      <Box sx={{ display: { xs: 'none', lg: 'flex' }, flexGrow: 1, justifyContent: 'center', px: 2 }}>
-        <Input
-          placeholder="חיפוש ..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          startDecorator={<SearchIcon sx={{ color: '#00c1ab' }} />}
+    <AppBar position="sticky" sx={{ 
+      background: "rgba(2, 6, 23, 0.8)", 
+      backdropFilter: "blur(10px)",
+      borderBottom: "1px solid rgba(64, 224, 208, 0.3)",
+      boxShadow: "none"
+    }}>
+      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        
+        <Typography
+          variant="h5"
+          component={Link}
+          to="/"
           sx={{
-            width: '180px',
-            transition: 'all 0.3s ease',
-            backgroundColor: '#1a1a1a',
-            border: '1px solid #333',
-            color: 'white',
-            borderRadius: '20px',
-            '&:focus-within': {
-              width: '350px',
-              borderColor: '#00c1ab',
-              boxShadow: '0 0 10px rgba(0, 193, 171, 0.3)'
-            }
+            textDecoration: "none",
+            color: "#40e0d0",
+            fontWeight: "bold",
+            letterSpacing: "1px",
+            display: "flex",
+            alignItems: "center"
           }}
-        />
-      </Box>
+        >
+          QUIZ MASTER
+        </Typography>
 
-      {/* תפריט וכפתורים */}
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
-          <List orientation="horizontal" sx={{ gap: 1 }}>
-            <NavLinks />
-          </List>
-          {token && <Divider orientation="vertical" sx={{ mx: 1, bgcolor: '#333', height: '24px' }} />}
-        </Box>
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon sx={{ color: "#40e0d0" }} />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="חפש חידון..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Search>
 
-        {!token ? (
-          <Stack direction="row" spacing={1}>
-            <Button variant="ghost" component={Link} to="/login">התחברות</Button>
-            <Button variant="solid" sx={{ bgcolor: '#00c1ab' }} component={Link} to="/register">הרשמה</Button>
-          </Stack>
-        ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 'bold', fontSize: '0.9rem' }}>
-              שלום, <span style={neonGlow}>{userName}</span>
-            </Typography>
-            <Button 
-                variant="outlined" 
-                color="danger" 
-                size="sm" 
-                sx={{ display: { xs: 'none', md: 'flex' }, borderRadius: '8px' }} 
-                onClick={handleLogout}
+        {isMobile ? (
+          <>
+            <IconButton onClick={handleMenuOpen} sx={{ color: "white" }}>
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              PaperProps={{
+                sx: { bgcolor: "#020617", color: "white", border: "1px solid #40e0d0" }
+              }}
             >
-                התנתק
-            </Button>
+              <MenuItem onClick={handleMenuClose} component={Link} to="/quizzes">חידונים</MenuItem>
+              {user && <MenuItem onClick={handleMenuClose} component={Link} to="/my-scores">הציונים שלי</MenuItem>}
+              {user?.role === 'admin' && <MenuItem onClick={handleMenuClose} component={Link} to="/create-quiz">צור חידון</MenuItem>}
+              {user?.role === 'admin' && <MenuItem onClick={handleMenuClose} component={Link} to="/admin/all-scores">כל הציונים</MenuItem>}
+              {user ? (
+                <MenuItem onClick={() => { handleMenuClose(); handleLogout(); }}>התנתק</MenuItem>
+              ) : (
+                <MenuItem onClick={handleMenuClose} component={Link} to="/login">התחבר</MenuItem>
+              )}
+            </Menu>
+          </>
+        ) : (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Button component={Link} to="/quizzes" sx={{ color: "white" }}>חידונים</Button>
+            {user && <Button component={Link} to="/my-scores" sx={{ color: "white" }}>הציונים שלי</Button>}
+            
+            {user?.role === 'admin' && (
+              <>
+                <Button component={Link} to="/create-quiz" sx={{ color: "#40e0d0" }}>צור חידון</Button>
+                <Button component={Link} to="/admin/all-scores" sx={{ color: "#40e0d0" }}>כל הציונים</Button>
+              </>
+            )}
+
+            {user ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
+                {/* התיקון כאן: הפרדה מוחלטת כדי למנוע היפוך טקסט */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: "rgba(255,255,255,0.7)" }}>
+                  <Typography variant="body2">שלום,</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>{user.userName}</Typography>
+                </Box>
+                <Button 
+                  onClick={handleLogout} 
+                  variant="outlined" 
+                  size="small" 
+                  sx={{ borderColor: "#40e0d0", color: "#40e0d0", borderRadius: "20px" }}
+                >
+                  התנתק
+                </Button>
+              </Box>
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: '20px', pl: 1, pr: 2 }}>
+                <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.85rem', mr: 2 }}>
+                  שלום, אורח!
+                </Typography>
+                <Button 
+                  component={Link} 
+                  to="/login" 
+                  variant="contained" 
+                  size="small"
+                  sx={{ bgcolor: "#40e0d0", color: "#020617", borderRadius: "20px", fontWeight: "bold" }}
+                >
+                  התחבר
+                </Button>
+              </Box>
+            )}
           </Box>
         )}
-
-        <IconButton
-          variant="outlined"
-          onClick={() => setIsMenuOpen(true)}
-          sx={{ display: { md: 'none' }, borderColor: '#00c1ab', color: '#00c1ab' }}
-        >
-          <MenuIcon />
-        </IconButton>
-      </Box>
-
-      {/* Drawer למובייל וטאבלט */}
-      <Drawer 
-        anchor="right" 
-        open={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)}
-        slotProps={{ 
-          backdrop: {
-            sx: {
-              // אם יש טקסט בחיפוש - מבטל טשטוש וצבע רקע כדי שיראו את התוצאות
-              backdropFilter: searchTerm ? 'none' : 'blur(4px)',
-              backgroundColor: searchTerm ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
-              transition: 'all 0.3s ease',
-            }
-          },
-          content: { 
-            sx: { 
-              bgcolor: '#0a0a0c', 
-              color: 'white', 
-              p: 3, 
-              direction: 'rtl',
-              boxShadow: searchTerm ? '-10px 0 30px rgba(0,0,0,0.8)' : 'none' 
-            } 
-          } 
-        }}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography level="h6" sx={neonGlow}>תפריט</Typography>
-          <IconButton onClick={() => setIsMenuOpen(false)} sx={{ color: 'white' }}><CloseIcon /></IconButton>
-        </Box>
-
-        <Input
-          placeholder="חיפוש..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          startDecorator={<SearchIcon sx={{ color: '#00c1ab' }} />}
-          sx={{ 
-            mb: 3, 
-            backgroundColor: '#1a1a1a', 
-            color: 'white',
-            borderColor: '#333',
-            '&:focus-within': { borderColor: '#00c1ab' }
-          }}
-        />
-
-        <Divider sx={{ mb: 2, bgcolor: '#333' }} />
-        <List><NavLinks isMobile /></List>
-        
-        <Box sx={{ mt: 'auto', textAlign: 'center', pb: 2 }}>
-           <Typography sx={{ mb: 2 }}>שלום <b style={neonGlow}>{userName || 'אורח'}</b></Typography>
-           {token && <Button fullWidth color="danger" variant="soft" onClick={handleLogout}>התנתק מהמערכת</Button>}
-        </Box>
-      </Drawer>
-    </Sheet>
+      </Toolbar>
+    </AppBar>
   );
 };
 

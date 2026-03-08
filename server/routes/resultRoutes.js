@@ -1,57 +1,51 @@
 const express = require('express');
 const router = express.Router();
 const Result = require('../models/Result');
-const { User } = require('../models/User');
-const { auth, adminOnly } = require('../middleware/auth');
+const auth = require('../middleware/auth'); 
 
+// קבלת הציונים של המשתמש המחובר
+router.get('/my-scores', auth, async (req, res) => {
+    try {
+        const scores = await Result.find({ userId: req.user.userId }).sort({ date: -1 });
+        res.json(scores);
+    } catch (err) {
+        res.status(500).send("שגיאת שרת");
+    }
+});
+
+// שמירת תוצאה
 router.post('/save', auth, async (req, res) => {
     try {
         const { quizId, quizTitle, score, totalQuestions } = req.body;
-        
-        // הוספנו totalQuestions גם כאן כדי שהמנהל יראה את הנתון המלא
-        const newResult = new Result({ 
-            userId: req.user._id, 
-            quizId, 
-            quizTitle, 
+        const newResult = new Result({
+            userId: req.user.userId,
+            quizId,
+            quizTitle,
             score,
-            totalQuestions // וודא שגם ב-Result.js הוספת את השדה הזה
+            totalQuestions
         });
         await newResult.save();
-
-        await User.findByIdAndUpdate(req.user._id, {
-            $push: {
-                quizHistory: {
-                    quizTitle,
-                    score,
-                    totalQuestions,
-                    date: new Date()
-                }
-            }
-        });
-
-        res.status(201).json({ message: "הציון נשמר בהצלחה!" });
+        res.status(201).json(newResult);
     } catch (err) {
-        res.status(400).json({ message: "שגיאה בשמירת הציון: " + err.message });
+        res.status(500).send("שגיאה בשמירה");
     }
 });
 
-router.get('/my-scores', auth, async (req, res) => {
+// קבלת כל הציונים במערכת (מנהל בלבד) - התווסף!
+router.get('/admin/all', auth, async (req, res) => {
     try {
-        const results = await Result.find({ userId: req.user._id }).sort({ date: -1 });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ message: "שגיאה בקבלת הציונים" });
-    }
-});
-
-router.get('/admin/all', auth, adminOnly, async (req, res) => {
-    try {
-        const results = await Result.find()
-            .populate('userId', 'userName email') // הוספתי אימייל כדי שהמנהל יזהה משתמשים בקלות
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: "גישה נדחתה" });
+        }
+        
+        // ה-populate מושך את שם המשתמש מתוך טבלת Users כדי שנוכל להציג אותו
+        const allScores = await Result.find()
+            .populate('userId', 'userName email')
             .sort({ date: -1 });
-        res.json(results);
+            
+        res.json(allScores);
     } catch (err) {
-        res.status(500).json({ message: "שגיאה בקבלת נתוני מנהל" });
+        res.status(500).send("שגיאת שרת משיכת כל הציונים");
     }
 });
 
