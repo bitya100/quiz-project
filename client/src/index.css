@@ -41,3 +41,14 @@ html, body {
 #tsparticles canvas {
   filter: blur(1px);
 }
+
+
+/* העלמת פס הגלילה המכוער מכל הדפדפנים */
+::-webkit-scrollbar {
+  display: none; /* למשתמשי כרום, ספארי ואופרה */
+}
+
+html, body {
+  -ms-overflow-style: none;  /* למשתמשי אדג' */
+  scrollbar-width: none;  /* למשתמשי פיירפוקס */
+}

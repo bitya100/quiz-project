@@ -115,8 +115,16 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
             >
               <MenuItem onClick={handleMenuClose} component={Link} to="/quizzes">חידונים</MenuItem>
               {user && <MenuItem onClick={handleMenuClose} component={Link} to="/my-scores">הציונים שלי</MenuItem>}
-              {user?.role === 'admin' && <MenuItem onClick={handleMenuClose} component={Link} to="/create-quiz">צור חידון</MenuItem>}
-              {user?.role === 'admin' && <MenuItem onClick={handleMenuClose} component={Link} to="/admin/all-scores">כל הציונים</MenuItem>}
+              
+              {/* תפריט מנהלים למובייל */}
+              {user?.role === 'admin' && (
+                [
+                  <MenuItem key="create" onClick={handleMenuClose} component={Link} to="/create-quiz">צור חידון</MenuItem>,
+                  <MenuItem key="scores" onClick={handleMenuClose} component={Link} to="/admin/all-scores">כל הציונים</MenuItem>,
+                  <MenuItem key="users" onClick={handleMenuClose} component={Link} to="/admin/users" sx={{ color: '#40e0d0' }}>ניהול משתמשים</MenuItem>
+                ]
+              )}
+
               {user ? (
                 <MenuItem onClick={() => { handleMenuClose(); handleLogout(); }}>התנתק</MenuItem>
               ) : (
@@ -129,20 +137,20 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
             <Button component={Link} to="/quizzes" sx={{ color: "white" }}>חידונים</Button>
             {user && <Button component={Link} to="/my-scores" sx={{ color: "white" }}>הציונים שלי</Button>}
             
+            {/* תפריט מנהלים לדסקטופ */}
             {user?.role === 'admin' && (
               <>
                 <Button component={Link} to="/create-quiz" sx={{ color: "#40e0d0" }}>צור חידון</Button>
                 <Button component={Link} to="/admin/all-scores" sx={{ color: "#40e0d0" }}>כל הציונים</Button>
+                <Button component={Link} to="/admin/users" sx={{ color: "#40e0d0", fontWeight: "bold" }}>ניהול משתמשים</Button>
               </>
             )}
 
             {user ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
-                {/* התיקון כאן: הפרדה מוחלטת כדי למנוע היפוך טקסט */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: "rgba(255,255,255,0.7)" }}>
-                  <Typography variant="body2">שלום,</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>{user.userName}</Typography>
-                </Box>
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }} dir="rtl">
+                  שלום, <Box component="span" sx={{ fontWeight: "bold" }}>{user.userName}</Box>
+                </Typography>
                 <Button 
                   onClick={handleLogout} 
                   variant="outlined" 
@@ -152,10 +160,11 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                   התנתק
                 </Button>
               </Box>
-            ) : (
-              <Box sx={{ display: 'flex', alignItems: 'center', ml: 2, bgcolor: 'rgba(255,255,255,0.05)', borderRadius: '20px', pl: 1, pr: 2 }}>
-                <Typography variant="body2" sx={{ color: '#ccc', fontSize: '0.85rem', mr: 2 }}>
-                  שלום, אורח!
+           ) : (
+              // התיקון: הורדנו את ה-bgcolor והריווחים המיותרים
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }} dir="rtl">
+                  שלום, <Box component="span" sx={{ fontWeight: "bold" }}>אורח!</Box>
                 </Typography>
                 <Button 
                   component={Link} 
@@ -168,6 +177,7 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                 </Button>
               </Box>
             )}
+            
           </Box>
         )}
       </Toolbar>

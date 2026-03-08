@@ -23,6 +23,7 @@ const CreateQuiz = () => {
       title: "",
       description: "",
       image: "",
+      // כאן מוגדר שברירת המחדל היא תמיד 0 (תשובה 1)
       questions: [{ questionText: "", options: ["", "", "", ""], correctAnswer: 0, image: "" }]
     }
   });
@@ -90,21 +91,20 @@ const CreateQuiz = () => {
           {isEditMode ? "עריכת חידון" : "יצירת חידון חדש"}
         </Typography>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} dir="rtl">
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth label="כותרת החידון"
                 {...register("title", { required: "חובה להזין כותרת" })}
                 error={!!errors.title} helperText={errors.title?.message}
-                InputLabelProps={{ style: { color: "#40e0d0" } }}
+                InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              {/* תיקון: הוספת כפתור הסרת תמונה ליד העלאת תמונת הנושא */}
               <Box sx={{ display: 'flex', gap: 1, height: '100%', alignItems: 'center' }}>
-                <Button variant="outlined" component="label" fullWidth sx={{ height: '100%', color: "#40e0d0", borderColor: "rgba(255,255,255,0.3)" }}>
+                <Button variant="outlined" component="label" fullWidth sx={{ height: '100%', minHeight: '56px', color: "#40e0d0", borderColor: "rgba(255,255,255,0.3)" }}>
                   {watch('image') ? '✅ תמונת נושא הועלתה (לחץ להחלפה)' : '🖼️ העלאת תמונת נושא לחידון'}
                   <input type="file" hidden accept="image/*" onChange={handleMainImageUpload} />
                 </Button>
@@ -124,7 +124,7 @@ const CreateQuiz = () => {
               <TextField
                 fullWidth multiline rows={2} label="תיאור קצר"
                 {...register("description")}
-                InputLabelProps={{ style: { color: "#40e0d0" } }}
+                InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ textarea: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
               />
             </Grid>
@@ -143,6 +143,7 @@ const CreateQuiz = () => {
               <TextField
                 fullWidth label="נוסח השאלה"
                 {...register(`questions.${index}.questionText`, { required: true })}
+                InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ mb: 3, input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
               />
 
@@ -152,6 +153,7 @@ const CreateQuiz = () => {
                     <TextField
                       fullWidth label={`תשובה ${optIndex + 1}`}
                       {...register(`questions.${index}.options.${optIndex}`, { required: true })}
+                      InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                       sx={{ input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
                     />
                   </Grid>
@@ -159,13 +161,20 @@ const CreateQuiz = () => {
               </Grid>
 
               <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2 }}>
-                <TextField select label="תשובה נכונה" sx={{ width: 150, "& .MuiSelect-select": { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }} {...register(`questions.${index}.correctAnswer`)}>
+                {/* התיקון כאן: הוספנו defaultValue=0 וגם valueAsNumber כדי לוודא שזה נשמר ומוצג כמו שצריך */}
+                <TextField 
+                  select 
+                  label="תשובה נכונה" 
+                  defaultValue={0}
+                  InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
+                  sx={{ width: 150, "& .MuiSelect-select": { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }} 
+                  {...register(`questions.${index}.correctAnswer`, { valueAsNumber: true })}
+                >
                   {[0, 1, 2, 3].map((i) => (<MenuItem key={i} value={i}>תשובה {i + 1}</MenuItem>))}
                 </TextField>
 
-                {/* תיקון: הוספת כפתור מחיקה ספציפי לתמונת השאלה */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />} sx={{ color: "#40e0d0", borderColor: "#40e0d0" }}>
+                  <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />} sx={{ color: "#40e0d0", borderColor: "#40e0d0", height: '56px' }}>
                     תמונה לשאלה
                     <input type="file" hidden accept="image/*" onChange={(e) => handleQuestionImageUpload(e, index)} />
                   </Button>
@@ -188,6 +197,7 @@ const CreateQuiz = () => {
             </Card>
           ))}
 
+          {/* גם בהוספת שאלה חדשה אנחנו מכריחים את correctAnswer להיות 0 */}
           <Button variant="outlined" startIcon={<AddCircleIcon />} onClick={() => append({ questionText: "", options: ["", "", "", ""], correctAnswer: 0, image: "" })} sx={{ mb: 4, color: "#40e0d0", borderColor: "#40e0d0" }}>
             הוספת שאלה
           </Button>

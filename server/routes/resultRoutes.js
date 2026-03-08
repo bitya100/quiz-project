@@ -31,14 +31,13 @@ router.post('/save', auth, async (req, res) => {
     }
 });
 
-// קבלת כל הציונים במערכת (מנהל בלבד) - התווסף!
-router.get('/admin/all', auth, async (req, res) => {
+// קבלת כל הציונים במערכת (מנהל בלבד) 
+router.get('/all', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: "גישה נדחתה" });
         }
         
-        // ה-populate מושך את שם המשתמש מתוך טבלת Users כדי שנוכל להציג אותו
         const allScores = await Result.find()
             .populate('userId', 'userName email')
             .sort({ date: -1 });
@@ -46,6 +45,20 @@ router.get('/admin/all', auth, async (req, res) => {
         res.json(allScores);
     } catch (err) {
         res.status(500).send("שגיאת שרת משיכת כל הציונים");
+    }
+});
+
+// מחיקת ציון ספציפי (מנהלים בלבד)
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).send("גישה נדחתה: מנהלים בלבד מורשים למחוק ציונים");
+        }
+
+        await Result.findByIdAndDelete(req.params.id);
+        res.json({ message: "הציון נמחק בהצלחה" });
+    } catch (err) {
+        res.status(500).send("שגיאה במחיקת הציון");
     }
 });
 

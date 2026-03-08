@@ -1,70 +1,116 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Container, Typography, Box, Paper, CircularProgress,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel
+import { 
+  Container, Typography, Paper, Table, TableBody, TableCell, 
+  TableContainer, TableHead, TableRow, Box, CircularProgress, 
+  IconButton, Tooltip, Snackbar, Alert, Dialog, DialogTitle, 
+  DialogContent, DialogActions, Button, TableSortLabel 
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const AllScores = () => {
-  const [allScores, setAllScores] = useState([]);
+const AllScores = ({ searchTerm = "" }) => {
+  const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
   
-  // משתני מצב לניהול המיון
-  const [order, setOrder] = useState('desc'); 
-  const [orderBy, setOrderBy] = useState('date'); 
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, scoreId: null });
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
-    const fetchAllScores = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:3001/api/results/admin/all', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        // חישוב אחוזים והכנת הנתונים
-        const processedData = res.data.map(item => ({
-            ...item,
-            percentage: Math.round((item.score / item.totalQuestions) * 100) || 0,
-            // מניעת קריסה במקרה שהמשתמש נמחק ממסד הנתונים אך הציון שלו נשאר
-            userName: item.userId?.userName || 'משתמש נמחק' 
-        }));
-        
-        setAllScores(processedData);
-      } catch (err) {
-        console.error("Error fetching all scores", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllScores();
+    fetchScores();
   }, []);
 
-  // פונקציה לשינוי סדר וסוג המיון בלחיצה על כותרת
-  const handleRequestSort = (property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
+  const fetchScores = async () => {
+    try {
+      // התיקון הקריטי: מחפשים את הטוקן בשני המקומות!
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      
+      const res = await axios.get("http://localhost:3001/api/results/all", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setScores(res.data);
+    } catch (err) {
+      console.error("Error fetching all scores:", err);
+      const errorMsg = err.response?.status === 400
+        ? "שגיאת הזדהות (400): הטוקן חסר. אנא התנתק והתחבר מחדש."
+        : err.response?.status === 404 
+        ? "שגיאה: השרת לא מוצא את הנתיב /all" 
+        : err.response?.status === 403
+        ? "אין לך הרשאה מספקת בשרת."
+        : "שגיאה בטעינת הציונים מהשרת";
+      
+      setNotification({ open: true, message: errorMsg, severity: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // הלוגיקה שממיינת את המערך
-  const sortedScores = [...allScores].sort((a, b) => {
-    let valA = a[orderBy];
-    let valB = b[orderBy];
-
-    // התאמות ספציפיות לפי סוג העמודה
-    if (orderBy === 'date') {
-      valA = new Date(a.date).getTime();
-      valB = new Date(b.date).getTime();
-    } else if (orderBy === 'quizTitle') {
-      valA = a.quizTitle.toLowerCase();
-      valB = b.quizTitle.toLowerCase();
-    } else if (orderBy === 'userName') {
-      valA = a.userName.toLowerCase();
-      valB = b.userName.toLowerCase();
+  const confirmDelete = async () => {
+    try {
+      // גם במחיקה - מוודאים שלוקחים את הטוקן מכל מקום אפשרי
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      
+      await axios.delete(`http://localhost:3001/api/results/${deleteDialog.scoreId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setScores(scores.filter(s => s._id !== deleteDialog.scoreId));
+      setNotification({ open: true, message: "הציון נמחק בהצלחה", severity: "success" });
+    } catch (err) {
+      setNotification({ open: true, message: "שגיאה במחיקת הציון", severity: "error" });
+    } finally {
+      setDeleteDialog({ open: false, scoreId: null });
     }
+  };
 
-    if (valA < valB) return order === 'asc' ? -1 : 1;
-    if (valA > valB) return order === 'asc' ? 1 : -1;
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const safeSearchTerm = (searchTerm || "").toLowerCase();
+
+  const filteredScores = scores.filter(score => {
+    const title = (score.quizTitle || "").toLowerCase();
+    const userName = (score.userId?.userName || "").toLowerCase();
+    return title.includes(safeSearchTerm) || userName.includes(safeSearchTerm);
+  });
+
+  const sortedScores = [...filteredScores].sort((a, b) => {
+    // מיון לפי שם משתמש
+    if (sortConfig.key === 'userName') {
+      const nameA = a.userId?.userName || "";
+      const nameB = b.userId?.userName || "";
+      if (nameA < nameB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (nameA > nameB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    }
+    
+    // מיון לפי שם החידון
+    if (sortConfig.key === 'quizTitle') {
+      const titleA = a.quizTitle || "";
+      const titleB = b.quizTitle || "";
+      if (titleA < titleB) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (titleA > titleB) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    }
+    
+    // מיון לפי ציון
+    if (sortConfig.key === 'score') {
+      const percentA = a.totalQuestions ? a.score / a.totalQuestions : 0;
+      const percentB = b.totalQuestions ? b.score / b.totalQuestions : 0;
+      return sortConfig.direction === 'asc' ? percentA - percentB : percentB - percentA;
+    }
+    
+    // מיון לפי תאריך
+    if (sortConfig.key === 'date') {
+      const dateA = new Date(a.date || 0);
+      const dateB = new Date(b.date || 0);
+      return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+    }
+    
     return 0;
   });
 
@@ -72,78 +118,100 @@ const AllScores = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>
-      <Typography variant="h3" sx={{ mb: 4, textAlign: 'center', color: '#40e0d0', fontWeight: 'bold' }}>
-        כל הציונים במערכת (ניהול)
+      <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', color: '#40e0d0', fontWeight: 'bold' }}>
+        כל הציונים במערכת
       </Typography>
-      
-      {allScores.length === 0 ? (
-        <Typography variant="h5" sx={{ textAlign: 'center', color: 'white', mt: 5 }}>
-          אין עדיין ציונים במערכת.
-        </Typography>
-      ) : (
-        <TableContainer component={Paper} sx={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)', borderRadius: 3 }}>
-          <Table sx={{ minWidth: 650 }} dir="rtl">
-            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
-              <TableRow>
-                <TableCell align="right">
-                  <TableSortLabel
-                    active={orderBy === 'userName'}
-                    direction={orderBy === 'userName' ? order : 'asc'}
-                    onClick={() => handleRequestSort('userName')}
-                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                  >
-                    שם משתמש
-                  </TableSortLabel>
+
+      <TableContainer component={Paper} sx={{ background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)', color: 'white' }}>
+        <Table dir="rtl">
+          <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
+            <TableRow>
+              
+              <TableCell align="right">
+                <TableSortLabel
+                  active={sortConfig.key === 'userName'}
+                  direction={sortConfig.key === 'userName' ? sortConfig.direction : 'asc'}
+                  onClick={() => handleSort('userName')}
+                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                >
+                  שם משתמש
+                </TableSortLabel>
+              </TableCell>
+
+              <TableCell align="right">
+                <TableSortLabel
+                  active={sortConfig.key === 'quizTitle'}
+                  direction={sortConfig.key === 'quizTitle' ? sortConfig.direction : 'asc'}
+                  onClick={() => handleSort('quizTitle')}
+                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                >
+                  חידון
+                </TableSortLabel>
+              </TableCell>
+
+              <TableCell align="right">
+                <TableSortLabel
+                  active={sortConfig.key === 'score'}
+                  direction={sortConfig.key === 'score' ? sortConfig.direction : 'asc'}
+                  onClick={() => handleSort('score')}
+                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                >
+                  ציון
+                </TableSortLabel>
+              </TableCell>
+
+              <TableCell align="right">
+                <TableSortLabel
+                  active={sortConfig.key === 'date'}
+                  direction={sortConfig.key === 'date' ? sortConfig.direction : 'asc'}
+                  onClick={() => handleSort('date')}
+                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                >
+                  תאריך
+                </TableSortLabel>
+              </TableCell>
+
+              <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedScores.map((score) => (
+              <TableRow key={score._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+                <TableCell align="right" sx={{ color: 'white' }}>{score.userId?.userName || "משתמש נמחק"}</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>{score.quizTitle}</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>
+                  {score.totalQuestions ? Math.round((score.score / score.totalQuestions) * 100) : 0}% ({score.score}/{score.totalQuestions})
                 </TableCell>
-                <TableCell align="right">
-                  <TableSortLabel
-                    active={orderBy === 'quizTitle'}
-                    direction={orderBy === 'quizTitle' ? order : 'asc'}
-                    onClick={() => handleRequestSort('quizTitle')}
-                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                  >
-                    שם החידון
-                  </TableSortLabel>
-                </TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>{new Date(score.date).toLocaleDateString('he-IL')}</TableCell>
                 <TableCell align="center">
-                  <TableSortLabel
-                    active={orderBy === 'percentage'}
-                    direction={orderBy === 'percentage' ? order : 'asc'}
-                    onClick={() => handleRequestSort('percentage')}
-                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                  >
-                    ציון (%)
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell align="left">
-                  <TableSortLabel
-                    active={orderBy === 'date'}
-                    direction={orderBy === 'date' ? order : 'asc'}
-                    onClick={() => handleRequestSort('date')}
-                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                  >
-                    תאריך
-                  </TableSortLabel>
+                  <Tooltip title="מחק ציון">
+                    <IconButton onClick={() => setDeleteDialog({ open: true, scoreId: score._id })} color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedScores.map((row) => (
-                <TableRow key={row._id} sx={{ '&:last-child td, &:last-child th': { border: 0 }, '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
-                  <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>{row.userName}</TableCell>
-                  <TableCell align="right" sx={{ color: 'white' }}>{row.quizTitle}</TableCell>
-                  <TableCell align="center" sx={{ color: row.percentage >= 60 ? '#4caf50' : '#f44336', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                    {row.percentage}%
-                  </TableCell>
-                  <TableCell align="left" sx={{ color: 'white', opacity: 0.8 }}>
-                    {new Date(row.date).toLocaleDateString('he-IL', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, scoreId: null })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} dir="rtl">
+        <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת ציון</DialogTitle>
+        <DialogContent>
+          <Typography>האם אתה בטוח שברצונך למחוק ציון זה מההיסטוריה?</Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDeleteDialog({ open: false, scoreId: null })} sx={{ color: 'white' }}>ביטול</Button>
+          <Button onClick={confirmDelete} variant="contained" sx={{ bgcolor: '#f44336', color: 'white', '&:hover': { bgcolor: '#d32f2f' } }}>מחק עכשיו</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={notification.open} autoHideDuration={6000} onClose={() => setNotification({ ...notification, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} sx={{ mb: 10 }}>
+        <Alert severity={notification.severity} sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: `1px solid ${notification.severity === 'error' ? '#f44336' : '#40e0d0'}` }}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

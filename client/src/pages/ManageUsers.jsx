@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
-import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Tooltip, Box, CircularProgress, Select, MenuItem } from "@mui/material";
+import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Tooltip, Box, CircularProgress, Select, MenuItem, Snackbar, Alert } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import adminService from "../services/adminService";
 
-// הגדרת מנהל העל של המערכת לפי אימייל
-const SUPER_ADMIN_EMAIL = "mmm@gmail.com"; 
+const SUPER_ADMIN_EMAIL = "admin10@gmail.com"; 
 
 const ManageUsers = ({ searchTerm }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
   
-  // משיכת פרטי המשתמש המחובר מה-Redux כדי לדעת מי מנסה למחוק
   const { user: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -30,10 +29,12 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  // פונקציה לשינוי תפקיד המשתמש
-  const handleRoleChange = async (userId, newRole, userEmail) => {
+  const currentUserData = users.find(u => u._id === currentUser?.userId);
+  const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL;
+
+const handleRoleChange = async (userId, newRole, userEmail) => {
     if (userEmail === SUPER_ADMIN_EMAIL) {
-      return alert("לא ניתן לשנות את ההרשאה של מנהל העל!");
+      return setNotification({ open: true, message: "לא ניתן לשנות את ההרשאה של מנהל העל!", severity: "warning" });
     }
 
     try {
@@ -43,33 +44,30 @@ const ManageUsers = ({ searchTerm }) => {
       });
       
       setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      setNotification({ open: true, message: "הרשאת המשתמש עודכנה בהצלחה", severity: "success" });
     } catch (err) {
-      alert("שגיאה בעדכון הרשאה. ודא שהוספת את הראוט בשרת.");
-      console.error(err);
+      // התיקון: משיכת השגיאה האמיתית מהשרת (כמו "גישה נדחתה") במקום טקסט גנרי
+      const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה";
+      setNotification({ open: true, message: errorMessage, severity: "error" });
     }
   };
 
   const handleDelete = async (userObj) => {
-    // 1. הגנה על מנהל העל
-    if (userObj.email === SUPER_ADMIN_EMAIL) {
-      return alert("לא ניתן למחוק את מנהל העל של המערכת!");
-    }
-
-    // 2. בדיקה האם מי שלחץ על הכפתור הוא מנהל העל בעצמו
-    const currentUserData = users.find(u => u._id === currentUser?.userId);
-    const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL;
-
+    // מחיקה נשארת חסומה רק למנהל על
     if (!isSuperAdmin) {
-      return alert("פעולה נדחתה: רק מנהל-על מורשה למחוק משתמשים. באפשרותך לשנות הרשאות חשבון בלבד.");
+      return setNotification({ open: true, message: "רק מנהל-על מורשה למחוק משתמשים!", severity: "error" });
+    }
+    if (userObj.email === SUPER_ADMIN_EMAIL) {
+      return setNotification({ open: true, message: "לא ניתן למחוק את מנהל העל של המערכת!", severity: "warning" });
     }
 
-    // 3. מחיקה בפועל
-    if (window.confirm(`האם אתה בטוח שברצונך למחוק את ${userObj.userName}?`)) {
+    if (window.confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${userObj.userName} לצמיתות?`)) {
       try {
         await adminService.deleteUser(userObj._id);
         setUsers(users.filter(u => u._id !== userObj._id));
+        setNotification({ open: true, message: "המשתמש נמחק בהצלחה", severity: "success" });
       } catch (err) {
-        alert("שגיאה במחיקת משתמש");
+        setNotification({ open: true, message: "שגיאה במחיקת משתמש", severity: "error" });
       }
     }
   };
@@ -100,20 +98,24 @@ const ManageUsers = ({ searchTerm }) => {
           <TableBody>
             {filteredUsers.map((user) => (
               <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
-                <TableCell align="right" sx={{ color: 'white' }}>{user.userName}</TableCell>
+                <TableCell align="right" sx={{ color: 'white' }}>
+                  {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
+                </TableCell>
                 <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
                 
-                {/* תיבת בחירה לשינוי תפקיד */}
                 <TableCell align="right">
                   <Select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
                     size="small"
+                    // התיקון: כולם יכולים לשנות, אלא אם זה מנהל העל
+                    disabled={user.email === SUPER_ADMIN_EMAIL}
                     sx={{ 
                       color: 'white', 
                       '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
-                      '& .MuiSvgIcon-root': { color: 'white' }
+                      '& .MuiSvgIcon-root': { color: 'white' },
+                      '&.Mui-disabled': { color: 'rgba(255,255,255,0.5)' }
                     }}
                   >
                     <MenuItem value="user">משתמש (user)</MenuItem>
@@ -121,12 +123,18 @@ const ManageUsers = ({ searchTerm }) => {
                   </Select>
                 </TableCell>
                 
-                {/* כפתור מחיקה */}
                 <TableCell align="center">
-                  <Tooltip title="מחק משתמש (למנהל-על בלבד)">
-                    <IconButton onClick={() => handleDelete(user)} color="error">
-                      <DeleteIcon />
-                    </IconButton>
+                  <Tooltip title={isSuperAdmin ? "מחק משתמש" : "מחיקה למנהל-על בלבד"}>
+                    <span>
+                      <IconButton 
+                        onClick={() => handleDelete(user)} 
+                        color="error" 
+                        // מחיקה נשארת חסומה למי שאינו מנהל על
+                        disabled={!isSuperAdmin || user.email === SUPER_ADMIN_EMAIL}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </span>
                   </Tooltip>
                 </TableCell>
               </TableRow>
@@ -134,6 +142,18 @@ const ManageUsers = ({ searchTerm }) => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Snackbar 
+        open={notification.open} 
+        autoHideDuration={3000} 
+        onClose={() => setNotification({ ...notification, open: false })} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ mb: 10 }}
+      >
+        <Alert severity={notification.severity} sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: `1px solid ${notification.severity === 'error' ? '#f44336' : '#40e0d0'}` }}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
