@@ -1,24 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const Result = require('../models/Result');
-const { User } = require('../models/User'); // הוספנו את המודל של המשתמש
+const { User } = require('../models/User');
 const { auth, adminOnly } = require('../middleware/auth');
 
-// 1. שמירת תוצאה - מעדכן גם את טבלת התוצאות וגם את המשתמש עצמו
 router.post('/save', auth, async (req, res) => {
     try {
         const { quizId, quizTitle, score, totalQuestions } = req.body;
         
-        // א. שמירה בטבלת התוצאות הכללית (עבור המנהל)
+        // הוספנו totalQuestions גם כאן כדי שהמנהל יראה את הנתון המלא
         const newResult = new Result({ 
             userId: req.user._id, 
             quizId, 
             quizTitle, 
-            score 
+            score,
+            totalQuestions // וודא שגם ב-Result.js הוספת את השדה הזה
         });
         await newResult.save();
 
-        // ב. שמירה בתוך ה-User (עבור הפרופיל/היסטוריה)
         await User.findByIdAndUpdate(req.user._id, {
             $push: {
                 quizHistory: {
@@ -30,13 +29,12 @@ router.post('/save', auth, async (req, res) => {
             }
         });
 
-        res.status(201).json({ message: "הציון נשמר בהצלחה בכל המערכות!" });
+        res.status(201).json({ message: "הציון נשמר בהצלחה!" });
     } catch (err) {
         res.status(400).json({ message: "שגיאה בשמירת הציון: " + err.message });
     }
 });
 
-// 2. קבלת ציונים אישיים
 router.get('/my-scores', auth, async (req, res) => {
     try {
         const results = await Result.find({ userId: req.user._id }).sort({ date: -1 });
@@ -46,11 +44,10 @@ router.get('/my-scores', auth, async (req, res) => {
     }
 });
 
-// 3. מנהל בלבד: קבלת כל הציונים
 router.get('/admin/all', auth, adminOnly, async (req, res) => {
     try {
         const results = await Result.find()
-            .populate('userId', 'userName') 
+            .populate('userId', 'userName email') // הוספתי אימייל כדי שהמנהל יזהה משתמשים בקלות
             .sort({ date: -1 });
         res.json(results);
     } catch (err) {

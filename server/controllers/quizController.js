@@ -46,19 +46,31 @@ exports.createQuiz = async (req, res) => {
 };
 
 
+
 // 4. עדכון חידון קיים - מנהל בלבד
 exports.updateQuiz = async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: "גישה נדחתה: מנהלים בלבד" });
     }
+
+    // בדיקה שלא מוחקים את כל השאלות
+    if (req.body.questions && req.body.questions.length === 0) {
+        return res.status(400).json({ message: "חידון חייב להכיל לפחות שאלה אחת" });
+    }
+
     try {
         const updatedQuiz = await Quiz.findByIdAndUpdate(
-            req.params.id, 
-            req.body, 
+            req.params.id,
+            req.body,
             { new: true }
         );
-        if (!updatedQuiz) return res.status(404).json({ message: "החידון לא נמצא" });
+
+        if (!updatedQuiz) {
+            return res.status(404).json({ message: "החידון לא נמצא" });
+        }
+
         res.json(updatedQuiz);
+
     } catch (err) {
         res.status(400).json({ message: "שגיאה בעדכון: " + err.message });
     }

@@ -19,24 +19,19 @@ const userSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
-/**
- * עדכון חשוב: בגרסת Async של Mongoose pre-save 
- * לא משתמשים ב-next(). פשוט מסיימים את הפונקציה או זורקים שגיאה.
- */
-userSchema.pre('save', async function () {
-    // אם הסיסמה לא שונתה, פשוט צא מהפונקציה
-    if (!this.isModified('password')) return;
+// תיקון קריטי: שימוש ב-function רגילה כדי ש-this יעבוד
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
 
     try {
         const salt = await bcrypt.genSalt(10);
         this.password = await bcrypt.hash(this.password, salt);
-        // אין קריאה ל-next() כאן!
+        next();
     } catch (err) {
-        throw new Error(err); // זריקת שגיאה תעצור את השמירה
+        next(err); 
     }
 });
 
-// פונקציית וולידציה (Joi) 
 const validateUser = (user) => {
     const schema = Joi.object({
         userName: Joi.string().min(2).required(),
