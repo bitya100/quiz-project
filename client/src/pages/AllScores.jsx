@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// 1. התיקון הקריטי: אנחנו מייבאים את ה-api הגלובלי במקום axios רגיל
 import api from "../services/api"; 
 import { useSelector } from "react-redux"; 
 import { 
@@ -22,7 +21,12 @@ const AllScores = ({ searchTerm = "" }) => {
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
   const { user } = useSelector((state) => state.auth);
-  const isSuperAdmin = user?.email === SUPER_ADMIN_EMAIL;
+  
+  // התיקון המנצח: אם האימייל לא קיים או לא תואם ב-Redux בגלל אותיות גדולות/קטנות, 
+  // אנחנו תופסים את מנהל העל לפי שם המשתמש שלו (שאנחנו רואים שמוצג תקין במסך)
+  const isSuperAdmin = 
+    (user?.email && user.email.toLowerCase() === SUPER_ADMIN_EMAIL) || 
+    (user?.userName && user.userName.toLowerCase().includes("admin10"));
 
   useEffect(() => {
     fetchScores();
@@ -30,13 +34,10 @@ const AllScores = ({ searchTerm = "" }) => {
 
   const fetchScores = async () => {
     try {
-      // 2. התיקון: שימוש ב-api.get (הטוקן נשלח אוטומטית!)
       const res = await api.get("/results/all");
       setScores(res.data);
     } catch (err) {
       console.error("Error fetching all scores:", err);
-      // אם זה שבת (503), ה-api.js כבר יעביר אותנו דף, אז אין צורך לטפל בזה פה.
-      // נטפל רק בשגיאות אחרות:
       if (err.response?.status !== 503) {
         setNotification({ open: true, message: "שגיאה בטעינת הנתונים", severity: "error" });
       }
@@ -49,7 +50,6 @@ const AllScores = ({ searchTerm = "" }) => {
     if (!isSuperAdmin) return;
 
     try {
-      // 3. התיקון: שימוש ב-api.delete
       await api.delete(`/results/${deleteDialog.scoreId}`);
       
       setScores(scores.filter(s => s._id !== deleteDialog.scoreId));
@@ -186,18 +186,22 @@ const AllScores = ({ searchTerm = "" }) => {
                 <TableCell align="right" sx={{ color: 'white' }}>{new Date(score.date).toLocaleDateString('he-IL')}</TableCell>
                 
                 <TableCell align="center">
-                  <Tooltip title={isSuperAdmin ? "מחק ציון" : "פעולה זו מורשית למנהל-על בלבד"}>
-                    <span> 
+                  {isSuperAdmin ? (
+                    <Tooltip title="מחק ציון">
                       <IconButton 
                         onClick={() => setDeleteDialog({ open: true, scoreId: score._id })} 
-                        color="error"
-                        disabled={!isSuperAdmin} 
-                        sx={{ opacity: isSuperAdmin ? 1 : 0.4 }} 
+                        sx={{ color: '#f44336' }} 
                       >
-                        {isSuperAdmin ? <DeleteIcon /> : <LockIcon fontSize="small" />}
+                        <DeleteIcon />
                       </IconButton>
-                    </span>
-                  </Tooltip>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="פעולה זו מורשית למנהל-על בלבד">
+                      <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
+                        <LockIcon fontSize="small" sx={{ color: 'white' }} />
+                      </Box>
+                    </Tooltip>
+                  )}
                 </TableCell>
 
               </TableRow>

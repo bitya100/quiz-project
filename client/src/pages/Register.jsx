@@ -3,12 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login as loginAction } from "../store";
 import authService from "../services/authService";
-import { Container, Paper, Typography, TextField, Button, Box, Alert, CircularProgress } from "@mui/material";
+import { Container, Paper, Typography, TextField, Button, Box, Alert } from "@mui/material";
 
 const Register = () => {
   const [formData, setFormData] = useState({ userName: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState(""); 
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -20,16 +22,25 @@ const Register = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setSuccessMsg("");
+
     try {
       const data = await authService.register(formData);
-      dispatch(loginAction({
-        user: { userId: data.userId, userName: data.userName, role: data.role },
-        token: data.token
-      }));
-      navigate("/quizzes");
+      
+      setLoading(false);
+      setSuccessMsg("נרשמת בהצלחה! רק רגע...");
+
+      setTimeout(() => {
+        // התיקון: אנחנו מוסיפים גם את המייל ל-Redux!
+        dispatch(loginAction({
+          user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
+          token: data.token
+        }));
+        navigate("/quizzes");
+      }, 1500);
+
     } catch (err) {
       setError(err.response?.data || "שגיאה ברישום.");
-    } finally {
       setLoading(false);
     }
   };
@@ -39,12 +50,28 @@ const Register = () => {
       <Paper elevation={10} sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(64, 224, 208, 0.2)' }}>
         <Typography variant="h4" align="center" sx={{ mb: 3, color: '#40e0d0', fontWeight: 'bold' }}>הרשמה</Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        
         <Box component="form" onSubmit={handleSubmit}>
           <TextField fullWidth name="userName" label="שם משתמש" variant="outlined" margin="normal" value={formData.userName} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
           <TextField fullWidth name="email" label="אימייל" variant="outlined" margin="normal" value={formData.email} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
           <TextField fullWidth name="password" label="סיסמה" type="password" variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
-          <Button type="submit" fullWidth variant="contained" disabled={loading} sx={{ mt: 3, mb: 2, bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', py: 1.5 }}>
-            {loading ? <CircularProgress size={24} color="inherit" /> : "הרשמה"}
+          
+          <Button 
+            type="submit" 
+            fullWidth 
+            variant="contained" 
+            disabled={loading || !!successMsg} 
+            sx={{ 
+              mt: 3, 
+              mb: 2, 
+              bgcolor: successMsg ? '#2cd8bbd6' : '#40e0d0', 
+              color: successMsg ? 'white' : '#020617', 
+              fontWeight: 'bold', 
+              py: 1.5,
+              '&:disabled': { bgcolor: successMsg ? '#2cd8bbd6' : 'rgba(64, 224, 208, 0.3)', color: successMsg ? 'white' : '' }
+            }}
+          >
+            {successMsg ? successMsg : (loading ? "מעבד נתונים..." : "הרשמה")}
           </Button>
         </Box>
         <Typography align="center">

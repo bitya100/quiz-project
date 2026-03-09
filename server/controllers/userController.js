@@ -2,18 +2,14 @@ const { User, validateUser } = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// --- פונקציית הרשמה ---
 const register = async (req, res) => {
     try {
-        // 1. וולידציה של הקלט
         const { error } = validateUser(req.body);
         if (error) return res.status(400).send(error.details[0].message);
 
-        // 2. בדיקה אם המשתמש קיים
         let user = await User.findOne({ email: req.body.email.toLowerCase() });
         if (user) return res.status(400).send('משתמש כבר רשום במערכת');
 
-        // 3. יצירת משתמש חדש
         const newUser = new User({
             userName: req.body.userName,
             email: req.body.email.toLowerCase(),
@@ -23,7 +19,6 @@ const register = async (req, res) => {
 
         await newUser.save();
 
-        // 4. יצירת טוקן
         const token = jwt.sign(
             { _id: newUser._id, role: newUser.role }, 
             process.env.JWT_SECRET || 'fallback_secret'
@@ -34,7 +29,8 @@ const register = async (req, res) => {
             token: token,
             role: newUser.role,
             userId: newUser._id,
-            userName: newUser.userName 
+            userName: newUser.userName,
+            email: newUser.email // <-- הוספנו את המייל למען אבטחה
         });
     } catch (ex) {
         console.error("Register Error Details:", ex);
@@ -42,7 +38,6 @@ const register = async (req, res) => {
     }
 };
 
-// --- פונקציית התחברות ---
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -62,7 +57,8 @@ const login = async (req, res) => {
             token: token, 
             role: user.role, 
             userId: user._id, 
-            userName: user.userName 
+            userName: user.userName,
+            email: user.email // <-- הוספנו את המייל למען אבטחה
         });
     } catch (ex) {
         console.error("Login Error Details:", ex);
@@ -70,7 +66,6 @@ const login = async (req, res) => {
     }
 };
 
-// --- קבלת נתוני פרופיל והיסטוריה ---
 const getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password');
@@ -80,7 +75,6 @@ const getProfile = async (req, res) => {
     }
 };
 
-// --- קבלת כל המשתמשים (למנהל בלבד) ---
 const getAllUsers = async (req, res) => {
     try {
         const users = await User.find().select('-password');
@@ -90,7 +84,6 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// --- עדכון תפקיד משתמש ---
 const updateUserRole = async (req, res) => {
     try {
         const userIdToUpdate = req.params.id;

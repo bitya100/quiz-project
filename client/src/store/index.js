@@ -1,35 +1,43 @@
-import { configureStore, createSlice } from '@reduxjs/toolkit';
+import { configureStore, createSlice } from "@reduxjs/toolkit";
 
-// Slice לניהול המשתמש והתחברות
+// ניסיון לשלוף את המשתמש מהאחסון המקומי
+const savedUser = JSON.parse(localStorage.getItem("user") || sessionStorage.getItem("user"));
+const savedToken = localStorage.getItem("token") || sessionStorage.getItem("token");
+
+// התיקון: אנחנו בודקים האם הנתונים שמורים כמו שצריך *עם אימייל*
+// אם יש משתמש ישן בלי אימייל, אנחנו מתעלמים ממנו כדי לאלץ התחברות מחדש
+const isValidUser = savedUser && savedUser.email; 
+
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState: {
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null,
+    user: isValidUser ? savedUser : null,
+    token: isValidUser ? savedToken : null,
+    isAuthenticated: !!isValidUser,
   },
   reducers: {
     login: (state, action) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
-      localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      state.isAuthenticated = true;
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      state.isAuthenticated = false;
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     },
   },
 });
 
-// Slice לניהול החידונים
-const quizSlice = createSlice({
-  name: 'quizzes',
+const quizzesSlice = createSlice({
+  name: "quizzes",
   initialState: {
     list: [],
     loading: false,
-    error: null,
   },
   reducers: {
     setQuizzes: (state, action) => {
@@ -38,15 +46,23 @@ const quizSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+    addQuizAction: (state, action) => {
+      state.list.push(action.payload);
+    },
+    deleteQuizAction: (state, action) => {
+      state.list = state.list.filter((quiz) => quiz._id !== action.payload);
+    },
   },
 });
 
 export const { login, logout } = authSlice.actions;
-export const { setQuizzes, setLoading } = quizSlice.actions;
+export const { setQuizzes, setLoading, addQuizAction, deleteQuizAction } = quizzesSlice.actions;
 
-export const store = configureStore({
+const store = configureStore({
   reducer: {
     auth: authSlice.reducer,
-    quizzes: quizSlice.reducer,
+    quizzes: quizzesSlice.reducer,
   },
 });
+
+export default store;
