@@ -8,12 +8,32 @@
     --text-white: #e0e0e0;
 }
 
+html {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-color: #020617;
+}
+
 body {
     margin: 0;
+    padding: 0;
     font-family: 'Assistant', sans-serif;
-    background-color: rgb(138, 177, 222);
+    background-color: #020617;
+    background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
     direction: rtl;
     min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+#root {
+    width: 100%;
+}
+
+.app-content-wrapper {
+    background: transparent;
+    padding: 10px;
 }
 
 .navbar {
@@ -80,12 +100,12 @@ body {
 
 /* --- כותרות ועיצוב דף --- */
 .main-title {
-    font-size: 4.5rem;
+    font-size: 3.5rem;
     font-weight: 900;
     text-align: center;
     color: #ffffff;
     text-shadow: 0 0 15px var(--neon-blue), 0 0 30px rgba(64, 224, 208, 0.4);
-    margin-top: 50px;
+    margin-top: 30px;
     margin-bottom: 10px;
     text-transform: uppercase;
 }
@@ -107,8 +127,9 @@ body {
 }
 
 .quiz-card {
-    background: black;
-    border: 1px solid rgba(64, 224, 208, 0.2);
+    background: rgba(0, 0, 0, 0.402) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(64, 224, 208, 0.3);
     border-radius: 20px;
     padding: 30px;
     transition: 0.4s ease;
@@ -204,16 +225,14 @@ table {
     table-layout: auto !important;
 }
 
-/* התיקון כאן: הסרנו את ה-padding הקשיח והוספנו תמיכה במיון */
 th {
     background-color: #34495e !important;
     color: #ffffff !important;
     text-align: center !important;
     white-space: nowrap !important;
-    padding: 0 !important; /* מאפשר ללחצן למלא את כל התא */
+    padding: 0 !important;
 }
 
-/* עיצוב ספציפי לטקסט בתוך th שאינו כפתור */
 th:not(:has(button)):not(:has(.MuiTableSortLabel-root)) {
     padding: 18px 15px !important;
 }
@@ -231,11 +250,9 @@ td button, td .MuiButton-root {
     display: inline-flex !important;
 }
 
-/* צבעי ציונים */
 .score-pass { color: #27ae60 !important; font-weight: bold; }
 .score-fail { color: #e74c3c !important; font-weight: bold; }
 
-/* טקסטים של מצבי טעינה ושגיאה */
 .center-message { text-align: center; margin-top: 100px; font-size: 20px; color: white; }
 .error-message { color: #ff4d4d; }
 
@@ -248,7 +265,6 @@ td button, td .MuiButton-root {
     font-family: 'Assistant', sans-serif !important;
 }
 
-/* עיצוב שורת החיפוש */
 .MuiTextField-root {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
@@ -263,13 +279,16 @@ td button, td .MuiButton-root {
 }
 
 .main-footer {
-    background-color: #000000;
-    color: #e0e0e0;
-    text-align: center;
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(64, 224, 208, 0.3);
+    color: #40e0d0;
     padding: 20px 0;
-    border-top: 2px solid #40e0d0;
+    text-align: center;
     width: 100%;
     margin-top: auto;
+    position: relative;
+    z-index: 10;
     font-family: 'Assistant', sans-serif;
 }
 
@@ -278,29 +297,6 @@ td button, td .MuiButton-root {
     font-size: 0.9rem;
     font-weight: 400;
     opacity: 0.8;
-}
-
-/* --- שינויים מחלק 2 שדורסים הגדרות קיימות --- */
-
-body {
-    background-color: #050505;
-    background: radial-gradient(circle at center, #0d213e 0%, #020617 100%);
-    overflow-x: hidden;
-}
-
-.app-content-wrapper {
-    background: transparent;
-}
-
-.quiz-card {
-    background: rgba(0, 0, 0, 0.402) !important;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(64, 224, 208, 0.3);
-}
-
-.main-title {
-    font-size: 3.5rem; 
-    margin-top: 30px;
 }
 
 /* --- עיצוב דף החידון (Quiz Page) --- */
@@ -345,7 +341,6 @@ body {
     box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
 }
 
-/* פס התקדמות (חלק ראשון) */
 .progress-bar-inner {
     background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
     box-shadow: 0 0 15px var(--neon-blue);
@@ -437,7 +432,6 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* פס התקדמות ניאון (חלק שני) */
 .quiz-progress-container {
     width: 100%;
     height: 10px;
@@ -644,46 +638,8 @@ body {
     .option-btn { padding: 12px; font-size: 1.1rem !important; }
 }
 
-/* src/index.css */
-body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; 
-  width: 100%;
-}
-
-#root {
-  width: 100%;
-}
-
-.app-content-wrapper {
-  padding: 10px;
-}
-
-/* התאמת גדלי טקסט בסיסיים לנייד */
 @media (max-width: 600px) {
   h1, h2, h3 {
     font-size: 1.5rem !important;
   }
 }
-
-.main-footer {
-  background: rgba(2, 6, 23, 0.8); /* רקע כהה מעט שקוף */
-  backdrop-filter: blur(10px); /* טשטוש יפה */
-  border-top: 1px solid rgba(64, 224, 208, 0.3); /* קו טורקיז עדין למעלה */
-  color: #40e0d0; /* טקסט בצבע טורקיז */
-  padding: 20px 0;
-  text-align: center;
-  width: 100%;
-  position: relative;
-  z-index: 10;
-}
-
-
-html, body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* מונע מההילה ליצור פס גלילה לצדדים */
-  background-color: #020617; /* מוודא שהצבע של הדפדפן תואם לאתר */
-}
-
