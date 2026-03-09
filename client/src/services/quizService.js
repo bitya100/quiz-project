@@ -1,7 +1,7 @@
-import api from './api';
+import api from './api'; 
 
 const getAllQuizzes = async () => {
-  const response = await api.get('/quizzes');
+  const response = await api.get('/quizzes'); 
   return response.data;
 };
 

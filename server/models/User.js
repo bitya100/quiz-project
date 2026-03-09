@@ -3,21 +3,23 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     userName: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { 
+        type: String, 
+        required: true, 
+        unique: true, // חסימת הרשמה כפולה עם אותו מייל
+        lowercase: true 
+    },
     password: { type: String, required: true },
     role: { type: String, default: 'user' }
 });
 
-// התיקון הקריטי: מחקנו את ה-next! בגרסאות מודרניות של Mongoose עם async, פשוט מחזירים תשובה.
-userSchema.pre('save', async function() {
-    // אם לא שינו את הסיסמה (למשל כשרק מעדכנים תפקיד), פשוט עוצרים פה והשמירה ממשיכה
+userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
-        return;
+        return next();
     }
-    
-    // מצפינים את הסיסמה
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
 module.exports = { User: mongoose.model('User', userSchema) };

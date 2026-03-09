@@ -1,23 +1,15 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = 'http://localhost:3001/api/users'; // נתיב המשתמשים
-
-const getAllUsers = async () => {
-  const token = localStorage.getItem('token');
-  const response = await axios.get(`${API_URL}/all`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+const adminService = {
+  getAllUsers: async () => {
+    const response = await api.get('/users'); 
+    return response.data;
+  },
+  
+  deleteUser: async (id) => {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
+  }
 };
 
-// התווסף - פונקציה למחיקת משתמש
-const deleteUser = async (userId) => {
-  const token = localStorage.getItem('token');
-  const response = await axios.delete(`${API_URL}/${userId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
-};
-
-const adminService = { getAllUsers, deleteUser };
 export default adminService;

@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store";
 import { 
   AppBar, Toolbar, Typography, Button, InputBase, Box, 
-  IconButton, Menu, MenuItem, useMediaQuery, useTheme 
+  IconButton, useMediaQuery, useTheme, Drawer, List, ListItem, ListItemText, Divider 
 } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -51,18 +52,49 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation(); 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+  
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
   };
 
-  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
+
+  const isActive = (path) => location.pathname === path;
+
+  const navButtonStyle = (path) => ({
+    color: isActive(path) ? "#40e0d0" : "white",
+    fontWeight: isActive(path) ? "bold" : "normal",
+    borderBottom: isActive(path) ? "2px solid #40e0d0" : "2px solid transparent",
+    borderRadius: 0,
+    '&:hover': {
+      color: "#40e0d0",
+      backgroundColor: "transparent"
+    }
+  });
+
+  const listItemStyle = (path) => ({
+    color: isActive(path) ? "#40e0d0" : "white",
+    bgcolor: isActive(path) ? "rgba(64, 224, 208, 0.1)" : "transparent",
+    borderRight: isActive(path) ? "4px solid #40e0d0" : "4px solid transparent",
+    textAlign: 'right',
+    cursor: 'pointer',
+    '&:hover': {
+      bgcolor: "rgba(64, 224, 208, 0.05)",
+      color: "#40e0d0"
+    }
+  });
 
   return (
     <AppBar position="sticky" sx={{ 
@@ -101,82 +133,184 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
         </Search>
 
         {isMobile ? (
-          <>
-            <IconButton onClick={handleMenuOpen} sx={{ color: "white" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            
+            <IconButton onClick={toggleDrawer(true)} sx={{ color: "white" }}>
               <MenuIcon />
             </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
+            
+            <Drawer
+              anchor="left" 
+              open={drawerOpen}
+              onClose={toggleDrawer(false)}
               PaperProps={{
-                sx: { bgcolor: "#020617", color: "white", border: "1px solid #40e0d0" }
+                sx: { 
+                  width: 280, // הרחבתי טיפה כדי ששני הכפתורים (התחברות והרשמה) ייכנסו יפה
+                  background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%)', 
+                  backdropFilter: 'blur(20px)', 
+                  borderRight: '1px solid rgba(64, 224, 208, 0.2)', 
+                  color: 'white' 
+                }
               }}
             >
-              <MenuItem onClick={handleMenuClose} component={Link} to="/quizzes">חידונים</MenuItem>
-              {user && <MenuItem onClick={handleMenuClose} component={Link} to="/my-scores">הציונים שלי</MenuItem>}
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <IconButton onClick={toggleDrawer(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                  <CloseIcon />
+                </IconButton>
+                <Typography variant="h6" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
+                  תפריט ניווט
+                </Typography>
+              </Box>
               
-              {/* תפריט מנהלים למובייל */}
-              {user?.role === 'admin' && (
-                [
-                  <MenuItem key="create" onClick={handleMenuClose} component={Link} to="/create-quiz">צור חידון</MenuItem>,
-                  <MenuItem key="scores" onClick={handleMenuClose} component={Link} to="/admin/all-scores">כל הציונים</MenuItem>,
-                  <MenuItem key="users" onClick={handleMenuClose} component={Link} to="/admin/users" sx={{ color: '#40e0d0' }}>ניהול משתמשים</MenuItem>
-                ]
-              )}
+              <Divider sx={{ mb: 2, bgcolor: 'rgba(64, 224, 208, 0.2)' }} />
+              
+              <List dir="rtl" sx={{ flexGrow: 1 }}>
+                <ListItem component={Link} to="/quizzes" onClick={toggleDrawer(false)} sx={listItemStyle('/quizzes')}>
+                  <ListItemText primary="חידונים" sx={{ textAlign: 'right' }} />
+                </ListItem>
+                
+                {user && (
+                  <ListItem component={Link} to="/my-scores" onClick={toggleDrawer(false)} sx={listItemStyle('/my-scores')}>
+                    <ListItemText primary="הציונים שלי" sx={{ textAlign: 'right' }} />
+                  </ListItem>
+                )}
+                
+                {user?.role === 'admin' && (
+                  <>
+                    <Divider sx={{ my: 1, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                    <ListItem component={Link} to="/create-quiz" onClick={toggleDrawer(false)} sx={listItemStyle('/create-quiz')}>
+                      <ListItemText primary="צור חידון" sx={{ textAlign: 'right' }} />
+                    </ListItem>
+                    <ListItem component={Link} to="/admin/all-scores" onClick={toggleDrawer(false)} sx={listItemStyle('/admin/all-scores')}>
+                      <ListItemText primary="כל הציונים" sx={{ textAlign: 'right' }} />
+                    </ListItem>
+                    <ListItem component={Link} to="/admin/users" onClick={toggleDrawer(false)} sx={listItemStyle('/admin/users')}>
+                      <ListItemText primary="ניהול משתמשים" sx={{ textAlign: 'right' }} />
+                    </ListItem>
+                  </>
+                )}
+              </List>
 
-              {user ? (
-                <MenuItem onClick={() => { handleMenuClose(); handleLogout(); }}>התנתק</MenuItem>
-              ) : (
-                <MenuItem onClick={handleMenuClose} component={Link} to="/login">התחבר</MenuItem>
-              )}
-            </Menu>
-          </>
+              <Divider sx={{ mt: 'auto', bgcolor: 'rgba(64, 224, 208, 0.2)' }} />
+
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', dir: 'rtl' }}>
+                {user ? (
+                  <>
+                    <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      שלום, <br/><Box component="span" sx={{ fontWeight: "bold", color: "white", fontSize: '1.1em' }}>{user.userName}</Box>
+                    </Typography>
+                    <Button 
+                      onClick={() => { setDrawerOpen(false); handleLogout(); }} 
+                      variant="outlined"
+                      size="small"
+                      sx={{ 
+                        color: '#f44336', 
+                        borderColor: 'rgba(244, 67, 54, 0.5)', 
+                        borderRadius: "20px", 
+                        '&:hover': { borderColor: '#f44336', bgcolor: 'rgba(244, 67, 54, 0.1)' } 
+                      }}
+                    >
+                      התנתק
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      שלום, <br/><Box component="span" sx={{ fontWeight: "bold", color: "white", fontSize: '1.1em' }}>אורח!</Box>
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button 
+                        component={Link} 
+                        to="/register" 
+                        onClick={toggleDrawer(false)}
+                        variant="outlined"
+                        size="small"
+                        sx={{ 
+                          color: '#40e0d0', 
+                          borderColor: 'rgba(64, 224, 208, 0.5)', 
+                          borderRadius: "20px", 
+                          '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } 
+                        }}
+                      >
+                        הרשמה
+                      </Button>
+                      <Button 
+                        component={Link} 
+                        to="/login" 
+                        onClick={toggleDrawer(false)}
+                        variant="contained"
+                        size="small"
+                        sx={{ 
+                          bgcolor: '#40e0d0', 
+                          color: '#020617', 
+                          borderRadius: "20px", 
+                          fontWeight: "bold", 
+                          '&:hover': { bgcolor: '#2dd4bf' } 
+                        }}
+                      >
+                        התחברות
+                      </Button>
+                    </Box>
+                  </>
+                )}
+              </Box>
+            </Drawer>
+          </Box>
         ) : (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Button component={Link} to="/quizzes" sx={{ color: "white" }}>חידונים</Button>
-            {user && <Button component={Link} to="/my-scores" sx={{ color: "white" }}>הציונים שלי</Button>}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             
-            {/* תפריט מנהלים לדסקטופ */}
+            <Button component={Link} to="/quizzes" sx={navButtonStyle('/quizzes')}>חידונים</Button>
+            
+            {user && <Button component={Link} to="/my-scores" sx={navButtonStyle('/my-scores')}>הציונים שלי</Button>}
+            
             {user?.role === 'admin' && (
               <>
-                <Button component={Link} to="/create-quiz" sx={{ color: "#40e0d0" }}>צור חידון</Button>
-                <Button component={Link} to="/admin/all-scores" sx={{ color: "#40e0d0" }}>כל הציונים</Button>
-                <Button component={Link} to="/admin/users" sx={{ color: "#40e0d0", fontWeight: "bold" }}>ניהול משתמשים</Button>
+                <Button component={Link} to="/create-quiz" sx={navButtonStyle('/create-quiz')}>צור חידון</Button>
+                <Button component={Link} to="/admin/all-scores" sx={navButtonStyle('/admin/all-scores')}>כל הציונים</Button>
+                <Button component={Link} to="/admin/users" sx={navButtonStyle('/admin/users')}>ניהול משתמשים</Button>
               </>
             )}
 
             {user ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 3 }}>
                 <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }} dir="rtl">
-                  שלום, <Box component="span" sx={{ fontWeight: "bold" }}>{user.userName}</Box>
+                  שלום, <Box component="span" sx={{ fontWeight: "bold", color: "white" }}>{user.userName}</Box>
                 </Typography>
                 <Button 
                   onClick={handleLogout} 
                   variant="outlined" 
                   size="small" 
-                  sx={{ borderColor: "#40e0d0", color: "#40e0d0", borderRadius: "20px" }}
+                  sx={{ borderColor: "rgba(255,255,255,0.3)", color: "white", borderRadius: "20px", '&:hover': { borderColor: '#f44336', color: '#f44336' } }}
                 >
                   התנתק
                 </Button>
               </Box>
-           ) : (
-              // התיקון: הורדנו את ה-bgcolor והריווחים המיותרים
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 2 }}>
+             ) : (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 3 }}>
                 <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }} dir="rtl">
-                  שלום, <Box component="span" sx={{ fontWeight: "bold" }}>אורח!</Box>
+                  שלום, <Box component="span" sx={{ fontWeight: "bold", color: "white" }}>אורח!</Box>
                 </Typography>
-                <Button 
-                  component={Link} 
-                  to="/login" 
-                  variant="contained" 
-                  size="small"
-                  sx={{ bgcolor: "#40e0d0", color: "#020617", borderRadius: "20px", fontWeight: "bold" }}
-                >
-                  התחבר
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button 
+                    component={Link} 
+                    to="/register" 
+                    variant="outlined" 
+                    size="small"
+                    sx={{ borderColor: "#40e0d0", color: "#40e0d0", borderRadius: "20px", '&:hover': { borderColor: '#2dd4bf', color: '#2dd4bf', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
+                  >
+                    הרשמה
+                  </Button>
+                  <Button 
+                    component={Link} 
+                    to="/login" 
+                    variant="contained" 
+                    size="small"
+                    sx={{ bgcolor: "#40e0d0", color: "#020617", borderRadius: "20px", fontWeight: "bold", '&:hover': { bgcolor: '#2dd4bf' } }}
+                  >
+                    התחברות
+                  </Button>
+                </Box>
               </Box>
-            
             )}
           </Box>
         )}

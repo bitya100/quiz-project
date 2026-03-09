@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import Particles from "react-tsparticles"; 
 import { loadSlim } from "tsparticles-slim"; 
 
-// ייבוא קומפוננטות
+// ייבוא קומפוננטות 
 import Navbar from "./components/Navbar";
 import Quizzes from "./pages/Quizzes";
 import QuizPage from "./pages/QuizPage";
@@ -13,6 +13,21 @@ import Register from "./pages/Register";
 import MyScores from "./pages/MyScores";
 import AllScores from "./pages/AllScores"; 
 import ManageUsers from "./pages/ManageUsers"; 
+import ShabbatPage from "./pages/ShabbatPage"; 
+
+// --- פונקציית חסימת שבת בצד הלקוח (נעילה הרמטית) ---
+const checkShabbat = () => {
+  const now = new Date();
+  
+  // לטובת בדיקה כרגע, האתר יחשוב שעכשיו שבת בבוקר:
+  const day = 6;  // שנה בחזרה ל: now.getDay()
+  const hour = 10; // שנה בחזרה ל: now.getHours()
+
+  if (day === 5 && hour >= 16) return true; // שישי אחה"צ
+  if (day === 6 && hour < 19) return true;  // מוצ"ש
+  
+  return false;
+};
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -34,7 +49,7 @@ const Footer = () => {
       color: '#40e0d0',
       position: 'relative',
       zIndex: 10,
-      marginTop: 'auto' // זה הסוד - דוחף אותו לתחתית גם כשהדף ריק
+      marginTop: 'auto' 
     }}>
       <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>
         ביתיה. כל הזכויות שמורות &copy; {currentYear}
@@ -45,49 +60,60 @@ const Footer = () => {
 
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // הפעלת השומר!
+  const isShabbat = checkShabbat();
 
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine);
   }, []);
 
+  // הגדרות הרקע המרחף (העיגולים)
+  const particlesOptions = {
+    fullScreen: { enable: true, zIndex: -1 },
+    background: { color: { value: "#020617" } },
+    fpsLimit: 60,
+    particles: {
+      number: { value: 6, density: { enable: false } },
+      color: { value: ["#00c1ab", "#1e90ff", "#7000ff", "#40e0d0", "#bc13fe"] },
+      shape: { type: "circle" },
+      opacity: { value: 0.12 }, 
+      size: { value: { min: 150, max: 350 } }, 
+      move: {
+        enable: true,
+        speed: 0.8, 
+        direction: "none",
+        random: true,
+        outModes: { default: "bounce" }, 
+        attract: { enable: false } 
+      },
+      shadow: { enable: true, color: "inherit", blur: 50 }
+    },
+    interactivity: { detectsOn: "window", events: { resize: true } },
+    detectRetina: true
+  };
+
+  // ==========================================
+  // נעילת שבת - אם שבת, מציגים *רק* את זה!
+  // ==========================================
+  if (isShabbat) {
+    return (
+      <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
+        <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <ShabbatPage />
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // האתר הרגיל - עובד רק אם לא שבת
+  // ==========================================
   return (
     <Router>
       <ScrollToTop />
-      
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={{
-          fullScreen: { enable: true, zIndex: -1 },
-          background: { color: { value: "#020617" } },
-          fpsLimit: 60,
-          particles: {
-            number: { value: 6, density: { enable: false } }, // קצת יותר עיגולים
-            color: { value: ["#00c1ab", "#1e90ff", "#7000ff", "#40e0d0", "#bc13fe"] },
-            shape: { type: "circle" },
-            opacity: { value: 0.12 }, // קצת יותר שקוף כדי שלא יסנוור
-            size: { value: { min: 150, max: 350 } }, // גודל קצת יותר הגיוני
-            move: {
-              enable: true,
-              speed: 0.8, // תנועה חלקה יותר
-              direction: "none",
-              random: true,
-              outModes: { default: "bounce" }, // העיגולים יקפצו מהקצוות במקום לברוח
-              attract: { enable: false } // ביטלנו את המגנט - מונע את הגוש הירוק!
-            },
-            shadow: {
-              enable: true,
-              color: "inherit",
-              blur: 50
-            }
-          },
-          interactivity: {
-            detectsOn: "window",
-            events: { resize: true }
-          },
-          detectRetina: true
-        }}
-      />
+      <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
 
       <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       
@@ -99,7 +125,6 @@ function App() {
         position: 'relative',
         zIndex: 1
       }}>
-        {/* שימוש ב-flexGrow כדי שהתוכן ידחוף את הפוטר תמיד לתחתית המסך */}
         <div style={{ flexGrow: 1, paddingBottom: '40px' }}>
           <Routes>
             <Route path="/" element={<Navigate to="/quizzes" />} />
@@ -112,6 +137,7 @@ function App() {
             <Route path="/edit-quiz/:id" element={<CreateQuiz />} />
             <Route path="/admin/all-scores" element={<AllScores searchTerm={searchTerm} />} /> 
             <Route path="/admin/users" element={<ManageUsers searchTerm={searchTerm} />} />
+            
             <Route path="*" element={
               <h1 style={{ textAlign: 'center', marginTop: '100px', color: '#00c1ab' }}>
                 404 - דף לא נמצא

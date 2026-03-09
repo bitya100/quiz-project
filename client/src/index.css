@@ -1,4 +1,31 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Heebo', sans-serif; /* פונט עברי מודרני ונקי */
+  /* רקע כהה ועשיר עם נטייה לכחול-חלל במקום אפור מונוטוני */
+  background: radial-gradient(circle at top left, #06fe9b3f 0%, #1c008139 50%, #24e6983f 100%);
+  color: white;
+  min-height: 100vh;
+  direction: rtl;
+}
+
+/* עיצוב מותאם לפסי גלילה (Scrollbars) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #020617; 
+}
+::-webkit-scrollbar-thumb {
+  background: #40e0d0; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2cb5a6; 
+}
 
 /* מאפס את כל הרווחים של כל האלמנטים */
 * {
@@ -52,3 +79,5 @@ html, body {
   -ms-overflow-style: none;  /* למשתמשי אדג' */
   scrollbar-width: none;  /* למשתמשי פיירפוקס */
 }
+
+
