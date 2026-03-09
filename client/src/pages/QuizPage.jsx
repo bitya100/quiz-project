@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Container, Typography, Button, Box, Paper, LinearProgress, Zoom, CardMedia } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import Confetti from "react-confetti"; // ייבוא הקונפטי החשוב!
+import Confetti from "react-confetti"; 
 import quizService from "../services/quizService";
 import resultService from "../services/resultService";
 
@@ -143,19 +143,17 @@ const QuizPage = () => {
 
   if (!quiz) return <LinearProgress sx={{ color: '#40e0d0', mt: 10 }} />;
 
-  // משתנה שבודק אם יש ציון מושלם
   const isPerfectScore = score === quiz.questions.length;
 
   return (
     <Container maxWidth="sm" sx={{ mt: 8, textAlign: 'center', pb: 5 }}>
       
-      {/* תצוגת הקונפטי - מופעלת רק כשיש מסך ציון וציון מושלם! */}
       {showScore && isPerfectScore && (
         <Confetti 
           width={window.innerWidth} 
           height={window.innerHeight} 
-          recycle={false} // עוצר אחרי כמה שניות כדי לא להציק
-          numberOfPieces={400} // הרבה קונפטי!
+          recycle={false}
+          numberOfPieces={400} 
         />
       )}
 
@@ -190,7 +188,19 @@ const QuizPage = () => {
           </Box>
 
           <Paper sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white' }}>
-            {quiz.questions[currentQuestion]?.image && <CardMedia component="img" image={quiz.questions[currentQuestion].image} sx={{ borderRadius: 2, mb: 3, maxHeight: 250, objectFit: 'contain' }} />}
+            {/* התיקון כאן: הוספת הקידומת http://localhost:3001 במקרה והתמונה מתיקיית ההעלאות */}
+            {quiz.questions[currentQuestion]?.image && (
+              <CardMedia 
+                component="img" 
+                image={
+                  quiz.questions[currentQuestion].image.startsWith('/uploads') 
+                    ? `http://localhost:3001${quiz.questions[currentQuestion].image}` 
+                    : quiz.questions[currentQuestion].image
+                } 
+                sx={{ borderRadius: 2, mb: 3, maxHeight: 250, objectFit: 'contain' }} 
+              />
+            )}
+            
             <Typography variant="h5" sx={{ mb: 4, fontWeight: 'bold' }}>{quiz.questions[currentQuestion]?.questionText}</Typography>
             
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

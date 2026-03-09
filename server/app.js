@@ -3,6 +3,7 @@ require('dotenv').config(); // חייב להיות ראשון!
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path'); // ⭐️ 1. הוספנו את השורה הזו כאן למעלה
 
 // ייבוא נתיבים
 const quizRoutes = require('./routes/quizRoutes');
@@ -16,14 +17,20 @@ app.use(cors());
 
 /** * עדכון חשוב: הגדלת נפח הבקשה ל-50MB כדי לאפשר העלאת תמונות בפורמט Base64
  * ללא הגדרה זו, השרת יחזיר שגיאה 500 או 413 בגלל גודל הקובץ
+ * (הערה: עכשיו שעברנו ל-multer לא נצטרך 50MB, אבל נשאיר את זה ליתר ביטחון)
  */
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// ⭐️ 2. הוספנו את השורה הזו: חשיפת תיקיית התמונות לדפדפן
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // הגדרת נתיבי ה-API
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/results', resultRoutes);
+// ⭐️ 3. הוספנו את הראוט החדש של ההעלאות
+app.use('/api/upload', require('./routes/uploadRoutes')); 
 
 // טיפול בנתיבים לא קיימים (404)
 app.use((req, res, next) => {

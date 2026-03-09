@@ -23,7 +23,6 @@ const CreateQuiz = () => {
       title: "",
       description: "",
       image: "",
-      // כאן מוגדר שברירת המחדל היא תמיד 0 (תשובה 1)
       questions: [{ questionText: "", options: ["", "", "", ""], correctAnswer: 0, image: "" }]
     }
   });
@@ -34,7 +33,7 @@ const CreateQuiz = () => {
     if (isEditMode) {
       const fetchQuiz = async () => {
         try {
-          const token = localStorage.getItem("token");
+          const token = localStorage.getItem("token") || sessionStorage.getItem("token");
           const res = await axios.get(`http://localhost:3001/api/quizzes/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -47,28 +46,48 @@ const CreateQuiz = () => {
     }
   }, [id, isEditMode, reset]);
 
-  const handleMainImageUpload = (e) => {
+  const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setValue('image', reader.result);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const res = await axios.post("http://localhost:3001/api/upload", formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      setValue('image', res.data.imageUrl);
+      setNotification({ open: true, message: "התמונה הועלתה בהצלחה", severity: "success" });
+    } catch (err) {
+      setNotification({ open: true, message: "שגיאה בהעלאת התמונה", severity: "error" });
     }
   };
 
-  const handleQuestionImageUpload = (e, index) => {
+  const handleQuestionImageUpload = async (e, index) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setValue(`questions.${index}.image`, reader.result);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      const res = await axios.post("http://localhost:3001/api/upload", formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      setValue(`questions.${index}.image`, res.data.imageUrl);
+      setNotification({ open: true, message: "תמונת השאלה הועלתה", severity: "success" });
+    } catch (err) {
+      setNotification({ open: true, message: "שגיאה בהעלאת התמונה", severity: "error" });
     }
   };
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const url = isEditMode ? `http://localhost:3001/api/quizzes/${id}` : `http://localhost:3001/api/quizzes`;
       const method = isEditMode ? "put" : "post";
 
@@ -110,7 +129,11 @@ const CreateQuiz = () => {
                 </Button>
                 {watch('image') && (
                   <IconButton 
-                    onClick={() => setValue('image', '')} 
+                    // התיקון כאן: מניעת ריפרש וניקוי מוחלט של הסטייט
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setValue('image', '', { shouldValidate: true, shouldDirty: true });
+                    }} 
                     color="error" 
                     title="הסר תמונה"
                     sx={{ border: '1px solid rgba(244, 67, 54, 0.5)', borderRadius: 1, height: '100%' }}
@@ -161,7 +184,6 @@ const CreateQuiz = () => {
               </Grid>
 
               <Box sx={{ mt: 3, display: "flex", alignItems: "center", gap: 2 }}>
-                {/* התיקון כאן: הוספנו defaultValue=0 וגם valueAsNumber כדי לוודא שזה נשמר ומוצג כמו שצריך */}
                 <TextField 
                   select 
                   label="תשובה נכונה" 
@@ -184,7 +206,11 @@ const CreateQuiz = () => {
                       <Typography variant="caption" color="#4caf50">✅</Typography>
                       <IconButton 
                         size="small" 
-                        onClick={() => setValue(`questions.${index}.image`, '')} 
+                        // התיקון כאן: מניעת ריפרש וניקוי מוחלט של הסטייט
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setValue(`questions.${index}.image`, '', { shouldValidate: true, shouldDirty: true });
+                        }} 
                         color="error"
                         title="הסר תמונה"
                       >
@@ -197,7 +223,6 @@ const CreateQuiz = () => {
             </Card>
           ))}
 
-          {/* גם בהוספת שאלה חדשה אנחנו מכריחים את correctAnswer להיות 0 */}
           <Button variant="outlined" startIcon={<AddCircleIcon />} onClick={() => append({ questionText: "", options: ["", "", "", ""], correctAnswer: 0, image: "" })} sx={{ mb: 4, color: "#40e0d0", borderColor: "#40e0d0" }}>
             הוספת שאלה
           </Button>

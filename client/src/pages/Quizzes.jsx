@@ -7,6 +7,7 @@ import { Container, Grid, Card, CardContent, CardMedia, Typography, Button, Box,
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "axios"; // חובה לייבא axios בשביל התיקון
 
 const Quizzes = ({ searchTerm }) => {
   const { list: quizzes, loading } = useSelector((state) => state.quizzes);
@@ -31,7 +32,12 @@ const Quizzes = ({ searchTerm }) => {
 
   const confirmDelete = async () => {
     try {
-      await quizService.deleteQuiz(deleteDialog.quizId);
+      // התיקון כאן: משיכת הטוקן ממקור בטוח ושליחת מחיקה ישירה לשרת (עוקף באגים ב-quizService)
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+      await axios.delete(`http://localhost:3001/api/quizzes/${deleteDialog.quizId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       dispatch(deleteQuizAction(deleteDialog.quizId)); 
       setNotification({ open: true, message: "החידון נמחק בהצלחה! 🗑️" });
     } catch (err) { 
@@ -48,13 +54,11 @@ const Quizzes = ({ searchTerm }) => {
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
   return (
-    /* התיקון כאן: maxWidth="xl" נותן למסך יותר רוחב כדי לארגן 3 כרטיסיות בשורה בנינוחות */
     <Container sx={{ mt: 5, pb: 5 }} maxWidth="xl">
       <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', fontWeight: 'bold', color: '#40e0d0' }}>החידונים שלנו</Typography>
       
       <Grid container spacing={4} dir="rtl">
         {filteredQuizzes.map((quiz) => (
-          /* התיקון כאן: xs=12 (מובייל 1 בשורה), sm=6 (טאבלט 2 בשורה), md=4 (מחשב 3 בשורה) */
           <Grid item key={quiz._id} xs={12} sm={6} md={4}>
             <Card sx={{ 
               height: '100%', 
@@ -66,13 +70,22 @@ const Quizzes = ({ searchTerm }) => {
               borderRadius: 3,
               overflow: 'hidden' 
             }}>
+              
+              {/* התיקון כאן: בדיקה אם התמונה מ-uploads וחיבור לכתובת השרת */}
               <CardMedia 
                 component="img" 
                 height="200"
                 sx={{ width: '100%', objectFit: 'cover' }} 
-                image={quiz.image || "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"} 
+                image={
+                  quiz.image 
+                    ? quiz.image.startsWith('/uploads') 
+                      ? `http://localhost:3001${quiz.image}` 
+                      : quiz.image
+                    : "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"
+                } 
                 alt={quiz.title}
               />
+
               <CardContent sx={{ textAlign: 'right', flexGrow: 1, p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                   <Typography variant="h5" sx={{ color: '#40e0d0', fontWeight: 'bold', wordBreak: 'break-word', pr: 1 }}>
@@ -142,7 +155,6 @@ const Quizzes = ({ searchTerm }) => {
         </DialogActions>
       </Dialog>
 
-      {/* התיקון כאן: הודעת מחיקה קופצת מלמעלה */}
       <Snackbar 
         open={notification.open} 
         autoHideDuration={3000} 
