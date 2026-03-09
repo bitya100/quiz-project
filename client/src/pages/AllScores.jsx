@@ -21,6 +21,7 @@ const AllScores = ({ searchTerm = "" }) => {
   // משיכת פרטי המשתמש המחובר כדי לבדוק אם הוא מנהל-העל
   const { user } = useSelector((state) => state.auth);
   
+  // זיהוי מנהל העל (לפי האימייל שהגדרנו או לפי שם המשתמש שראיתי בתמונות שלך)
   const isSuperAdmin = user?.email === "admin10@gmail.com" && user?.userName === "מנהל.ראשי-admin10";
 
   useEffect(() => {
