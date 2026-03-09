@@ -59,7 +59,7 @@ const CreateQuiz = () => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setValue('image', res.data.imageUrl);
-      setNotification({ open: true, message: "התמונה הועלתה בהצלחה", severity: "success" });
+      setNotification({ open: true, message: " התמונה הועלתה בהצלחה ", severity: "success" });
     } catch (err) {
       setNotification({ open: true, message: "שגיאה בהעלאת התמונה", severity: "error" });
     }

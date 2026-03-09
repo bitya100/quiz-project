@@ -141,6 +141,13 @@ const QuizPage = () => {
     } catch (err) { console.error("Error saving result", err); }
   };
 
+  // פונקציה חדשה לאיפוס החידון והתחלה מחדש
+  const restartQuiz = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowScore(false);
+  };
+
   if (!quiz) return <LinearProgress sx={{ color: '#40e0d0', mt: 10 }} />;
 
   const isPerfectScore = score === quiz.questions.length;
@@ -159,13 +166,43 @@ const QuizPage = () => {
 
       {showScore ? (
         <Zoom in={true}>
-          <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'white', backdropFilter: 'blur(10px)' }}>
+          <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'white', backdropFilter: 'blur(10px)' }} dir="rtl">
             <Typography variant="h3" gutterBottom sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
               {isPerfectScore ? 'מושלם! 🏆' : 'סיימת!'}
             </Typography>
             <Typography variant="h2" sx={{ color: '#40e0d0', mb: 2 }}>{Math.round((score / quiz.questions.length) * 100)}%</Typography>
             <Typography variant="h6" sx={{ mb: 4 }}>ענית נכון על {score} מתוך {quiz.questions.length}</Typography>
-            <Button variant="contained" fullWidth onClick={() => navigate('/quizzes')} sx={{ bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', '&:hover': { bgcolor: '#00c1ab' } }}>חזרה לתפריט</Button>
+            
+            {/* הכפתור המקורי חזרה לתפריט */}
+            <Button 
+              variant="contained" 
+              fullWidth 
+              onClick={() => navigate('/quizzes')} 
+              sx={{ mb: 2, bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', '&:hover': { bgcolor: '#00c1ab' } }}
+            >
+              חזרה לחידונים
+            </Button>
+
+            {/* שורת הכפתורים החדשה שביקשת */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button 
+                variant="outlined" 
+                fullWidth 
+                onClick={restartQuiz} 
+                sx={{ color: '#40e0d0', borderColor: 'rgba(64, 224, 208, 0.5)', '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
+              >
+                בצע חידון זה שוב
+              </Button>
+              <Button 
+                variant="outlined" 
+                fullWidth 
+                onClick={() => navigate('/my-scores')} 
+                sx={{ color: '#40e0d0', borderColor: 'rgba(64, 224, 208, 0.5)', '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
+              >
+                הציונים שלי
+              </Button>
+            </Box>
+
           </Paper>
         </Zoom>
       ) : (
@@ -187,8 +224,7 @@ const QuizPage = () => {
             </Box>
           </Box>
 
-          <Paper sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white' }}>
-            {/* התיקון כאן: הוספת הקידומת http://localhost:3001 במקרה והתמונה מתיקיית ההעלאות */}
+          <Paper sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.08)', color: 'white' }} dir="rtl">
             {quiz.questions[currentQuestion]?.image && (
               <CardMedia 
                 component="img" 
