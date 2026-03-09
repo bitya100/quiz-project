@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useSelector } from "react-redux"; // הוספנו משיכה מהסטור
 import { 
   Container, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, Box, CircularProgress, 
@@ -7,6 +8,7 @@ import {
   DialogContent, DialogActions, Button, TableSortLabel 
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import LockIcon from "@mui/icons-material/Lock"; // הוספנו אייקון מנעול
 
 const AllScores = ({ searchTerm = "" }) => {
   const [scores, setScores] = useState([]);
@@ -16,13 +18,17 @@ const AllScores = ({ searchTerm = "" }) => {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, scoreId: null });
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
+  // משיכת פרטי המשתמש המחובר כדי לבדוק אם הוא מנהל-העל
+  const { user } = useSelector((state) => state.auth);
+  
+  const isSuperAdmin = user?.email === "admin10@gmail.com" && user?.userName === "מנהל.ראשי-admin10";
+
   useEffect(() => {
     fetchScores();
   }, []);
 
   const fetchScores = async () => {
     try {
-      // התיקון הקריטי: מחפשים את הטוקן בשני המקומות!
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       
       const res = await axios.get("http://localhost:3001/api/results/all", {
@@ -46,8 +52,10 @@ const AllScores = ({ searchTerm = "" }) => {
   };
 
   const confirmDelete = async () => {
+    // הגנה נוספת ליתר ביטחון גם בצד הלקוח
+    if (!isSuperAdmin) return;
+
     try {
-      // גם במחיקה - מוודאים שלוקחים את הטוקן מכל מקום אפשרי
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       
       await axios.delete(`http://localhost:3001/api/results/${deleteDialog.scoreId}`, {
@@ -79,7 +87,6 @@ const AllScores = ({ searchTerm = "" }) => {
   });
 
   const sortedScores = [...filteredScores].sort((a, b) => {
-    // מיון לפי שם משתמש
     if (sortConfig.key === 'userName') {
       const nameA = a.userId?.userName || "";
       const nameB = b.userId?.userName || "";
@@ -87,8 +94,6 @@ const AllScores = ({ searchTerm = "" }) => {
       if (nameA > nameB) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     }
-    
-    // מיון לפי שם החידון
     if (sortConfig.key === 'quizTitle') {
       const titleA = a.quizTitle || "";
       const titleB = b.quizTitle || "";
@@ -96,21 +101,16 @@ const AllScores = ({ searchTerm = "" }) => {
       if (titleA > titleB) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     }
-    
-    // מיון לפי ציון
     if (sortConfig.key === 'score') {
       const percentA = a.totalQuestions ? a.score / a.totalQuestions : 0;
       const percentB = b.totalQuestions ? b.score / b.totalQuestions : 0;
       return sortConfig.direction === 'asc' ? percentA - percentB : percentB - percentA;
     }
-    
-    // מיון לפי תאריך
     if (sortConfig.key === 'date') {
       const dateA = new Date(a.date || 0);
       const dateB = new Date(b.date || 0);
       return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
     }
-    
     return 0;
   });
 
@@ -126,7 +126,6 @@ const AllScores = ({ searchTerm = "" }) => {
         <Table dir="rtl">
           <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
             <TableRow>
-              
               <TableCell align="right">
                 <TableSortLabel
                   active={sortConfig.key === 'userName'}
@@ -183,13 +182,23 @@ const AllScores = ({ searchTerm = "" }) => {
                   {score.totalQuestions ? Math.round((score.score / score.totalQuestions) * 100) : 0}% ({score.score}/{score.totalQuestions})
                 </TableCell>
                 <TableCell align="right" sx={{ color: 'white' }}>{new Date(score.date).toLocaleDateString('he-IL')}</TableCell>
+                
+                {/* התיקון כאן: בדיקת מנהל על למראה הכפתור */}
                 <TableCell align="center">
-                  <Tooltip title="מחק ציון">
-                    <IconButton onClick={() => setDeleteDialog({ open: true, scoreId: score._id })} color="error">
-                      <DeleteIcon />
-                    </IconButton>
+                  <Tooltip title={isSuperAdmin ? "מחק ציון" : "פעולה זו מורשית למנהל-על בלבד"}>
+                    <span> {/* Span חובה כדי שה-Tooltip יעבוד על כפתור מכובה */}
+                      <IconButton 
+                        onClick={() => setDeleteDialog({ open: true, scoreId: score._id })} 
+                        color="error"
+                        disabled={!isSuperAdmin} // מכבה את הכפתור אם לא מנהל על
+                        sx={{ opacity: isSuperAdmin ? 1 : 0.4 }} // מדהה את הכפתור
+                      >
+                        {isSuperAdmin ? <DeleteIcon /> : <LockIcon fontSize="small" />}
+                      </IconButton>
+                    </span>
                   </Tooltip>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>

@@ -176,8 +176,8 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                   התחבר
                 </Button>
               </Box>
-            )}
             
+            )}
           </Box>
         )}
       </Toolbar>
