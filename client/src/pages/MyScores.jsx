@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api"; // התיקון הקריטי: משתמשים ב-api שלנו ולא ב-axios נקי
 import {
   Container, Typography, Box, Paper, Button, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel
@@ -11,20 +11,15 @@ const MyScores = () => {
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // משתני מצב לניהול המיון
-  const [order, setOrder] = useState('desc'); // 'asc' = עולה, 'desc' = יורד
-  const [orderBy, setOrderBy] = useState('date'); // ברירת מחדל: מיון לפי תאריך
+  const [order, setOrder] = useState('desc'); 
+  const [orderBy, setOrderBy] = useState('date'); 
 
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        const token = localStorage.getItem('token');
-        // משיכת נתונים מהשרת
-        const res = await axios.get('http://localhost:3001/api/results/my-scores', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        // התיקון: api.get מצרף את הטוקן אוטומטית מאיפה שהוא לא נמצא (local או session)
+        const res = await api.get('/results/my-scores');
         
-        // מוסיף שדה "אחוזים" לכל אובייקט כדי שיהיה קל יותר למיין ולהציג אותו
         const processedData = res.data.map(item => ({
             ...item,
             percentage: Math.round((item.score / item.totalQuestions) * 100) || 0
@@ -40,24 +35,20 @@ const MyScores = () => {
     fetchScores();
   }, []);
 
-  // פונקציה שמטפלת בלחיצה על כותרת בטבלה
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
-  // הלוגיקה שממיינת את המערך בפועל לפני הרינדור
   const sortedScores = [...scores].sort((a, b) => {
     let valA = a[orderBy];
     let valB = b[orderBy];
 
-    // טיפול מיוחד במיון תאריכים
     if (orderBy === 'date') {
       valA = new Date(valA).getTime();
       valB = new Date(valB).getTime();
     } 
-    // טיפול מיוחד במיון טקסט (שמות חידונים) כדי שיתעלם מאותיות גדולות/קטנות באנגלית
     else if (orderBy === 'quizTitle') {
       valA = valA.toLowerCase();
       valB = valB.toLowerCase();
@@ -68,10 +59,8 @@ const MyScores = () => {
     return 0;
   });
 
-  // מסך טעינה
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
-  // אם המשתמש לא פתר אף חידון - מציג את המסך הריק עם הקישור
   if (scores.length === 0) {
     return (
       <Container maxWidth="sm" sx={{ mt: 10, textAlign: 'center' }}>
@@ -89,7 +78,6 @@ const MyScores = () => {
     );
   }
 
-  // הטבלה הרגילה (ללא העמודה שהורדנו)
   return (
     <Container maxWidth="md" sx={{ mt: 5, pb: 5 }}>
       <Typography variant="h3" sx={{ mb: 4, textAlign: 'center', color: '#40e0d0', fontWeight: 'bold' }}>הציונים שלי</Typography>

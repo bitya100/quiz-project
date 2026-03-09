@@ -9,9 +9,13 @@ const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 // משיכת ציונים אישיים
 router.get('/my-scores', auth, async (req, res) => {
     try {
-        const scores = await Result.find({ userId: req.user.userId }).sort({ date: -1 });
+        // התיקון: תומך גם בטוקנים ישנים (userId) וגם בחדשים (_id)
+        const currentUserId = req.user._id || req.user.userId || req.user.id;
+        
+        const scores = await Result.find({ userId: currentUserId }).sort({ date: -1 });
         res.json(scores);
     } catch (err) {
+        console.error("Error fetching my scores:", err);
         res.status(500).send("שגיאת שרת");
     }
 });
@@ -20,16 +24,26 @@ router.get('/my-scores', auth, async (req, res) => {
 router.post('/save', auth, async (req, res) => {
     try {
         const { quizId, quizTitle, score, totalQuestions } = req.body;
+        
+        // התיקון הקריטי: שולפים את המזהה בכל צורה שהוא עשוי להגיע מהטוקן
+        const currentUserId = req.user._id || req.user.userId || req.user.id;
+
+        if (!currentUserId) {
+            return res.status(400).json({ message: "שגיאה: לא תקין מזהה משתמש בטוקן" });
+        }
+
         const newResult = new Result({
-            userId: req.user.userId,
+            userId: currentUserId,
             quizId,
             quizTitle,
             score,
             totalQuestions
         });
+        
         await newResult.save();
         res.status(201).json(newResult);
     } catch (err) {
+        console.error("Error saving result:", err);
         res.status(500).send("שגיאה בשמירה");
     }
 });
@@ -49,13 +63,13 @@ router.get('/all', auth, async (req, res) => {
     }
 });
 
-// מחיקת ציון - התיקון כאן!
+// מחיקת ציון 
 router.delete('/:id', auth, async (req, res) => {
     try {
-        // 1. מוצאים את המשתמש שמנסה למחוק לפי ה-ID שבטוקן
-        const user = await User.findById(req.user.userId);
+        // התיקון למחיקה מותאמת
+        const currentUserId = req.user._id || req.user.userId || req.user.id;
+        const user = await User.findById(currentUserId);
         
-        // 2. בדיקה: האם הוא קיים והאם המייל שלו הוא מייל מנהל העל?
         if (!user || user.email !== SUPER_ADMIN_EMAIL) {
             return res.status(403).json({ message: "רק מנהל-על מורשה למחוק ציונים" });
         }

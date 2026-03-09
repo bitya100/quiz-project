@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux"; 
 import { Container, Typography, Button, Box, Paper, LinearProgress, Zoom, CardMedia } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -26,6 +27,9 @@ const playSound = (type) => {
 const QuizPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  const { user } = useSelector((state) => state.auth);
+
   const [quiz, setQuiz] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
@@ -131,17 +135,26 @@ const QuizPage = () => {
     setShowScore(true);
     if (timerRef.current) clearInterval(timerRef.current);
     playSound('victory'); 
-    try {
-      await resultService.saveResult({
-        quizId: quiz._id,
-        quizTitle: quiz.title,
-        score: finalScore,
-        totalQuestions: quiz.questions.length
-      });
-    } catch (err) { console.error("Error saving result", err); }
+    
+    // התיקון הקריטי: שומרים את האובייקט גם אם זה אורח
+    const resultData = {
+      quizId: quiz._id,
+      quizTitle: quiz.title,
+      score: finalScore,
+      totalQuestions: quiz.questions.length
+    };
+
+    if (user) {
+      try {
+        // משתמש רשום - שולחים ישר לשרת
+        await resultService.saveResult(resultData);
+      } catch (err) { console.error("Error saving result", err); }
+    } else {
+      // אורח - שומרים בזיכרון הזמני של הדפדפן כדי שיחכה לו אחרי ההרשמה!
+      sessionStorage.setItem('pendingResult', JSON.stringify(resultData));
+    }
   };
 
-  // פונקציה חדשה לאיפוס החידון והתחלה מחדש
   const restartQuiz = () => {
     setCurrentQuestion(0);
     setScore(0);
@@ -173,34 +186,63 @@ const QuizPage = () => {
             <Typography variant="h2" sx={{ color: '#40e0d0', mb: 2 }}>{Math.round((score / quiz.questions.length) * 100)}%</Typography>
             <Typography variant="h6" sx={{ mb: 4 }}>ענית נכון על {score} מתוך {quiz.questions.length}</Typography>
             
-            {/* הכפתור המקורי חזרה לתפריט */}
-            <Button 
-              variant="contained" 
-              fullWidth 
-              onClick={() => navigate('/quizzes')} 
-              sx={{ mb: 2, bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', '&:hover': { bgcolor: '#00c1ab' } }}
-            >
-              חזרה לחידונים
-            </Button>
+            {!user && (
+              <Box sx={{ mb: 4, p: 3, borderRadius: 3, background: 'rgba(188, 19, 254, 0.1)', border: '2px solid #bc13fe', boxShadow: '0 0 15px rgba(188, 19, 254, 0.2)' }}>
+                <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mb: 1 }}>
+                  תוצאה מעולה! חבל שהיא תימחק... 😢
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 3 }}>
+                  הירשם עכשיו בחינם כדי לשמור את התוצאה שלך, לראות את ההיסטוריה שלך ולעקוב אחר ההתקדמות.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  fullWidth 
+                  onClick={() => navigate('/register')} 
+                  sx={{ 
+                    bgcolor: '#bc13fe', 
+                    color: 'white', 
+                    fontWeight: 'bold', 
+                    borderRadius: '25px', 
+                    py: 1.5,
+                    '&:hover': { bgcolor: '#a00be0', boxShadow: '0 0 20px #bc13fe' } 
+                  }}
+                >
+                  להרשמה ושמירת הציון
+                </Button>
+              </Box>
+            )}
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Button 
+                variant="contained" 
+                fullWidth 
+                onClick={() => navigate('/quizzes')} 
+                sx={{ py: 1.5, bgcolor: '#40e0d0', color: '#020617', fontWeight: 'bold', borderRadius: '25px', '&:hover': { bgcolor: '#00c1ab' } }}
+              >
+                חזרה לחידונים
+              </Button>
 
-            {/* שורת הכפתורים החדשה שביקשת */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button 
-                variant="outlined" 
-                fullWidth 
-                onClick={restartQuiz} 
-                sx={{ color: '#40e0d0', borderColor: 'rgba(64, 224, 208, 0.5)', '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
-              >
-                בצע חידון זה שוב
-              </Button>
-              <Button 
-                variant="outlined" 
-                fullWidth 
-                onClick={() => navigate('/my-scores')} 
-                sx={{ color: '#40e0d0', borderColor: 'rgba(64, 224, 208, 0.5)', '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
-              >
-                הציונים שלי
-              </Button>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button 
+                  variant="outlined" 
+                  fullWidth 
+                  onClick={restartQuiz} 
+                  sx={{ color: '#40e0d0', borderColor: 'rgba(64, 224, 208, 0.5)', borderRadius: '25px', py: 1.5, '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
+                >
+                  בצע שוב
+                </Button>
+                
+                {user && (
+                  <Button 
+                    variant="outlined" 
+                    fullWidth 
+                    onClick={() => navigate('/my-scores')} 
+                    sx={{ color: '#40e0d0', borderColor: 'rgba(64, 224, 208, 0.5)', borderRadius: '25px', py: 1.5, '&:hover': { borderColor: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)' } }}
+                  >
+                    הציונים שלי
+                  </Button>
+                )}
+              </Box>
             </Box>
 
           </Paper>

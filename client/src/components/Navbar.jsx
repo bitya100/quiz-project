@@ -355,7 +355,7 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center', pb: 3, gap: 2 }}>
-          <Button onClick={() => setGuestModalOpen(false)} sx={{borderRadius : '15px',boxShadow: '0 0 5px #104494' , color: 'rgba(255, 255, 255, 0.87)' }}>
+          <Button onClick={() => setGuestModalOpen(false)} sx={{borderRadius : '15px',boxShadow: '0 0 5px #1e7869' , color: 'rgba(255, 255, 255, 0.87)' }}>
             אולי אחר כך
           </Button>
           <Button 
@@ -364,12 +364,12 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
             onClick={() => setGuestModalOpen(false)} 
             variant="contained" 
             sx={{ 
-              bgcolor: '#104494', // סגול ניאון בולט
+              bgcolor: '#1e7869', // סגול ניאון בולט
               color: 'white', 
               fontWeight: 'bold', 
               borderRadius: '20px',
               padding: '6px 25px',
-              '&:hover': { bgcolor: '#104494', boxShadow: '0 0 15px #104494' } 
+              '&:hover': { bgcolor: '#1e7869', boxShadow: '0 0 15px #1e7869' } 
             }}
           >
             להרשמה המהירה

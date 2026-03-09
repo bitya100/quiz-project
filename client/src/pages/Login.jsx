@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login as loginAction } from "../store";
 import authService from "../services/authService";
+import resultService from "../services/resultService"; // הוספנו ייבוא לשירות התוצאות
 import { Container, Paper, Typography, TextField, Button, Box, Alert, Checkbox, FormControlLabel } from "@mui/material";
 
 const Login = () => {
@@ -38,7 +39,6 @@ const Login = () => {
       
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem("token", data.token);
-      // התיקון: שומרים גם את המייל של המשתמש בדפדפן!
       storage.setItem("user", JSON.stringify({ 
         userId: data.userId, 
         userName: data.userName, 
@@ -53,10 +53,35 @@ const Login = () => {
       }
 
       setLoading(false);
+
+      // --- התיקון: בדיקה אם יש ציון שמחכה להישמר ---
+      const pendingResultStr = sessionStorage.getItem('pendingResult');
+      
+      if (pendingResultStr) {
+        try {
+          const pendingResult = JSON.parse(pendingResultStr);
+          await resultService.saveResult(pendingResult); // שומרים במסד הנתונים
+          sessionStorage.removeItem('pendingResult'); // מנקים את הזיכרון
+          
+          setSuccessMsg("התחברת בהצלחה! שומר את הציון שלך...");
+          
+          setTimeout(() => {
+            dispatch(loginAction({
+              user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
+              token: data.token
+            }));
+            navigate("/my-scores"); // מעביר ישירות לציונים כדי שיראה שהצלחנו!
+          }, 1500);
+          return;
+        } catch (err) {
+          console.error("Failed to save pending result", err);
+        }
+      }
+
+      // התנהגות רגילה אם אין ציון ממתין
       setSuccessMsg("התחברת בהצלחה! רק רגע...");
 
       setTimeout(() => {
-        // וגם ב-Redux
         dispatch(loginAction({
           user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
           token: data.token

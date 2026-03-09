@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login as loginAction } from "../store";
 import authService from "../services/authService";
+import resultService from "../services/resultService"; // הוספנו ייבוא
 import { Container, Paper, Typography, TextField, Button, Box, Alert } from "@mui/material";
 
 const Register = () => {
@@ -27,11 +28,45 @@ const Register = () => {
     try {
       const data = await authService.register(formData);
       
+      // התיקון: אנחנו חייבים לשמור את הטוקן ב-sessionStorage כדי שהבקשה של שמירת הציון תעבוד!
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("user", JSON.stringify({ 
+        userId: data.userId, 
+        userName: data.userName, 
+        email: data.email, 
+        role: data.role 
+      }));
+
       setLoading(false);
+
+      // --- התיקון: משיכת הציון הממתין של האורח ---
+      const pendingResultStr = sessionStorage.getItem('pendingResult');
+      
+      if (pendingResultStr) {
+        try {
+          const pendingResult = JSON.parse(pendingResultStr);
+          await resultService.saveResult(pendingResult); // שומרים למסד הנתונים
+          sessionStorage.removeItem('pendingResult'); // מנקים לאחר ההצלחה
+          
+          setSuccessMsg("נרשמת בהצלחה! שומר את הציון שלך...");
+          
+          setTimeout(() => {
+            dispatch(loginAction({
+              user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
+              token: data.token
+            }));
+            navigate("/my-scores"); // מעביר ישירות לציונים
+          }, 1500);
+          return;
+        } catch (err) {
+          console.error("Failed to save pending result", err);
+        }
+      }
+
+      // התנהגות רגילה אם אין ציון
       setSuccessMsg("נרשמת בהצלחה! רק רגע...");
 
       setTimeout(() => {
-        // התיקון: אנחנו מוסיפים גם את המייל ל-Redux!
         dispatch(loginAction({
           user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
           token: data.token
@@ -51,7 +86,7 @@ const Register = () => {
         <Typography variant="h4" align="center" sx={{ mb: 3, color: '#40e0d0', fontWeight: 'bold' }}>הרשמה</Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} dir="rtl">
           <TextField fullWidth name="userName" label="שם משתמש" variant="outlined" margin="normal" value={formData.userName} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
           <TextField fullWidth name="email" label="אימייל" variant="outlined" margin="normal" value={formData.email} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
           <TextField fullWidth name="password" label="סיסמה" type="password" variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
