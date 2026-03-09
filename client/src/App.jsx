@@ -15,16 +15,17 @@ import AllScores from "./pages/AllScores";
 import ManageUsers from "./pages/ManageUsers"; 
 import ShabbatPage from "./pages/ShabbatPage"; 
 
-// --- פונקציית חסימת שבת בצד הלקוח (נעילה הרמטית) ---
+// --- פונקציית חסימת שבת בצד הלקוח (נעילה הרמטית מ-12:00 בשישי) ---
 const checkShabbat = () => {
   const now = new Date();
-  
-  // לטובת בדיקה כרגע, האתר יחשוב שעכשיו שבת בבוקר:
-  const day = 6;  // שנה בחזרה ל: now.getDay()
-  const hour = 10; // שנה בחזרה ל: now.getHours()
+  const day = now.getDay();  
+  const hour = now.getHours(); 
 
-  if (day === 5 && hour >= 16) return true; // שישי אחה"צ
-  if (day === 6 && hour < 19) return true;  // מוצ"ש
+  // חסימה מיום שישי (5) בחצות היום (12:00) ועד סוף היום
+  if (day === 5 && hour >= 12) return true; 
+  
+  // כל שבת (6) עד 19:00 בערב
+  if (day === 6 && hour < 19) return true;  
   
   return false;
 };
@@ -61,14 +62,12 @@ const Footer = () => {
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
   
-  // הפעלת השומר!
   const isShabbat = checkShabbat();
 
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine);
   }, []);
 
-  // הגדרות הרקע המרחף (העיגולים)
   const particlesOptions = {
     fullScreen: { enable: true, zIndex: -1 },
     background: { color: { value: "#020617" } },
@@ -93,9 +92,6 @@ function App() {
     detectRetina: true
   };
 
-  // ==========================================
-  // נעילת שבת - אם שבת, מציגים *רק* את זה!
-  // ==========================================
   if (isShabbat) {
     return (
       <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden' }}>
@@ -107,9 +103,6 @@ function App() {
     );
   }
 
-  // ==========================================
-  // האתר הרגיל - עובד רק אם לא שבת
-  // ==========================================
   return (
     <Router>
       <ScrollToTop />
@@ -137,6 +130,8 @@ function App() {
             <Route path="/edit-quiz/:id" element={<CreateQuiz />} />
             <Route path="/admin/all-scores" element={<AllScores searchTerm={searchTerm} />} /> 
             <Route path="/admin/users" element={<ManageUsers searchTerm={searchTerm} />} />
+            
+            <Route path="/shabbat" element={<ShabbatPage />} />
             
             <Route path="*" element={
               <h1 style={{ textAlign: 'center', marginTop: '100px', color: '#00c1ab' }}>

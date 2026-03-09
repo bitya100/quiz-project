@@ -1,22 +1,22 @@
 // server/middleware/shabbatBlock.js
-
 const isShabbat = () => {
     const now = new Date();
-    
-    // סימולציה: נגיד לשרת שהיום יום שבת (6) והשעה 10 בבוקר
-    const day = 6;  // במקום now.getDay()
-    const hour = 10; // במקום now.getHours()
+    const day = now.getDay();
+    const hour = now.getHours();
 
-    // הלוגיקה המקורית שלך:
-    if (day === 5 && hour >= 16) return true; // שישי אחה"צ
-    if (day === 6 && hour < 19) return true;  // שבת לפני צאתה
+    // יום שישי (5) מ-12:00 בצהריים ועד סוף היום
+    if (day === 5 && hour >= 12) return true; 
+    
+    // כל יום שבת (6) מתחילת היום ועד 19:00 בערב
+    if (day === 6 && hour < 19) return true;  
     
     return false;
 };
+
 const shabbatBlock = (req, res, next) => {
     if (isShabbat()) {
         return res.status(503).json({ 
-            message: "האתר סגור בשבת. שאבעס!!!" 
+            message: "האתר סגור בשבת. נשמח לראותכם במוצאי שבת!" 
         });
     }
     next();

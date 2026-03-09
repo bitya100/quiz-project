@@ -1,14 +1,16 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/users';
+const API_URL = '/users'; // api.js כבר מכיל את ה- http://localhost:3001/api
 
 const register = async (userData) => {
-  const response = await axios.post(`${API_URL}/register`, userData);
+  // נשלח ל- http://localhost:3001/api/users/register
+  const response = await api.post(`${API_URL}/register`, userData);
   return response.data;
 };
 
 const login = async (userData) => {
-  const response = await axios.post(`${API_URL}/login`, userData);
+  // נשלח ל- http://localhost:3001/api/users/login
+  const response = await api.post(`${API_URL}/login`, userData);
   return response.data;
 };
 

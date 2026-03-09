@@ -4,7 +4,7 @@ import { Box, Typography, Paper, Container } from '@mui/material';
 const ShabbatPage = () => {
   return (
     <Box sx={{ 
-      minHeight: '100vh', // חזר ל-100 כדי לתפוס את כל המסך יפה
+      minHeight: '100vh', 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center', 
