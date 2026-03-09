@@ -15,6 +15,7 @@ const CreateQuiz = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false); // סטייט חדש שנועל את הטופס אחרי הצלחה
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
   const isEditMode = !!id;
 
@@ -85,7 +86,11 @@ const CreateQuiz = () => {
   };
 
   const onSubmit = async (data) => {
+    // מניעת כפילויות קשיחה: אם כבר נשלח או בטעינה, תעצור מיד!
+    if (loading || isSubmitted) return; 
+    
     setLoading(true);
+    
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       const url = isEditMode ? `http://localhost:3001/api/quizzes/${id}` : `http://localhost:3001/api/quizzes`;
@@ -93,13 +98,15 @@ const CreateQuiz = () => {
 
       await axios[method](url, data, { headers: { Authorization: `Bearer ${token}` } });
 
+      // אם הצליח, אנחנו נועלים את הטופס לתמיד עד למעבר עמוד
+      setIsSubmitted(true); 
       setNotification({ open: true, message: isEditMode ? "החידון עודכן בהצלחה! 🚀" : "החידון נוצר בהצלחה! 🎉", severity: "success" });
       
       setTimeout(() => { navigate("/quizzes"); }, 2000);
     } catch (err) {
+      // אם הייתה שגיאה, נשחרר את הנעילה כדי שיוכל לתקן ולנסות שוב
+      setLoading(false); 
       setNotification({ open: true, message: "שגיאה בשמירה: " + (err.response?.data?.message || err.message), severity: "error" });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -119,23 +126,24 @@ const CreateQuiz = () => {
                 error={!!errors.title} helperText={errors.title?.message}
                 InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
+                disabled={loading || isSubmitted} // נעילה בזמן טעינה
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <Box sx={{ display: 'flex', gap: 1, height: '100%', alignItems: 'center' }}>
-                <Button variant="outlined" component="label" fullWidth sx={{ height: '100%', minHeight: '56px', color: "#40e0d0", borderColor: "rgba(255,255,255,0.3)" }}>
-                  {watch('image') ? '✅ תמונת נושא הועלתה (לחץ להחלפה)' : '🖼️ העלאת תמונת נושא לחידון'}
+                <Button variant="outlined" component="label" fullWidth disabled={loading || isSubmitted} sx={{ height: '100%', minHeight: '56px', color: "#40e0d0", borderColor: "rgba(255,255,255,0.3)" }}>
+                  {watch('image') ? '✅ תמונת נושא הועלתה' : '🖼️ העלאת תמונת נושא לחידון'}
                   <input type="file" hidden accept="image/*" onChange={handleMainImageUpload} />
                 </Button>
                 {watch('image') && (
                   <IconButton 
-                    // התיקון כאן: מניעת ריפרש וניקוי מוחלט של הסטייט
                     onClick={(e) => {
                       e.preventDefault();
                       setValue('image', '', { shouldValidate: true, shouldDirty: true });
                     }} 
                     color="error" 
                     title="הסר תמונה"
+                    disabled={loading || isSubmitted}
                     sx={{ border: '1px solid rgba(244, 67, 54, 0.5)', borderRadius: 1, height: '100%' }}
                   >
                     <DeleteIcon />
@@ -149,6 +157,7 @@ const CreateQuiz = () => {
                 {...register("description")}
                 InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ textarea: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
+                disabled={loading || isSubmitted}
               />
             </Grid>
           </Grid>
@@ -160,7 +169,7 @@ const CreateQuiz = () => {
             <Card key={field.id} sx={{ p: 3, mb: 3, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                 <Typography variant="h6">שאלה {index + 1}</Typography>
-                <IconButton onClick={() => remove(index)} color="error" disabled={fields.length === 1}><DeleteIcon /></IconButton>
+                <IconButton onClick={() => remove(index)} color="error" disabled={fields.length === 1 || loading || isSubmitted}><DeleteIcon /></IconButton>
               </Box>
 
               <TextField
@@ -168,6 +177,7 @@ const CreateQuiz = () => {
                 {...register(`questions.${index}.questionText`, { required: true })}
                 InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ mb: 3, input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
+                disabled={loading || isSubmitted}
               />
 
               <Grid container spacing={2}>
@@ -178,6 +188,7 @@ const CreateQuiz = () => {
                       {...register(`questions.${index}.options.${optIndex}`, { required: true })}
                       InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                       sx={{ input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
+                      disabled={loading || isSubmitted}
                     />
                   </Grid>
                 ))}
@@ -191,28 +202,29 @@ const CreateQuiz = () => {
                   InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                   sx={{ width: 150, "& .MuiSelect-select": { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }} 
                   {...register(`questions.${index}.correctAnswer`, { valueAsNumber: true })}
+                  disabled={loading || isSubmitted}
                 >
                   {[0, 1, 2, 3].map((i) => (<MenuItem key={i} value={i}>תשובה {i + 1}</MenuItem>))}
                 </TextField>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />} sx={{ color: "#40e0d0", borderColor: "#40e0d0", height: '56px' }}>
+                  <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />} disabled={loading || isSubmitted} sx={{ color: "#40e0d0", borderColor: "#40e0d0", height: '56px' }}>
                     תמונה לשאלה
                     <input type="file" hidden accept="image/*" onChange={(e) => handleQuestionImageUpload(e, index)} />
                   </Button>
                   
                   {watch(`questions.${index}.image`) && (
                     <>
-                      <Typography variant="caption" color="#4caf50">✅</Typography>
+                      <Typography variant="caption" color="#2cd8bbd6">✅</Typography>
                       <IconButton 
                         size="small" 
-                        // התיקון כאן: מניעת ריפרש וניקוי מוחלט של הסטייט
                         onClick={(e) => {
                           e.preventDefault();
                           setValue(`questions.${index}.image`, '', { shouldValidate: true, shouldDirty: true });
                         }} 
                         color="error"
                         title="הסר תמונה"
+                        disabled={loading || isSubmitted}
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -223,12 +235,39 @@ const CreateQuiz = () => {
             </Card>
           ))}
 
-          <Button variant="outlined" startIcon={<AddCircleIcon />} onClick={() => append({ questionText: "", options: ["", "", "", ""], correctAnswer: 0, image: "" })} sx={{ mb: 4, color: "#40e0d0", borderColor: "#40e0d0" }}>
+          <Button 
+            variant="outlined" 
+            startIcon={<AddCircleIcon />} 
+            onClick={() => append({ questionText: "", options: ["", "", "", ""], correctAnswer: 0, image: "" })} 
+            sx={{ mb: 4, color: "#40e0d0", borderColor: "#40e0d0" }}
+            disabled={loading || isSubmitted}
+          >
             הוספת שאלה
           </Button>
 
-          <Button type="submit" fullWidth variant="contained" size="large" disabled={loading} startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />} sx={{ bgcolor: "#40e0d0", color: "#020617", fontWeight: "bold", "&:hover": { bgcolor: "#00c1ab" } }}>
-            {isEditMode ? "עדכן חידון" : "צור חידון"}
+          {/* כפתור השמירה עם שינוי צבע ומניעת כפילויות */}
+          <Button 
+            type="submit" 
+            fullWidth 
+            variant="contained" 
+            size="large" 
+            disabled={loading || isSubmitted} // נעילה מוחלטת
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : (isSubmitted ? <CheckCircleIcon /> : <SaveIcon />)} 
+            sx={{ 
+              bgcolor: isSubmitted ? "#2cd8bbd6" : "#40e0d0", // הופך לירוק בהצלחה
+              color: isSubmitted ? "white" : "#020617", 
+              fontWeight: "bold", 
+              py: 1.5,
+              "&:hover": { bgcolor: isSubmitted ? "#2cd8bbd6" : "#00c1ab" },
+              "&:disabled": { 
+                bgcolor: isSubmitted ? "#2cd8bbd6" : "rgba(41, 202, 180, 0.83)", 
+                color: isSubmitted ? "white" : "" 
+              }
+            }}
+          >
+            {isSubmitted 
+              ? (isEditMode ? "עודכן בהצלחה!" : "החידון נוצר בהצלחה!") 
+              : (loading ? "שומר נתונים..." : (isEditMode ? "עדכן חידון" : "צור חידון"))}
           </Button>
         </form>
       </Paper>

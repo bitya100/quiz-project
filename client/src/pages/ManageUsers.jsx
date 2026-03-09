@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Tooltip, Box, CircularProgress, Select, MenuItem, Snackbar, Alert } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import adminService from "../services/adminService";
@@ -24,6 +23,10 @@ const ManageUsers = ({ searchTerm }) => {
       setUsers(data);
     } catch (err) {
       console.error("Failed to load users", err);
+      // מציג שגיאה רק אם זה לא חסימת שבת
+      if (err.response?.status !== 503) {
+        setNotification({ open: true, message: "שגיאה בטעינת המשתמשים", severity: "error" });
+      }
     } finally {
       setLoading(false);
     }
@@ -32,28 +35,24 @@ const ManageUsers = ({ searchTerm }) => {
   const currentUserData = users.find(u => u._id === currentUser?.userId);
   const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL;
 
-const handleRoleChange = async (userId, newRole, userEmail) => {
+  const handleRoleChange = async (userId, newRole, userEmail) => {
     if (userEmail === SUPER_ADMIN_EMAIL) {
       return setNotification({ open: true, message: "לא ניתן לשנות את ההרשאה של מנהל העל!", severity: "warning" });
     }
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:3001/api/users/${userId}/role`, { role: newRole }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // שימוש בשירות המסודר במקום axios ישיר
+      await adminService.updateUserRole(userId, newRole);
       
       setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
       setNotification({ open: true, message: "הרשאת המשתמש עודכנה בהצלחה", severity: "success" });
     } catch (err) {
-      // התיקון: משיכת השגיאה האמיתית מהשרת (כמו "גישה נדחתה") במקום טקסט גנרי
       const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה";
       setNotification({ open: true, message: errorMessage, severity: "error" });
     }
   };
 
   const handleDelete = async (userObj) => {
-    // מחיקה נשארת חסומה רק למנהל על
     if (!isSuperAdmin) {
       return setNotification({ open: true, message: "רק מנהל-על מורשה למחוק משתמשים!", severity: "error" });
     }
@@ -72,9 +71,10 @@ const handleRoleChange = async (userId, newRole, userEmail) => {
     }
   };
 
+  const safeSearchTerm = (searchTerm || "").toLowerCase();
   const filteredUsers = users.filter(u => 
-    u.userName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (u.userName || "").toLowerCase().includes(safeSearchTerm) || 
+    (u.email || "").toLowerCase().includes(safeSearchTerm)
   );
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
@@ -108,7 +108,6 @@ const handleRoleChange = async (userId, newRole, userEmail) => {
                     value={user.role}
                     onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
                     size="small"
-                    // התיקון: כולם יכולים לשנות, אלא אם זה מנהל העל
                     disabled={user.email === SUPER_ADMIN_EMAIL}
                     sx={{ 
                       color: 'white', 
@@ -129,7 +128,6 @@ const handleRoleChange = async (userId, newRole, userEmail) => {
                       <IconButton 
                         onClick={() => handleDelete(user)} 
                         color="error" 
-                        // מחיקה נשארת חסומה למי שאינו מנהל על
                         disabled={!isSuperAdmin || user.email === SUPER_ADMIN_EMAIL}
                       >
                         <DeleteIcon />
