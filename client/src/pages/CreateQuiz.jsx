@@ -245,29 +245,56 @@ const CreateQuiz = () => {
             הוספת שאלה
           </Button>
 
-          <Button 
-            type="submit" 
-            fullWidth 
-            variant="contained" 
-            size="large" 
-            disabled={loading || isSubmitted} 
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : (isSubmitted ? <CheckCircleIcon /> : <SaveIcon />)} 
-            sx={{ 
-              bgcolor: isSubmitted ? "#2cd8bbd6" : "#40e0d0", 
-              color: isSubmitted ? "white" : "#020617", 
-              fontWeight: "bold", 
-              py: 1.5,
-              "&:hover": { bgcolor: isSubmitted ? "#2cd8bbd6" : "#00c1ab" },
-              "&:disabled": { 
-                bgcolor: isSubmitted ? "#2cd8bbd6" : "rgba(41, 202, 180, 0.83)", 
-                color: isSubmitted ? "white" : "" 
-              }
-            }}
-          >
-            {isSubmitted 
-              ? (isEditMode ? "עודכן בהצלחה!" : "החידון נוצר בהצלחה!") 
-              : (loading ? "שומר נתונים..." : (isEditMode ? "עדכן חידון" : "צור חידון"))}
-          </Button>
+          {/* התיקון: שורה עם שני כפתורים - שמירה וביטול */}
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            
+            {/* כפתור ביטול */}
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => navigate('/quizzes')}
+              disabled={loading || isSubmitted}
+              sx={{
+                flex: 1, // תופס חצי מהרוחב
+                color: '#f44336',
+                borderColor: 'rgba(244, 67, 54, 0.5)',
+                fontWeight: 'bold',
+                py: 1.5,
+                '&:hover': {
+                  borderColor: '#f44336',
+                  bgcolor: 'rgba(244, 67, 54, 0.1)'
+                }
+              }}
+            >
+              ביטול
+            </Button>
+
+            {/* כפתור שמירה */}
+            <Button 
+              type="submit" 
+              size="large" 
+              disabled={loading || isSubmitted} 
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : (isSubmitted ? <CheckCircleIcon /> : <SaveIcon />)} 
+              sx={{ 
+                flex: 1, // תופס חצי מהרוחב
+                bgcolor: isSubmitted ? "#2cd8bbd6" : "#40e0d0", 
+                color: isSubmitted ? "white" : "#020617", 
+                fontWeight: "bold", 
+                py: 1.5,
+                "&:hover": { bgcolor: isSubmitted ? "#2cd8bbd6" : "#00c1ab" },
+                "&:disabled": { 
+                  bgcolor: isSubmitted ? "#2cd8bbd6" : "rgba(41, 202, 180, 0.83)", 
+                  color: isSubmitted ? "white" : "" 
+                }
+              }}
+            >
+              {isSubmitted 
+                ? (isEditMode ? "עודכן בהצלחה!" : "החידון נוצר בהצלחה!") 
+                : (loading ? "שומר נתונים..." : (isEditMode ? "עדכן חידון" : "צור חידון"))}
+            </Button>
+
+          </Box>
+
         </form>
       </Paper>
 
