@@ -182,7 +182,7 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
               <SearchIcon sx={{ color: "#40e0d0" }} />
             </SearchIconWrapper>
             <StyledInputBase
-              placeholder="חפש חידון..."
+              placeholder="החיפוש כאן..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

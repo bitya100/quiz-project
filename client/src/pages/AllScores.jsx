@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock"; 
+import SearchOffIcon from "@mui/icons-material/SearchOff"; // הוספנו אייקון של "לא נמצא"
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
@@ -21,27 +22,24 @@ const AllScores = ({ searchTerm = "" }) => {
 
   const { user } = useSelector((state) => state.auth);
   
-  // בדיקה אם המשתמש הוא מנהל-על
   const isSuperAdmin = 
     (user?.email && user.email.toLowerCase() === SUPER_ADMIN_EMAIL) || 
     (user?.userName && user.userName.toLowerCase().includes("admin10"));
 
-  // הגנה ראשונית: האם הוא בכלל מנהל?
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    // --- התיקון: לא פונים לשרת אם המשתמש הוא לא מנהל! ---
     if (isAdmin) {
         fetchScores();
     } else {
-        setLoading(false); // מפסיקים את הטעינה
+        setLoading(false); 
     }
   }, [isAdmin]);
 
   const fetchScores = async () => {
     try {
       const res = await api.get("/results/all");
-      setScores(res.data || []); // מוודאים שחוזר מערך
+      setScores(res.data || []); 
     } catch (err) {
       console.error("Error fetching all scores:", err);
       if (err.response?.status === 403) {
@@ -77,11 +75,11 @@ const AllScores = ({ searchTerm = "" }) => {
     setSortConfig({ key, direction });
   };
 
-  // --- התיקון: מוודאים ש scores הוא מערך לפני שמפעילים filter ו-sort ---
   const safeScores = Array.isArray(scores) ? scores : [];
-  const safeSearchTerm = (searchTerm || "").toLowerCase();
+  const safeSearchTerm = (searchTerm || "").toLowerCase().trim();
 
   const filteredScores = safeScores.filter(score => {
+    if (!safeSearchTerm) return true;
     const title = (score.quizTitle || "").toLowerCase();
     const userName = (score.userId?.userName || "").toLowerCase();
     return title.includes(safeSearchTerm) || userName.includes(safeSearchTerm);
@@ -117,7 +115,6 @@ const AllScores = ({ searchTerm = "" }) => {
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
-  // --- התיקון: הודעה ברורה למשתמש שאין לו הרשאה לראות את הדף ---
   if (!isAdmin) {
       return (
           <Container maxWidth="sm" sx={{ mt: 10, textAlign: 'center' }}>
@@ -136,102 +133,112 @@ const AllScores = ({ searchTerm = "" }) => {
         כל הציונים במערכת
       </Typography>
 
-      <TableContainer 
-        component={Paper} 
-        sx={{ 
-          background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)', 
-          backdropFilter: 'blur(15px)', 
-          border: '1px solid rgba(255, 255, 255, 0.1)', 
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
-          borderRadius: 3, 
-          color: 'white',
-          overflow: 'hidden' 
-        }}
-      >
-        <Table dir="rtl">
-          <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
-            <TableRow>
-              <TableCell align="right">
-                <TableSortLabel
-                  active={sortConfig.key === 'userName'}
-                  direction={sortConfig.key === 'userName' ? sortConfig.direction : 'asc'}
-                  onClick={() => handleSort('userName')}
-                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                >
-                  שם משתמש
-                </TableSortLabel>
-              </TableCell>
-
-              <TableCell align="right">
-                <TableSortLabel
-                  active={sortConfig.key === 'quizTitle'}
-                  direction={sortConfig.key === 'quizTitle' ? sortConfig.direction : 'asc'}
-                  onClick={() => handleSort('quizTitle')}
-                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                >
-                  חידון
-                </TableSortLabel>
-              </TableCell>
-
-              <TableCell align="right">
-                <TableSortLabel
-                  active={sortConfig.key === 'score'}
-                  direction={sortConfig.key === 'score' ? sortConfig.direction : 'asc'}
-                  onClick={() => handleSort('score')}
-                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                >
-                  ציון
-                </TableSortLabel>
-              </TableCell>
-
-              <TableCell align="right">
-                <TableSortLabel
-                  active={sortConfig.key === 'date'}
-                  direction={sortConfig.key === 'date' ? sortConfig.direction : 'asc'}
-                  onClick={() => handleSort('date')}
-                  sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
-                >
-                  תאריך
-                </TableSortLabel>
-              </TableCell>
-
-              <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedScores.map((score) => (
-              <TableRow key={score._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
-                <TableCell align="right" sx={{ color: 'white' }}>{score.userId?.userName || "משתמש נמחק"}</TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>{score.quizTitle}</TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>
-                  {score.totalQuestions ? Math.round((score.score / score.totalQuestions) * 100) : 0}% ({score.score}/{score.totalQuestions})
-                </TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>{new Date(score.date).toLocaleDateString('he-IL')}</TableCell>
-                
-                <TableCell align="center">
-                  {isSuperAdmin ? (
-                    <Tooltip title="מחק ציון">
-                      <IconButton 
-                        onClick={() => setDeleteDialog({ open: true, scoreId: score._id })} 
-                        sx={{ color: '#f44336' }} 
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="פעולה זו מורשית למנהל-על בלבד">
-                      <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
-                        <LockIcon fontSize="small" sx={{ color: 'white' }} />
-                      </Box>
-                    </Tooltip>
-                  )}
+      {/* התיקון: בדיקה אם יש תוצאות להציג בטבלה */}
+      {sortedScores.length === 0 ? (
+        <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
+          <SearchOffIcon sx={{ fontSize: 80, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
+          <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            מצטערים, לא נמצא הערך המבוקש.
+          </Typography>
+        </Box>
+      ) : (
+        <TableContainer 
+          component={Paper} 
+          sx={{ 
+            background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)', 
+            backdropFilter: 'blur(15px)', 
+            border: '1px solid rgba(255, 255, 255, 0.1)', 
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+            borderRadius: 3, 
+            color: 'white',
+            overflow: 'hidden' 
+          }}
+        >
+          <Table dir="rtl">
+            <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
+              <TableRow>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortConfig.key === 'userName'}
+                    direction={sortConfig.key === 'userName' ? sortConfig.direction : 'asc'}
+                    onClick={() => handleSort('userName')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    שם משתמש
+                  </TableSortLabel>
                 </TableCell>
 
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortConfig.key === 'quizTitle'}
+                    direction={sortConfig.key === 'quizTitle' ? sortConfig.direction : 'asc'}
+                    onClick={() => handleSort('quizTitle')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    חידון
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortConfig.key === 'score'}
+                    direction={sortConfig.key === 'score' ? sortConfig.direction : 'asc'}
+                    onClick={() => handleSort('score')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    ציון
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell align="right">
+                  <TableSortLabel
+                    active={sortConfig.key === 'date'}
+                    direction={sortConfig.key === 'date' ? sortConfig.direction : 'asc'}
+                    onClick={() => handleSort('date')}
+                    sx={{ color: '#40e0d0 !important', fontWeight: 'bold', '& .MuiTableSortLabel-icon': { color: '#40e0d0 !important' } }}
+                  >
+                    תאריך
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {sortedScores.map((score) => (
+                <TableRow key={score._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+                  <TableCell align="right" sx={{ color: 'white' }}>{score.userId?.userName || "משתמש נמחק"}</TableCell>
+                  <TableCell align="right" sx={{ color: 'white' }}>{score.quizTitle}</TableCell>
+                  <TableCell align="right" sx={{ color: 'white' }}>
+                    {score.totalQuestions ? Math.round((score.score / score.totalQuestions) * 100) : 0}% ({score.score}/{score.totalQuestions})
+                  </TableCell>
+                  <TableCell align="right" sx={{ color: 'white' }}>{new Date(score.date).toLocaleDateString('he-IL')}</TableCell>
+                  
+                  <TableCell align="center">
+                    {isSuperAdmin ? (
+                      <Tooltip title="מחק ציון">
+                        <IconButton 
+                          onClick={() => setDeleteDialog({ open: true, scoreId: score._id })} 
+                          sx={{ color: '#f44336' }} 
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="פעולה זו מורשית למנהל-על בלבד">
+                        <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
+                          <LockIcon fontSize="small" sx={{ color: 'white' }} />
+                        </Box>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, scoreId: null })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} dir="rtl">
         <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת ציון</DialogTitle>

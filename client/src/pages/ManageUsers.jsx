@@ -10,11 +10,12 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock"; 
+import SearchOffIcon from "@mui/icons-material/SearchOff"; // הוספנו אייקון
 import adminService from "../services/adminService";
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com"; 
 
-const ManageUsers = ({ searchTerm }) => {
+const ManageUsers = ({ searchTerm = "" }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
@@ -51,11 +52,6 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  const safeUsers = Array.isArray(users) ? users : []; 
-  
-  const currentUserData = safeUsers.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
-  const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
-
   const handleRoleChange = async (userId, newRole, userEmail) => {
     if (userEmail === SUPER_ADMIN_EMAIL) {
       return setNotification({ open: true, message: "לא ניתן לשנות את ההרשאה של מנהל העל!", severity: "warning" });
@@ -63,19 +59,17 @@ const ManageUsers = ({ searchTerm }) => {
 
     try {
       await adminService.updateUserRole(userId, newRole);
-      setUsers(safeUsers.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
       
       const currentLoggedInId = currentUser?.userId || currentUser?._id;
       
       if (userId === currentLoggedInId && newRole === 'user') {
-        // התיקון: קודם מקפיצים הודעה למשתמש
         setNotification({ 
           open: true, 
           message: "שינית את ההרשאה של עצמך למשתמש רגיל! מעביר אותך כעת...", 
           severity: "info" 
         });
         
-        // התיקון: משהים את עדכון ה-Redux עד לרגע המעבר כדי שהמסך לא יתחלף לחסימה!
         setTimeout(() => {
           const updatedUser = { ...currentUser, role: 'user' };
           const currentToken = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -111,7 +105,7 @@ const ManageUsers = ({ searchTerm }) => {
 
     try {
       await adminService.deleteUser(deleteDialog.userObj._id);
-      setUsers(safeUsers.filter(u => u._id !== deleteDialog.userObj._id));
+      setUsers(users.filter(u => u._id !== deleteDialog.userObj._id));
       setNotification({ open: true, message: "המשתמש נמחק בהצלחה", severity: "success" });
     } catch (err) {
       setNotification({ open: true, message: "שגיאה במחיקת משתמש", severity: "error" });
@@ -119,12 +113,6 @@ const ManageUsers = ({ searchTerm }) => {
       setDeleteDialog({ open: false, userObj: null });
     }
   };
-
-  const safeSearchTerm = (searchTerm || "").toLowerCase();
-  const filteredUsers = safeUsers.filter(u => 
-    (u.userName || "").toLowerCase().includes(safeSearchTerm) || 
-    (u.email || "").toLowerCase().includes(safeSearchTerm)
-  );
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
@@ -140,92 +128,114 @@ const ManageUsers = ({ searchTerm }) => {
     );
   }
 
+  const safeUsers = Array.isArray(users) ? users : []; 
+  const safeSearchTerm = (searchTerm || "").toLowerCase().trim();
+  
+  const filteredUsers = safeUsers.filter(u => {
+    if (!safeSearchTerm) return true;
+    return (u.userName || "").toLowerCase().includes(safeSearchTerm) || 
+           (u.email || "").toLowerCase().includes(safeSearchTerm);
+  });
+
+  const currentUserData = safeUsers.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
+  const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
+
   return (
     <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>
       <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', color: '#40e0d0', fontWeight: 'bold' }}>
         ניהול משתמשים במערכת
       </Typography>
 
-      <TableContainer 
-        component={Paper} 
-        sx={{ 
-          background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)', 
-          backdropFilter: 'blur(15px)', 
-          border: '1px solid rgba(255, 255, 255, 0.1)', 
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
-          borderRadius: 3, 
-          color: 'white',
-          overflow: 'hidden' 
-        }}
-      >
-        <Table dir="rtl">
-          <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
-            <TableRow>
-              <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>שם משתמש</TableCell>
-              <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>אימייל</TableCell>
-              <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>תפקיד</TableCell>
-              <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredUsers.map((user) => (
-              <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
-                <TableCell align="right" sx={{ color: 'white' }}>
-                  {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
-                </TableCell>
-                <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
-                
-                <TableCell align="right">
-                  <Select
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
-                    size="small"
-                    disabled={user.email === SUPER_ADMIN_EMAIL}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: { bgcolor: '#020617', color: 'white', border: '1px solid #40e0d0' }
-                      }
-                    }}
-                    sx={{ 
-                      color: 'white', 
-                      minWidth: '120px',
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
-                      '& .MuiSvgIcon-root': { color: 'white' },
-                      '&.Mui-disabled': { color: 'rgba(255,255,255,0.5)' }
-                    }}
-                  >
-                    <MenuItem value="user">משתמש (user)</MenuItem>
-                    <MenuItem value="admin">מנהל (admin)</MenuItem>
-                  </Select>
-                </TableCell>
-                
-                <TableCell align="center">
-                  {isSuperAdmin ? (
-                    <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
-                      <span>
-                        <IconButton 
-                          onClick={() => handleDeleteClick(user)} 
-                          sx={{ color: '#f44336' }} 
-                          disabled={user.email === SUPER_ADMIN_EMAIL}
-                        >
-                          {user.email === SUPER_ADMIN_EMAIL ? <LockIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.3)' }} /> : <DeleteIcon />}
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="מחיקה למנהל-על בלבד">
-                      <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
-                        <LockIcon fontSize="small" sx={{ color: 'white' }} />
-                      </Box>
-                    </Tooltip>
-                  )}
-                </TableCell>
+      {/* התיקון: בדיקה אם יש משתמשים מתאימים לחיפוש */}
+      {filteredUsers.length === 0 ? (
+        <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
+          <SearchOffIcon sx={{ fontSize: 80, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
+          <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            מצטערים, לא נמצא הערך המבוקש.
+          </Typography>
+        </Box>
+      ) : (
+        <TableContainer 
+          component={Paper} 
+          sx={{ 
+            background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)', 
+            backdropFilter: 'blur(15px)', 
+            border: '1px solid rgba(255, 255, 255, 0.1)', 
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+            borderRadius: 3, 
+            color: 'white',
+            overflow: 'hidden' 
+          }}
+        >
+          <Table dir="rtl">
+            <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
+              <TableRow>
+                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>שם משתמש</TableCell>
+                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>אימייל</TableCell>
+                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>תפקיד</TableCell>
+                <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {filteredUsers.map((user) => (
+                <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+                  <TableCell align="right" sx={{ color: 'white' }}>
+                    {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
+                  </TableCell>
+                  <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
+                  
+                  <TableCell align="right">
+                    <Select
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
+                      size="small"
+                      disabled={user.email === SUPER_ADMIN_EMAIL}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: { bgcolor: '#020617', color: 'white', border: '1px solid #40e0d0' }
+                        }
+                      }}
+                      sx={{ 
+                        color: 'white', 
+                        minWidth: '120px',
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
+                        '& .MuiSvgIcon-root': { color: 'white' },
+                        '&.Mui-disabled': { color: 'rgba(255,255,255,0.5)' }
+                      }}
+                    >
+                      <MenuItem value="user">משתמש (user)</MenuItem>
+                      <MenuItem value="admin">מנהל (admin)</MenuItem>
+                    </Select>
+                  </TableCell>
+                  
+                  <TableCell align="center">
+                    {isSuperAdmin ? (
+                      <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
+                        <span>
+                          <IconButton 
+                            onClick={() => handleDeleteClick(user)} 
+                            sx={{ color: '#f44336' }} 
+                            disabled={user.email === SUPER_ADMIN_EMAIL}
+                          >
+                            {user.email === SUPER_ADMIN_EMAIL ? <LockIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.3)' }} /> : <DeleteIcon />}
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="מחיקה למנהל-על בלבד">
+                        <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
+                          <LockIcon fontSize="small" sx={{ color: 'white' }} />
+                        </Box>
+                      </Tooltip>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Dialog 
         open={deleteDialog.open} 
