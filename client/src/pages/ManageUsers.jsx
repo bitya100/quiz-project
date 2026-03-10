@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux"; 
+import { useNavigate } from "react-router-dom"; 
+import { logout } from "../store"; 
 import { 
   Container, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, IconButton, Tooltip, 
@@ -16,23 +18,34 @@ const ManageUsers = ({ searchTerm }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
-  
-  // הוספנו סטייט לחלון מחיקה מעוצב כמו בדף הציונים
   const [deleteDialog, setDeleteDialog] = useState({ open: false, userObj: null });
   
   const { user: currentUser } = useSelector((state) => state.auth);
+  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // הגנה ראשונית: האם הוא בכלל מנהל?
+  const isAdmin = currentUser?.role === 'admin';
 
   useEffect(() => {
-    loadUsers();
-  }, []);
+    // --- התיקון: לא פונים לשרת אם המשתמש הוא לא מנהל! ---
+    if (isAdmin) {
+        loadUsers();
+    } else {
+        setLoading(false); // מפסיקים את הטעינה
+    }
+  }, [isAdmin]);
 
   const loadUsers = async () => {
     try {
       const data = await adminService.getAllUsers();
-      setUsers(data);
+      setUsers(data || []); // מוודאים שחוזר מערך
     } catch (err) {
       console.error("Failed to load users", err);
-      if (err.response?.status !== 503) {
+      if (err.response?.status === 403) {
+          setNotification({ open: true, message: "גישה נדחתה. אין לך הרשאות מתאימות.", severity: "error" });
+      } else if (err.response?.status !== 503) {
         setNotification({ open: true, message: "שגיאה בטעינת המשתמשים", severity: "error" });
       }
     } finally {
@@ -40,7 +53,9 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  const currentUserData = users.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
+  const safeUsers = Array.isArray(users) ? users : []; // הגנה מפני קריסה
+  
+  const currentUserData = safeUsers.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
   const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
 
   const handleRoleChange = async (userId, newRole, userEmail) => {
@@ -50,7 +65,24 @@ const ManageUsers = ({ searchTerm }) => {
 
     try {
       await adminService.updateUserRole(userId, newRole);
-      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      setUsers(safeUsers.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      
+      const currentLoggedInId = currentUser?.userId || currentUser?._id;
+      
+      if (userId === currentLoggedInId && newRole === 'user') {
+        setNotification({ 
+          open: true, 
+          message: "שינית את ההרשאה של עצמך! המערכת תנתק אותך כעת...", 
+          severity: "warning" 
+        });
+        
+        setTimeout(() => {
+          dispatch(logout());
+          navigate('/login');
+        }, 2500);
+        return;
+      }
+
       setNotification({ open: true, message: "הרשאת המשתמש עודכנה בהצלחה", severity: "success" });
     } catch (err) {
       const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה";
@@ -58,7 +90,6 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  // פתיחת חלון אישור במקום ה- window.confirm המכוער
   const handleDeleteClick = (userObj) => {
     if (!isSuperAdmin) {
       return setNotification({ open: true, message: "רק מנהל-על מורשה למחוק משתמשים!", severity: "error" });
@@ -69,11 +100,12 @@ const ManageUsers = ({ searchTerm }) => {
     setDeleteDialog({ open: true, userObj });
   };
 
-  // ביצוע המחיקה בפועל
   const confirmDelete = async () => {
+    if (!deleteDialog.userObj) return;
+
     try {
       await adminService.deleteUser(deleteDialog.userObj._id);
-      setUsers(users.filter(u => u._id !== deleteDialog.userObj._id));
+      setUsers(safeUsers.filter(u => u._id !== deleteDialog.userObj._id));
       setNotification({ open: true, message: "המשתמש נמחק בהצלחה", severity: "success" });
     } catch (err) {
       setNotification({ open: true, message: "שגיאה במחיקת משתמש", severity: "error" });
@@ -83,12 +115,25 @@ const ManageUsers = ({ searchTerm }) => {
   };
 
   const safeSearchTerm = (searchTerm || "").toLowerCase();
-  const filteredUsers = users.filter(u => 
+  const filteredUsers = safeUsers.filter(u => 
     (u.userName || "").toLowerCase().includes(safeSearchTerm) || 
     (u.email || "").toLowerCase().includes(safeSearchTerm)
   );
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
+
+  // --- התיקון: הודעה ברורה למשתמש שאין לו הרשאה לראות את הדף ---
+  if (!isAdmin) {
+    return (
+        <Container maxWidth="sm" sx={{ mt: 10, textAlign: 'center' }}>
+          <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: '#f44336', backdropFilter: 'blur(10px)', border: '1px solid rgba(244, 67, 54, 0.3)' }}>
+              <LockIcon sx={{ fontSize: 60, mb: 2 }} />
+              <Typography variant="h5" fontWeight="bold">גישה נדחתה</Typography>
+              <Typography>דף זה מיועד למנהלי מערכת בלבד.</Typography>
+          </Paper>
+        </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>
@@ -151,7 +196,6 @@ const ManageUsers = ({ searchTerm }) => {
                 </TableCell>
                 
                 <TableCell align="center">
-                  {/* העתקנו את לוגיקת המנעול מדף הציונים */}
                   {isSuperAdmin ? (
                     <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
                       <span>
@@ -178,7 +222,6 @@ const ManageUsers = ({ searchTerm }) => {
         </Table>
       </TableContainer>
 
-      {/* חלון המחיקה המעוצב שלנו */}
       <Dialog 
         open={deleteDialog.open} 
         onClose={() => setDeleteDialog({ open: false, userObj: null })} 

@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../store";
+import { login, logout } from "../store"; 
+import api from "../services/api"; 
 import { 
   AppBar, Toolbar, Typography, Button, InputBase, Box, 
   IconButton, useMediaQuery, useTheme, Drawer, List, ListItem, ListItemText, Divider,
-  Dialog, DialogTitle, DialogContent, DialogActions // הוספתי ייבוא למודאל
+  Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert
 } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -59,7 +60,8 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [guestModalOpen, setGuestModalOpen] = useState(false); // סטייט חדש למודאל האורחים
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [roleUpdateMsg, setRoleUpdateMsg] = useState({ open: false, text: "" });
 
   const handleLogout = () => {
     dispatch(logout());
@@ -73,14 +75,13 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
     setDrawerOpen(open);
   };
 
-  // פונקציה שמטפלת בלחיצה על "הציונים שלי"
   const handleMyScoresClick = () => {
     if (user) {
       navigate('/my-scores');
       setDrawerOpen(false);
     } else {
       setDrawerOpen(false);
-      setGuestModalOpen(true); // פותח את המודאל אם זה אורח
+      setGuestModalOpen(true);
     }
   };
 
@@ -108,6 +109,47 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
       color: "#40e0d0"
     }
   });
+
+  useEffect(() => {
+    const checkRoleUpdate = async () => {
+      if (user) {
+        try {
+          const res = await api.get('/users/profile'); 
+          const dbUser = res.data;
+
+          if (dbUser && dbUser.role && dbUser.role !== user.role) {
+            
+            const updatedUser = { ...user, role: dbUser.role };
+            // התיקון: אנחנו לוקחים את הטוקן החדש והמרענן מהשרת!
+            const newToken = dbUser.token || localStorage.getItem('token') || sessionStorage.getItem('token');
+            
+            // מעדכנים את האחסון המקומי כדי שהבקשות הבאות יצאו עם ההרשאה הנכונה
+            if (localStorage.getItem('user')) {
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                localStorage.setItem('token', newToken);
+            }
+            if (sessionStorage.getItem('user')) {
+                sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                sessionStorage.setItem('token', newToken);
+            }
+            
+            // מעדכנים את ה-Redux
+            dispatch(login({ user: updatedUser, token: newToken }));
+
+            if (dbUser.role === 'admin') {
+              setRoleUpdateMsg({ open: true, text: "🎉 ברכות! קודמת לתפקיד מנהל במערכת!" });
+            } else {
+              setRoleUpdateMsg({ open: true, text: "ההרשאות שלך עודכנו על ידי מנהל המערכת לתפקיד משתמש רגיל." });
+            }
+          }
+        } catch (err) {
+          console.log("Silent profile check failed", err.message);
+        }
+      }
+    };
+
+    checkRoleUpdate();
+  }, [location.pathname]);
 
   return (
     <>
@@ -183,7 +225,6 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                     <ListItemText primary="חידונים" sx={{ textAlign: 'right' }} />
                   </ListItem>
                   
-                  {/* התיקון: כפתור הציונים מופיע תמיד במובייל */}
                   <ListItem onClick={handleMyScoresClick} sx={listItemStyle('/my-scores')}>
                     <ListItemText primary="הציונים שלי" sx={{ textAlign: 'right' }} />
                   </ListItem>
@@ -273,8 +314,6 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               
               <Button component={Link} to="/quizzes" sx={navButtonStyle('/quizzes')}>חידונים</Button>
-              
-              {/* התיקון: כפתור הציונים מופיע תמיד במחשב שולחני */}
               <Button onClick={handleMyScoresClick} sx={navButtonStyle('/my-scores')}>הציונים שלי</Button>
               
               {user?.role === 'admin' && (
@@ -331,19 +370,10 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
         </Toolbar>
       </AppBar>
 
-      {/* מודאל "תפריט רפאים" לאורחים */}
       <Dialog 
         open={guestModalOpen} 
         onClose={() => setGuestModalOpen(false)} 
-        PaperProps={{ 
-          sx: { 
-            bgcolor: '#020617', 
-            color: 'white', 
-            border: '2px solid #40e0d0',
-            borderRadius: 3,
-            boxShadow: '0 0 20px rgba(64, 224, 208, 0.3)'
-          } 
-        }} 
+        PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '2px solid #40e0d0', borderRadius: 3, boxShadow: '0 0 20px rgba(64, 224, 208, 0.3)' } }} 
         dir="rtl"
       >
         <DialogTitle sx={{ color: '#40e0d0', fontWeight: 'bold', textAlign: 'center', fontSize: '1.5rem', mt: 1 }}>
@@ -355,27 +385,30 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center', pb: 3, gap: 2 }}>
-          <Button onClick={() => setGuestModalOpen(false)} sx={{borderRadius : '15px',boxShadow: '0 0 5px #1e7869' , color: 'rgba(255, 255, 255, 0.87)' }}>
+          <Button onClick={() => setGuestModalOpen(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
             אולי אחר כך
           </Button>
-          <Button 
-            component={Link} 
-            to="/register" 
-            onClick={() => setGuestModalOpen(false)} 
-            variant="contained" 
-            sx={{ 
-              bgcolor: '#1e7869', // סגול ניאון בולט
-              color: 'white', 
-              fontWeight: 'bold', 
-              borderRadius: '20px',
-              padding: '6px 25px',
-              '&:hover': { bgcolor: '#1e7869', boxShadow: '0 0 15px #1e7869' } 
-            }}
-          >
+          <Button component={Link} to="/register" onClick={() => setGuestModalOpen(false)} variant="contained" sx={{ bgcolor: '#bc13fe', color: 'white', fontWeight: 'bold', borderRadius: '20px', padding: '6px 25px', '&:hover': { bgcolor: '#a00be0', boxShadow: '0 0 15px #bc13fe' } }}>
             להרשמה המהירה
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar 
+        open={roleUpdateMsg.open} 
+        autoHideDuration={6000} 
+        onClose={() => setRoleUpdateMsg({ ...roleUpdateMsg, open: false })} 
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 8 }}
+      >
+        <Alert 
+          onClose={() => setRoleUpdateMsg({ ...roleUpdateMsg, open: false })} 
+          severity="success" 
+          sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '2px solid #40e0d0', fontSize: '1.2rem', fontWeight: 'bold' }}
+        >
+          {roleUpdateMsg.text}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

@@ -16,29 +16,37 @@ const AllScores = ({ searchTerm = "" }) => {
   const [scores, setScores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
-  
   const [deleteDialog, setDeleteDialog] = useState({ open: false, scoreId: null });
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
   const { user } = useSelector((state) => state.auth);
   
-  // התיקון המנצח: אם האימייל לא קיים או לא תואם ב-Redux בגלל אותיות גדולות/קטנות, 
-  // אנחנו תופסים את מנהל העל לפי שם המשתמש שלו (שאנחנו רואים שמוצג תקין במסך)
+  // בדיקה אם המשתמש הוא מנהל-על
   const isSuperAdmin = 
     (user?.email && user.email.toLowerCase() === SUPER_ADMIN_EMAIL) || 
     (user?.userName && user.userName.toLowerCase().includes("admin10"));
 
+  // הגנה ראשונית: האם הוא בכלל מנהל?
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
-    fetchScores();
-  }, []);
+    // --- התיקון: לא פונים לשרת אם המשתמש הוא לא מנהל! ---
+    if (isAdmin) {
+        fetchScores();
+    } else {
+        setLoading(false); // מפסיקים את הטעינה
+    }
+  }, [isAdmin]);
 
   const fetchScores = async () => {
     try {
       const res = await api.get("/results/all");
-      setScores(res.data);
+      setScores(res.data || []); // מוודאים שחוזר מערך
     } catch (err) {
       console.error("Error fetching all scores:", err);
-      if (err.response?.status !== 503) {
+      if (err.response?.status === 403) {
+          setNotification({ open: true, message: "גישה נדחתה. אין לך הרשאות מתאימות.", severity: "error" });
+      } else if (err.response?.status !== 503) {
         setNotification({ open: true, message: "שגיאה בטעינת הנתונים", severity: "error" });
       }
     } finally {
@@ -47,7 +55,7 @@ const AllScores = ({ searchTerm = "" }) => {
   };
 
   const confirmDelete = async () => {
-    if (!isSuperAdmin) return;
+    if (!isSuperAdmin || !deleteDialog.scoreId) return;
 
     try {
       await api.delete(`/results/${deleteDialog.scoreId}`);
@@ -69,9 +77,11 @@ const AllScores = ({ searchTerm = "" }) => {
     setSortConfig({ key, direction });
   };
 
+  // --- התיקון: מוודאים ש scores הוא מערך לפני שמפעילים filter ו-sort ---
+  const safeScores = Array.isArray(scores) ? scores : [];
   const safeSearchTerm = (searchTerm || "").toLowerCase();
 
-  const filteredScores = scores.filter(score => {
+  const filteredScores = safeScores.filter(score => {
     const title = (score.quizTitle || "").toLowerCase();
     const userName = (score.userId?.userName || "").toLowerCase();
     return title.includes(safeSearchTerm) || userName.includes(safeSearchTerm);
@@ -106,6 +116,19 @@ const AllScores = ({ searchTerm = "" }) => {
   });
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
+
+  // --- התיקון: הודעה ברורה למשתמש שאין לו הרשאה לראות את הדף ---
+  if (!isAdmin) {
+      return (
+          <Container maxWidth="sm" sx={{ mt: 10, textAlign: 'center' }}>
+            <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: '#f44336', backdropFilter: 'blur(10px)', border: '1px solid rgba(244, 67, 54, 0.3)' }}>
+                <LockIcon sx={{ fontSize: 60, mb: 2 }} />
+                <Typography variant="h5" fontWeight="bold">גישה נדחתה</Typography>
+                <Typography>דף זה מיועד למנהלי מערכת בלבד.</Typography>
+            </Paper>
+          </Container>
+      );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>

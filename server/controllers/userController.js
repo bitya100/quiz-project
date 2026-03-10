@@ -2,6 +2,8 @@ const { User, validateUser } = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const SUPER_ADMIN_EMAIL = "admin10@gmail.com"; 
+
 const register = async (req, res) => {
     try {
         const { error } = validateUser(req.body);
@@ -10,18 +12,21 @@ const register = async (req, res) => {
         let user = await User.findOne({ email: req.body.email.toLowerCase() });
         if (user) return res.status(400).send('משתמש כבר רשום במערכת');
 
+        const assignedRole = req.body.email.toLowerCase() === SUPER_ADMIN_EMAIL ? 'admin' : 'user';
+
         const newUser = new User({
             userName: req.body.userName,
             email: req.body.email.toLowerCase(),
             password: req.body.password, 
-            role: 'user' 
+            role: assignedRole 
         });
 
         await newUser.save();
 
         const token = jwt.sign(
-            { _id: newUser._id, role: newUser.role }, 
-            process.env.JWT_SECRET || 'fallback_secret'
+            { _id: newUser._id, userId: newUser._id, role: newUser.role, userName: newUser.userName }, 
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '7d' }
         );
 
         return res.status(201).json({ 
@@ -30,7 +35,7 @@ const register = async (req, res) => {
             role: newUser.role,
             userId: newUser._id,
             userName: newUser.userName,
-            email: newUser.email // <-- הוספנו את המייל למען אבטחה
+            email: newUser.email 
         });
     } catch (ex) {
         console.error("Register Error Details:", ex);
@@ -48,9 +53,15 @@ const login = async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(400).send('אימייל או סיסמה שגויים');
 
+        if (user.email === SUPER_ADMIN_EMAIL && user.role !== 'admin') {
+            user.role = 'admin';
+            await user.save();
+        }
+
         const token = jwt.sign(
-            { _id: user._id, role: user.role }, 
-            process.env.JWT_SECRET || 'fallback_secret'
+            { _id: user._id, userId: user._id, role: user.role, userName: user.userName }, 
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '7d' }
         );
 
         res.json({ 
@@ -58,7 +69,7 @@ const login = async (req, res) => {
             role: user.role, 
             userId: user._id, 
             userName: user.userName,
-            email: user.email // <-- הוספנו את המייל למען אבטחה
+            email: user.email 
         });
     } catch (ex) {
         console.error("Login Error Details:", ex);
@@ -68,8 +79,21 @@ const login = async (req, res) => {
 
 const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
-        res.json(user);
+        const currentUserId = req.user._id || req.user.userId;
+        const user = await User.findById(currentUserId).select('-password');
+        if (!user) return res.status(404).send('משתמש לא נמצא');
+
+        // התיקון הקריטי: יצירת טוקן חדש ומעודכן עם התפקיד הנוכחי!
+        const freshToken = jwt.sign(
+            { _id: user._id, userId: user._id, role: user.role, userName: user.userName }, 
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '7d' }
+        );
+
+        const userResponse = user.toObject();
+        userResponse.token = freshToken; // מצרפים את הטוקן למידע שחוזר
+
+        res.json(userResponse);
     } catch (ex) {
         res.status(500).send('שגיאה בטעינת הפרופיל');
     }
@@ -77,6 +101,9 @@ const getProfile = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).send("גישה נדחתה: מנהלים בלבד");
+        }
         const users = await User.find().select('-password');
         res.json(users);
     } catch (ex) {
@@ -86,34 +113,57 @@ const getAllUsers = async (req, res) => {
 
 const updateUserRole = async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).send("גישה נדחתה: מנהלים בלבד");
+        }
+
         const userIdToUpdate = req.params.id;
         const { role } = req.body;
+        const userToUpdate = await User.findById(userIdToUpdate);
+
+        if (!userToUpdate) return res.status(404).send('משתמש לא נמצא');
+
+        if (userToUpdate.email === SUPER_ADMIN_EMAIL) {
+            return res.status(403).send("לא ניתן לשנות הרשאה למנהל העל");
+        }
 
         if (role === 'user') {
             const adminCount = await User.countDocuments({ role: 'admin' });
-            const userToUpdate = await User.findById(userIdToUpdate);
             if (userToUpdate.role === 'admin' && adminCount <= 1) {
                 return res.status(400).send('לא ניתן להסיר את המנהל האחרון במערכת.');
             }
         }
 
-        const updatedUser = await User.findByIdAndUpdate(
-            userIdToUpdate, 
-            { role: role }, 
-            { new: true }
-        ).select('-password');
-
-        if (!updatedUser) return res.status(404).send('משתמש לא נמצא');
-        res.json({ message: `המשתמש ${updatedUser.userName} הוא כעת ${role}`, user: updatedUser });
+        userToUpdate.role = role;
+        await userToUpdate.save();
+        
+        res.json({ message: `המשתמש ${userToUpdate.userName} הוא כעת ${role}`, user: userToUpdate });
     } catch (ex) {
         res.status(500).send('שגיאה בעדכון התפקיד');
     }
 };
 
-module.exports = { 
-    register, 
-    login, 
-    getProfile,
-    getAllUsers,
-    updateUserRole 
+const deleteUser = async (req, res) => {
+    try {
+        const currentUserId = req.user._id || req.user.userId;
+        const requestingUser = await User.findById(currentUserId);
+        
+        if (requestingUser.email !== SUPER_ADMIN_EMAIL) {
+            return res.status(403).send("גישה נדחתה: רק מנהל-על מורשה למחוק משתמשים");
+        }
+
+        const userToDelete = await User.findById(req.params.id);
+        if (!userToDelete) return res.status(404).send("משתמש לא נמצא");
+        
+        if (userToDelete.email === SUPER_ADMIN_EMAIL) {
+            return res.status(403).send("לא ניתן למחוק את מנהל העל");
+        }
+
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: "המשתמש נמחק בהצלחה" });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
 };
+
+module.exports = { register, login, getProfile, getAllUsers, updateUserRole, deleteUser };
