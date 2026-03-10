@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Container, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Tooltip, Box, CircularProgress, Select, MenuItem, Snackbar, Alert } from "@mui/material";
+import { 
+  Container, Typography, Paper, Table, TableBody, TableCell, 
+  TableContainer, TableHead, TableRow, IconButton, Tooltip, 
+  Box, CircularProgress, Select, MenuItem, Snackbar, Alert,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import LockIcon from "@mui/icons-material/Lock"; 
 import adminService from "../services/adminService";
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com"; 
@@ -10,6 +16,9 @@ const ManageUsers = ({ searchTerm }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
+  
+  // הוספנו סטייט לחלון מחיקה מעוצב כמו בדף הציונים
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, userObj: null });
   
   const { user: currentUser } = useSelector((state) => state.auth);
 
@@ -23,7 +32,6 @@ const ManageUsers = ({ searchTerm }) => {
       setUsers(data);
     } catch (err) {
       console.error("Failed to load users", err);
-      // מציג שגיאה רק אם זה לא חסימת שבת
       if (err.response?.status !== 503) {
         setNotification({ open: true, message: "שגיאה בטעינת המשתמשים", severity: "error" });
       }
@@ -32,8 +40,8 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  const currentUserData = users.find(u => u._id === currentUser?.userId);
-  const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL;
+  const currentUserData = users.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
+  const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
 
   const handleRoleChange = async (userId, newRole, userEmail) => {
     if (userEmail === SUPER_ADMIN_EMAIL) {
@@ -41,9 +49,7 @@ const ManageUsers = ({ searchTerm }) => {
     }
 
     try {
-      // שימוש בשירות המסודר במקום axios ישיר
       await adminService.updateUserRole(userId, newRole);
-      
       setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
       setNotification({ open: true, message: "הרשאת המשתמש עודכנה בהצלחה", severity: "success" });
     } catch (err) {
@@ -52,22 +58,27 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  const handleDelete = async (userObj) => {
+  // פתיחת חלון אישור במקום ה- window.confirm המכוער
+  const handleDeleteClick = (userObj) => {
     if (!isSuperAdmin) {
       return setNotification({ open: true, message: "רק מנהל-על מורשה למחוק משתמשים!", severity: "error" });
     }
     if (userObj.email === SUPER_ADMIN_EMAIL) {
       return setNotification({ open: true, message: "לא ניתן למחוק את מנהל העל של המערכת!", severity: "warning" });
     }
+    setDeleteDialog({ open: true, userObj });
+  };
 
-    if (window.confirm(`האם אתה בטוח שברצונך למחוק את המשתמש ${userObj.userName} לצמיתות?`)) {
-      try {
-        await adminService.deleteUser(userObj._id);
-        setUsers(users.filter(u => u._id !== userObj._id));
-        setNotification({ open: true, message: "המשתמש נמחק בהצלחה", severity: "success" });
-      } catch (err) {
-        setNotification({ open: true, message: "שגיאה במחיקת משתמש", severity: "error" });
-      }
+  // ביצוע המחיקה בפועל
+  const confirmDelete = async () => {
+    try {
+      await adminService.deleteUser(deleteDialog.userObj._id);
+      setUsers(users.filter(u => u._id !== deleteDialog.userObj._id));
+      setNotification({ open: true, message: "המשתמש נמחק בהצלחה", severity: "success" });
+    } catch (err) {
+      setNotification({ open: true, message: "שגיאה במחיקת משתמש", severity: "error" });
+    } finally {
+      setDeleteDialog({ open: false, userObj: null });
     }
   };
 
@@ -85,9 +96,20 @@ const ManageUsers = ({ searchTerm }) => {
         ניהול משתמשים במערכת
       </Typography>
 
-      <TableContainer component={Paper} sx={{ background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)', color: 'white' }}>
+      <TableContainer 
+        component={Paper} 
+        sx={{ 
+          background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)', 
+          backdropFilter: 'blur(15px)', 
+          border: '1px solid rgba(255, 255, 255, 0.1)', 
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+          borderRadius: 3, 
+          color: 'white',
+          overflow: 'hidden' 
+        }}
+      >
         <Table dir="rtl">
-          <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
+          <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
             <TableRow>
               <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>שם משתמש</TableCell>
               <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>אימייל</TableCell>
@@ -109,8 +131,14 @@ const ManageUsers = ({ searchTerm }) => {
                     onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
                     size="small"
                     disabled={user.email === SUPER_ADMIN_EMAIL}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: { bgcolor: '#020617', color: 'white', border: '1px solid #40e0d0' }
+                      }
+                    }}
                     sx={{ 
                       color: 'white', 
+                      minWidth: '120px',
                       '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
                       '& .MuiSvgIcon-root': { color: 'white' },
@@ -123,17 +151,26 @@ const ManageUsers = ({ searchTerm }) => {
                 </TableCell>
                 
                 <TableCell align="center">
-                  <Tooltip title={isSuperAdmin ? "מחק משתמש" : "מחיקה למנהל-על בלבד"}>
-                    <span>
-                      <IconButton 
-                        onClick={() => handleDelete(user)} 
-                        color="error" 
-                        disabled={!isSuperAdmin || user.email === SUPER_ADMIN_EMAIL}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
+                  {/* העתקנו את לוגיקת המנעול מדף הציונים */}
+                  {isSuperAdmin ? (
+                    <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
+                      <span>
+                        <IconButton 
+                          onClick={() => handleDeleteClick(user)} 
+                          sx={{ color: '#f44336' }} 
+                          disabled={user.email === SUPER_ADMIN_EMAIL}
+                        >
+                          {user.email === SUPER_ADMIN_EMAIL ? <LockIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.3)' }} /> : <DeleteIcon />}
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="מחיקה למנהל-על בלבד">
+                      <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
+                        <LockIcon fontSize="small" sx={{ color: 'white' }} />
+                      </Box>
+                    </Tooltip>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -141,9 +178,29 @@ const ManageUsers = ({ searchTerm }) => {
         </Table>
       </TableContainer>
 
+      {/* חלון המחיקה המעוצב שלנו */}
+      <Dialog 
+        open={deleteDialog.open} 
+        onClose={() => setDeleteDialog({ open: false, userObj: null })} 
+        PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} 
+        dir="rtl"
+      >
+        <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת משתמש לצמיתות</DialogTitle>
+        <DialogContent>
+          <Typography>
+            האם אתה בטוח שברצונך למחוק את המשתמש <strong>{deleteDialog.userObj?.userName}</strong>?
+            <br />פעולה זו אינה ניתנת לביטול!
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDeleteDialog({ open: false, userObj: null })} sx={{ color: 'white' }}>ביטול</Button>
+          <Button onClick={confirmDelete} variant="contained" sx={{ bgcolor: '#f44336', color: 'white', '&:hover': { bgcolor: '#d32f2f' } }}>מחק עכשיו</Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar 
         open={notification.open} 
-        autoHideDuration={3000} 
+        autoHideDuration={4000} 
         onClose={() => setNotification({ ...notification, open: false })} 
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         sx={{ mb: 10 }}
