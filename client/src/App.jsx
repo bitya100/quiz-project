@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Particles from "react-tsparticles"; 
 import { loadSlim } from "tsparticles-slim"; 
+import { Box } from "@mui/material"; // ייבוא Box
 
 // ייבוא קומפוננטות 
 import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
 import Quizzes from "./pages/Quizzes";
 import QuizPage from "./pages/QuizPage";
 import CreateQuiz from "./pages/CreateQuiz";
@@ -14,23 +16,17 @@ import MyScores from "./pages/MyScores";
 import AllScores from "./pages/AllScores"; 
 import ManageUsers from "./pages/ManageUsers"; 
 import ShabbatPage from "./pages/ShabbatPage"; 
-
-// ייבוא כפתור הגלילה למעלה
 import ScrollToTopBtn from "./components/ScrollToTop"; 
 
-// --- פונקציית חסימת שבת בצד הלקוח ---
 const checkShabbat = () => {
   const now = new Date();
   const day = now.getDay();  
   const hour = now.getHours(); 
-
   if (day === 5 && hour >= 12) return true; 
   if (day === 6 && hour < 19) return true;  
-  
   return false;
 };
 
-// פונקציה שעושה גלילה למעלה אוטומטית במעבר בין דפים
 const ScrollToTopOnNavigate = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -119,8 +115,24 @@ function App() {
       }}>
         <div style={{ flexGrow: 1, paddingBottom: '40px' }}>
           <Routes>
-            <Route path="/" element={<Navigate to="/quizzes" />} />
-            <Route path="/quizzes" element={<Quizzes searchTerm={searchTerm} />} />
+            {/* ראוט השער הראשי: כולל את סיפור הגלילה ולמטה את החידונים */}
+            <Route path="/" element={
+              <Box>
+                <Home />
+                {/* כאן הכפתור נוחת עם גלילה חלקה */}
+                <Box id="quizzes-section" sx={{ pt: 8, pb: 10 }}>
+                  <Quizzes searchTerm={searchTerm} />
+                </Box>
+              </Box>
+            } />
+            
+            {/* ראוט התפריט: מציג ישירות את החידונים למי שלוחץ "חידונים" למעלה */}
+            <Route path="/quizzes" element={
+              <Box sx={{ pt: 5 }}>
+                <Quizzes searchTerm={searchTerm} />
+              </Box>
+            } />
+
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/quiz/:id" element={<QuizPage />} />
@@ -140,9 +152,7 @@ function App() {
         <Footer />
       </div>
 
-      {/* התיקון: הכפתור נמצא כעת ברמה הגבוהה ביותר של האפליקציה! */}
       <ScrollToTopBtn />
-      
     </Router>
   );
 }
