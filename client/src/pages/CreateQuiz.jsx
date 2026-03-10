@@ -15,7 +15,7 @@ const CreateQuiz = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false); // סטייט חדש שנועל את הטופס אחרי הצלחה
+  const [isSubmitted, setIsSubmitted] = useState(false); 
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
   const isEditMode = !!id;
 
@@ -35,7 +35,8 @@ const CreateQuiz = () => {
       const fetchQuiz = async () => {
         try {
           const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-          const res = await axios.get(`http://localhost:3001/api/quizzes/${id}`, {
+          // הכתובת החדשה!
+          const res = await axios.get(`https://quiz-project-t7g7.onrender.com/api/quizzes/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           reset(res.data);
@@ -56,7 +57,8 @@ const CreateQuiz = () => {
 
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const res = await axios.post("http://localhost:3001/api/upload", formData, {
+      // הכתובת החדשה!
+      const res = await axios.post("https://quiz-project-t7g7.onrender.com/api/upload", formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setValue('image', res.data.imageUrl);
@@ -75,7 +77,8 @@ const CreateQuiz = () => {
 
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const res = await axios.post("http://localhost:3001/api/upload", formData, {
+      // הכתובת החדשה!
+      const res = await axios.post("https://quiz-project-t7g7.onrender.com/api/upload", formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setValue(`questions.${index}.image`, res.data.imageUrl);
@@ -86,25 +89,23 @@ const CreateQuiz = () => {
   };
 
   const onSubmit = async (data) => {
-    // מניעת כפילויות קשיחה: אם כבר נשלח או בטעינה, תעצור מיד!
     if (loading || isSubmitted) return; 
     
     setLoading(true);
     
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const url = isEditMode ? `http://localhost:3001/api/quizzes/${id}` : `http://localhost:3001/api/quizzes`;
+      // הכתובת החדשה!
+      const url = isEditMode ? `https://quiz-project-t7g7.onrender.com/api/quizzes/${id}` : `https://quiz-project-t7g7.onrender.com/api/quizzes`;
       const method = isEditMode ? "put" : "post";
 
       await axios[method](url, data, { headers: { Authorization: `Bearer ${token}` } });
 
-      // אם הצליח, אנחנו נועלים את הטופס לתמיד עד למעבר עמוד
       setIsSubmitted(true); 
       setNotification({ open: true, message: isEditMode ? "החידון עודכן בהצלחה! 🚀" : "החידון נוצר בהצלחה! 🎉", severity: "success" });
       
       setTimeout(() => { navigate("/quizzes"); }, 2000);
     } catch (err) {
-      // אם הייתה שגיאה, נשחרר את הנעילה כדי שיוכל לתקן ולנסות שוב
       setLoading(false); 
       setNotification({ open: true, message: "שגיאה בשמירה: " + (err.response?.data?.message || err.message), severity: "error" });
     }
@@ -126,7 +127,7 @@ const CreateQuiz = () => {
                 error={!!errors.title} helperText={errors.title?.message}
                 InputLabelProps={{ shrink: true, style: { color: "#40e0d0" } }}
                 sx={{ input: { color: "white" }, "& .MuiOutlinedInput-root": { "& fieldset": { borderColor: "rgba(255,255,255,0.3)" } } }}
-                disabled={loading || isSubmitted} // נעילה בזמן טעינה
+                disabled={loading || isSubmitted} 
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -245,16 +246,15 @@ const CreateQuiz = () => {
             הוספת שאלה
           </Button>
 
-          {/* כפתור השמירה עם שינוי צבע ומניעת כפילויות */}
           <Button 
             type="submit" 
             fullWidth 
             variant="contained" 
             size="large" 
-            disabled={loading || isSubmitted} // נעילה מוחלטת
+            disabled={loading || isSubmitted} 
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : (isSubmitted ? <CheckCircleIcon /> : <SaveIcon />)} 
             sx={{ 
-              bgcolor: isSubmitted ? "#2cd8bbd6" : "#40e0d0", // הופך לירוק בהצלחה
+              bgcolor: isSubmitted ? "#2cd8bbd6" : "#40e0d0", 
               color: isSubmitted ? "white" : "#020617", 
               fontWeight: "bold", 
               py: 1.5,

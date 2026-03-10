@@ -7,7 +7,7 @@ import { Container, Card, CardContent, CardMedia, Typography, Button, Box, Circu
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SearchOffIcon from "@mui/icons-material/SearchOff"; // הוספנו אייקון של "לא נמצא"
+import SearchOffIcon from "@mui/icons-material/SearchOff"; 
 import axios from "axios";
 
 const Quizzes = ({ searchTerm = "" }) => {
@@ -34,7 +34,8 @@ const Quizzes = ({ searchTerm = "" }) => {
   const confirmDelete = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      await axios.delete(`http://localhost:3001/api/quizzes/${deleteDialog.quizId}`, {
+      // הכתובת החדשה למחיקה!
+      await axios.delete(`https://quiz-project-t7g7.onrender.com/api/quizzes/${deleteDialog.quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -57,7 +58,6 @@ const Quizzes = ({ searchTerm = "" }) => {
     <Container sx={{ mt: 5, pb: 5 }} maxWidth="lg">
       <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', fontWeight: 'bold', color: '#40e0d0' }}>החידונים שלנו</Typography>
       
-      {/* התיקון: אם אין תוצאות חיפוש, מציגים הודעה יפה במקום מסך ריק */}
       {filteredQuizzes.length === 0 ? (
         <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
           <SearchOffIcon sx={{ fontSize: 80, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
@@ -100,14 +100,14 @@ const Quizzes = ({ searchTerm = "" }) => {
                 borderBottom: '1px solid rgba(64, 224, 208, 0.2)'
               }}>
                 <CardMedia 
-                  component="img" 
-                  image={
-                    quiz.image 
-                      ? quiz.image.startsWith('/uploads') 
-                        ? `http://localhost:3001${quiz.image}` 
-                        : quiz.image
-                      : "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"
-                  } 
+                component="img" 
+                image={
+                  quiz.image 
+                    ? quiz.image.startsWith('/uploads') 
+                      ? `https://quiz-project-t7g7.onrender.com${quiz.image}` // <-- התיקון כאן!
+                      : quiz.image
+                    : "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"
+                }
                   alt={quiz.title}
                   sx={{ 
                     maxHeight: '100%', 
@@ -185,7 +185,6 @@ const Quizzes = ({ searchTerm = "" }) => {
         </Box>
       )}
 
-      {/* הדיאלוג והסנאקבר נשארים פה כרגיל */}
       <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ ...deleteDialog, open: false })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} dir="rtl">
         <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת חידון</DialogTitle>
         <DialogContent>

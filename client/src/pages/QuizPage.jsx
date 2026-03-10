@@ -136,7 +136,6 @@ const QuizPage = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     playSound('victory'); 
     
-    // התיקון הקריטי: שומרים את האובייקט גם אם זה אורח
     const resultData = {
       quizId: quiz._id,
       quizTitle: quiz.title,
@@ -146,11 +145,9 @@ const QuizPage = () => {
 
     if (user) {
       try {
-        // משתמש רשום - שולחים ישר לשרת
         await resultService.saveResult(resultData);
       } catch (err) { console.error("Error saving result", err); }
     } else {
-      // אורח - שומרים בזיכרון הזמני של הדפדפן כדי שיחכה לו אחרי ההרשמה!
       sessionStorage.setItem('pendingResult', JSON.stringify(resultData));
     }
   };
@@ -272,7 +269,7 @@ const QuizPage = () => {
                 component="img" 
                 image={
                   quiz.questions[currentQuestion].image.startsWith('/uploads') 
-                    ? `http://localhost:3001${quiz.questions[currentQuestion].image}` 
+                    ? `https://quiz-project-t7g7.onrender.com${quiz.questions[currentQuestion].image}` // <-- התיקון כאן!
                     : quiz.questions[currentQuestion].image
                 } 
                 sx={{ borderRadius: 2, mb: 3, maxHeight: 250, objectFit: 'contain' }} 
