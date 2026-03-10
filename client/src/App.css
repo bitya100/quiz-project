@@ -13,6 +13,7 @@ html {
     padding: 0;
     overflow-x: hidden;
     background-color: #020617;
+    scroll-behavior: smooth; /* <--- שורת הקסם שמבצעת אנימציית החלקה למעלה מכל מקום באתר */
 }
 
 body {
@@ -27,6 +28,7 @@ body {
     overflow-x: hidden;
 }
 
+/* ... שאר קובץ ה-CSS שלך ללא שינוי ... */
 #root {
     width: 100%;
 }

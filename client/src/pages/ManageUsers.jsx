@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux"; 
 import { useNavigate } from "react-router-dom"; 
-import { logout } from "../store"; 
+import { login } from "../store"; 
 import { 
   Container, Typography, Paper, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, IconButton, Tooltip, 
@@ -25,22 +25,20 @@ const ManageUsers = ({ searchTerm }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // הגנה ראשונית: האם הוא בכלל מנהל?
   const isAdmin = currentUser?.role === 'admin';
 
   useEffect(() => {
-    // --- התיקון: לא פונים לשרת אם המשתמש הוא לא מנהל! ---
     if (isAdmin) {
         loadUsers();
     } else {
-        setLoading(false); // מפסיקים את הטעינה
+        setLoading(false);
     }
   }, [isAdmin]);
 
   const loadUsers = async () => {
     try {
       const data = await adminService.getAllUsers();
-      setUsers(data || []); // מוודאים שחוזר מערך
+      setUsers(data || []); 
     } catch (err) {
       console.error("Failed to load users", err);
       if (err.response?.status === 403) {
@@ -53,7 +51,7 @@ const ManageUsers = ({ searchTerm }) => {
     }
   };
 
-  const safeUsers = Array.isArray(users) ? users : []; // הגנה מפני קריסה
+  const safeUsers = Array.isArray(users) ? users : []; 
   
   const currentUserData = safeUsers.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
   const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
@@ -70,15 +68,23 @@ const ManageUsers = ({ searchTerm }) => {
       const currentLoggedInId = currentUser?.userId || currentUser?._id;
       
       if (userId === currentLoggedInId && newRole === 'user') {
+        // התיקון: קודם מקפיצים הודעה למשתמש
         setNotification({ 
           open: true, 
-          message: "שינית את ההרשאה של עצמך! המערכת תנתק אותך כעת...", 
-          severity: "warning" 
+          message: "שינית את ההרשאה של עצמך למשתמש רגיל! מעביר אותך כעת...", 
+          severity: "info" 
         });
         
+        // התיקון: משהים את עדכון ה-Redux עד לרגע המעבר כדי שהמסך לא יתחלף לחסימה!
         setTimeout(() => {
-          dispatch(logout());
-          navigate('/login');
+          const updatedUser = { ...currentUser, role: 'user' };
+          const currentToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+          
+          if (localStorage.getItem('user')) localStorage.setItem('user', JSON.stringify(updatedUser));
+          if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(updatedUser));
+          
+          dispatch(login({ user: updatedUser, token: currentToken }));
+          navigate('/quizzes');
         }, 2500);
         return;
       }
@@ -122,7 +128,6 @@ const ManageUsers = ({ searchTerm }) => {
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
-  // --- התיקון: הודעה ברורה למשתמש שאין לו הרשאה לראות את הדף ---
   if (!isAdmin) {
     return (
         <Container maxWidth="sm" sx={{ mt: 10, textAlign: 'center' }}>
