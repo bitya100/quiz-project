@@ -3,11 +3,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setQuizzes, setLoading, deleteQuizAction } from "../store";
 import quizService from "../services/quizService";
-import { Container, Grid, Card, CardContent, CardMedia, Typography, Button, Box, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from "@mui/material";
+import { Container, Card, CardContent, CardMedia, Typography, Button, Box, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "axios"; // חובה לייבא axios בשביל התיקון
+import axios from "axios";
 
 const Quizzes = ({ searchTerm }) => {
   const { list: quizzes, loading } = useSelector((state) => state.quizzes);
@@ -32,7 +32,6 @@ const Quizzes = ({ searchTerm }) => {
 
   const confirmDelete = async () => {
     try {
-      // התיקון כאן: משיכת הטוקן ממקור בטוח ושליחת מחיקה ישירה לשרת (עוקף באגים ב-quizService)
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
       await axios.delete(`http://localhost:3001/api/quizzes/${deleteDialog.quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -54,28 +53,47 @@ const Quizzes = ({ searchTerm }) => {
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
   return (
-    <Container sx={{ mt: 5, pb: 5 }} maxWidth="xl">
+    <Container sx={{ mt: 5, pb: 5 }} maxWidth="lg">
       <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', fontWeight: 'bold', color: '#40e0d0' }}>החידונים שלנו</Typography>
       
-      <Grid container spacing={4} dir="rtl">
+      {/* התיקון המוחלט: שימוש ב-CSS Grid אמיתי. 
+          במחשב (md) הוא נועל בדיוק 3 עמודות שוות.
+          בטאבלט (sm) 2 עמודות, ובמובייל (xs) עמודה אחת. */}
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, 
+        gap: 4,
+        dir: 'rtl'
+      }}>
         {filteredQuizzes.map((quiz) => (
-          <Grid item key={quiz._id} xs={12} sm={6} md={4}>
-            <Card sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              background: 'rgba(255, 255, 255, 0.05)', 
-              color: 'white', 
-              border: '1px solid rgba(64, 224, 208, 0.2)',
-              borderRadius: 3,
-              overflow: 'hidden' 
+          <Card key={quiz._id} sx={{ 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            background: 'rgba(255, 255, 255, 0.05)', 
+            color: 'white', 
+            border: '1px solid rgba(64, 224, 208, 0.2)',
+            borderRadius: 3,
+            overflow: 'hidden',
+            transition: 'all 0.3s ease-in-out',
+            '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: '0 8px 25px rgba(64, 224, 208, 0.3)',
+                borderColor: '#40e0d0'
+            }
+          }}>
+            
+            <Box sx={{ 
+              width: '100%', 
+              height: 200, 
+              bgcolor: 'rgba(0, 0, 0, 0.3)', 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderBottom: '1px solid rgba(64, 224, 208, 0.2)'
             }}>
-              
-              {/* התיקון כאן: בדיקה אם התמונה מ-uploads וחיבור לכתובת השרת */}
               <CardMedia 
                 component="img" 
-                height="200"
-                sx={{ width: '100%', objectFit: 'cover' }} 
                 image={
                   quiz.image 
                     ? quiz.image.startsWith('/uploads') 
@@ -84,65 +102,80 @@ const Quizzes = ({ searchTerm }) => {
                     : "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"
                 } 
                 alt={quiz.title}
+                sx={{ 
+                  maxHeight: '100%', 
+                  maxWidth: '100%',
+                  objectFit: 'contain' 
+                }} 
               />
+            </Box>
 
-              <CardContent sx={{ textAlign: 'right', flexGrow: 1, p: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                  <Typography variant="h5" sx={{ color: '#40e0d0', fontWeight: 'bold', wordBreak: 'break-word', pr: 1 }}>
-                    {quiz.title}
-                  </Typography>
-                  
-                  {user?.role === 'admin' && (
-                    <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
-                        sx={{ color: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)', '&:hover': { bgcolor: 'rgba(64, 224, 208, 0.2)' } }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => setDeleteDialog({ open: true, quizId: quiz._id, quizTitle: quiz.title })} 
-                        sx={{ color: '#f44336', bgcolor: 'rgba(244, 67, 54, 0.1)', '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.2)' } }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  )}
-                </Box>
-                
-                <Typography variant="body2" sx={{ opacity: 0.8, mt: 1 }}>
-                  {quiz.description}
+            <CardContent sx={{ textAlign: 'right', flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                <Typography variant="h5" sx={{ color: '#40e0d0', fontWeight: 'bold', wordBreak: 'break-word', pr: 1 }}>
+                  {quiz.title}
                 </Typography>
-              </CardContent>
-
-              <Box sx={{ p: 2, mt: 'auto' }}>
-                <Button 
-                  component={Link} 
-                  to={`/quiz/${quiz._id}`} 
-                  fullWidth 
-                  variant="contained" 
-                  startIcon={<PlayArrowIcon />} 
-                  sx={{ 
-                    bgcolor: '#40e0d0', 
-                    color: '#020617', 
-                    fontWeight: 'bold', 
-                    border: '2px solid rgba(255, 255, 255, 0.5)',
-                    borderRadius: 2,
-                    '&:hover': { 
-                      bgcolor: '#33b3a6',
-                      borderColor: 'rgba(255, 255, 255, 0.9)'
-                    } 
-                  }}
-                >
-                  התחל חידון
-                </Button>
+                
+                {user?.role === 'admin' && (
+                  <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
+                      sx={{ color: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)', '&:hover': { bgcolor: 'rgba(64, 224, 208, 0.2)' } }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => setDeleteDialog({ open: true, quizId: quiz._id, quizTitle: quiz.title })} 
+                      sx={{ color: '#f44336', bgcolor: 'rgba(244, 67, 54, 0.1)', '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.2)' } }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
               </Box>
-            </Card>
-          </Grid>
+              
+              <Typography variant="body2" sx={{ 
+                opacity: 0.8, 
+                mb: 2,
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden'
+              }}>
+                {quiz.description}
+              </Typography>
+              
+              <Box sx={{ flexGrow: 1 }} />
+            </CardContent>
+
+            <Box sx={{ p: 3, pt: 0 }}>
+              <Button 
+                component={Link} 
+                to={`/quiz/${quiz._id}`} 
+                fullWidth 
+                variant="contained" 
+                startIcon={<PlayArrowIcon />} 
+                sx={{ 
+                  bgcolor: '#40e0d0', 
+                  color: '#020617', 
+                  fontWeight: 'bold', 
+                  border: '2px solid rgba(255, 255, 255, 0.5)',
+                  borderRadius: 2,
+                  py: 1,
+                  '&:hover': { 
+                    bgcolor: '#33b3a6',
+                    borderColor: 'rgba(255, 255, 255, 0.9)'
+                  } 
+                }}
+              >
+                התחל חידון
+              </Button>
+            </Box>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
       <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ ...deleteDialog, open: false })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} dir="rtl">
         <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת חידון</DialogTitle>

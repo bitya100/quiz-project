@@ -47,7 +47,6 @@ const ScrollToTop = () => {
             backdropFilter: 'blur(10px)',
             boxShadow: '0 0 15px rgba(64, 224, 208, 0.2)',
             transition: 'all 0.3s ease-in-out',
-            // כאן ביטלנו את הקפיצה למעלה, נשאר רק שינוי הצבע וההילה!
             '&:hover': {
               border: '1px solid #020617',
               bgcolor: '#40e0d0',
