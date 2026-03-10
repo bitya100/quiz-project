@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+// משתנה חכם: ימשוך את הכתובת מנטליפי, ואם אין (במחשב המקומי) ישתמש בכתובת המקומית מה-.env
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 const api = axios.create({
-  // baseURL: 'http://localhost:3001/api'
-  baseURL: "https://quiz-project-t7g7.onrender.com/api"
+  baseURL: apiUrl
 });
 
 // מטפל בשליחת הטוקן לשרת בכל בקשה

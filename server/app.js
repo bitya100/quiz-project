@@ -16,7 +16,7 @@ const shabbatBlock = require('./middleware/shabbatBlock');
 const app = express();
 
 // Middleware בסיסיים
-app.use(cors());
+app.use(cors()); // <-- מאשר לדפדפן (כמו ריאקט) לדבר עם השרת שלנו
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -24,7 +24,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ⭐️ 2. הפעלת חסימת השבת על כל הבקשות שמגיעות לשרת!
-// חשוב שזה יהיה כאן, לפני הראוטים של ה-API
 app.use(shabbatBlock);
 
 // הגדרת נתיבי ה-API

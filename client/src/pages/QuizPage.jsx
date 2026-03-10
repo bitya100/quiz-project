@@ -44,6 +44,9 @@ const QuizPage = () => {
   const timerRef = useRef(null);
   const delayRef = useRef(null);
 
+  // הכתובת החכמה
+  const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
@@ -269,7 +272,7 @@ const QuizPage = () => {
                 component="img" 
                 image={
                   quiz.questions[currentQuestion].image.startsWith('/uploads') 
-                    ? `https://quiz-project-t7g7.onrender.com${quiz.questions[currentQuestion].image}` // <-- התיקון כאן!
+                    ? `${serverUrl}${quiz.questions[currentQuestion].image}` // שימוש בכתובת החכמה
                     : quiz.questions[currentQuestion].image
                 } 
                 sx={{ borderRadius: 2, mb: 3, maxHeight: 250, objectFit: 'contain' }} 

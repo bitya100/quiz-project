@@ -19,6 +19,9 @@ const Quizzes = ({ searchTerm = "" }) => {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, quizId: null, quizTitle: "" });
   const [notification, setNotification] = useState({ open: false, message: "" });
 
+  // הגדרת הכתובת החכמה עבור התמונות וקריאות ישירות
+  const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+
   useEffect(() => {
     const fetchQuizzes = async () => {
       dispatch(setLoading(true));
@@ -34,8 +37,8 @@ const Quizzes = ({ searchTerm = "" }) => {
   const confirmDelete = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      // הכתובת החדשה למחיקה!
-      await axios.delete(`https://quiz-project-t7g7.onrender.com/api/quizzes/${deleteDialog.quizId}`, {
+      // שימוש בכתובת החכמה
+      await axios.delete(`${serverUrl}/api/quizzes/${deleteDialog.quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -104,7 +107,7 @@ const Quizzes = ({ searchTerm = "" }) => {
                 image={
                   quiz.image 
                     ? quiz.image.startsWith('/uploads') 
-                      ? `https://quiz-project-t7g7.onrender.com${quiz.image}` // <-- התיקון כאן!
+                      ? `${serverUrl}${quiz.image}` // שימוש בכתובת החכמה
                       : quiz.image
                     : "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"
                 }

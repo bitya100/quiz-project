@@ -19,6 +19,9 @@ const CreateQuiz = () => {
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
   const isEditMode = !!id;
 
+  // הכתובת החכמה!
+  const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+
   const { register, control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       title: "",
@@ -35,8 +38,7 @@ const CreateQuiz = () => {
       const fetchQuiz = async () => {
         try {
           const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-          // הכתובת החדשה!
-          const res = await axios.get(`https://quiz-project-t7g7.onrender.com/api/quizzes/${id}`, {
+          const res = await axios.get(`${serverUrl}/api/quizzes/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           reset(res.data);
@@ -46,7 +48,7 @@ const CreateQuiz = () => {
       };
       fetchQuiz();
     }
-  }, [id, isEditMode, reset]);
+  }, [id, isEditMode, reset, serverUrl]);
 
   const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -57,8 +59,7 @@ const CreateQuiz = () => {
 
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      // הכתובת החדשה!
-      const res = await axios.post("https://quiz-project-t7g7.onrender.com/api/upload", formData, {
+      const res = await axios.post(`${serverUrl}/api/upload`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setValue('image', res.data.imageUrl);
@@ -77,8 +78,7 @@ const CreateQuiz = () => {
 
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      // הכתובת החדשה!
-      const res = await axios.post("https://quiz-project-t7g7.onrender.com/api/upload", formData, {
+      const res = await axios.post(`${serverUrl}/api/upload`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setValue(`questions.${index}.image`, res.data.imageUrl);
@@ -95,8 +95,7 @@ const CreateQuiz = () => {
     
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      // הכתובת החדשה!
-      const url = isEditMode ? `https://quiz-project-t7g7.onrender.com/api/quizzes/${id}` : `https://quiz-project-t7g7.onrender.com/api/quizzes`;
+      const url = isEditMode ? `${serverUrl}/api/quizzes/${id}` : `${serverUrl}/api/quizzes`;
       const method = isEditMode ? "put" : "post";
 
       await axios[method](url, data, { headers: { Authorization: `Bearer ${token}` } });
