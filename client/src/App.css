@@ -1,5 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&display=swap');
 
+* {
+  font-family: 'Rubik', sans-serif !important;
+}
 :root {
     --bg-dark: #0a0a0c;
     --card-bg: #16161a;

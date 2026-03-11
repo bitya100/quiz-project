@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setQuizzes, setLoading, deleteQuizAction } from "../store";
 import quizService from "../services/quizService";
-import api from "../services/api"; // התיקון הגדול! מייבאים את ה-API החכם שלנו
+import api from "../services/api"; 
 import { 
   Container, Card, CardContent, CardMedia, Typography, Button, 
   Box, CircularProgress, IconButton, Dialog, DialogTitle, 
@@ -41,9 +41,7 @@ const Quizzes = ({ searchTerm = "" }) => {
 
   const confirmDelete = async () => {
     try {
-      // שימוש ב-api.js המרכזי (אין צורך להוסיף טוקן ידנית, זה קורה לבד!)
       await api.delete(`/quizzes/${deleteDialog.quizId}`);
-      
       dispatch(deleteQuizAction(deleteDialog.quizId)); 
       setNotification({ open: true, message: "החידון נמחק בהצלחה! 🗑️" });
     } catch (err) { 
@@ -55,9 +53,7 @@ const Quizzes = ({ searchTerm = "" }) => {
 
   const handleApplyCreator = async () => {
     try {
-      // שימוש ב-api.js המרכזי! הוא כבר יודע ללכת ל- localhost:3001/api 
       await api.post('/users/request-creator');
-
       setCreatorDialog(false);
       setNotification({ open: true, message: "הבקשה נשמרה במסד הנתונים והועברה למנהל המערכת! 🚀" });
     } catch (error) {
@@ -74,12 +70,12 @@ const Quizzes = ({ searchTerm = "" }) => {
 
   return (
     <Container sx={{ mt: 5, pb: 10 }} maxWidth="lg">
-      <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', fontWeight: 'bold', color: '#40e0d0' }}>החידונים שלנו</Typography>
+      <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', fontWeight: '900', color: '#40e0d0' }}>החידונים שלנו</Typography>
       
       {filteredQuizzes.length === 0 ? (
         <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
           <SearchOffIcon sx={{ fontSize: 80, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
-          <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: '500' }}>
             מצטערים, לא נמצא הערך המבוקש.
           </Typography>
         </Box>
@@ -95,27 +91,28 @@ const Quizzes = ({ searchTerm = "" }) => {
               height: '100%', 
               display: 'flex', 
               flexDirection: 'column', 
-              background: 'rgba(255, 255, 255, 0.05)', 
+              background: 'rgba(255, 255, 255, 0.03)', 
               color: 'white', 
-              border: '1px solid rgba(64, 224, 208, 0.2)',
-              borderRadius: 3,
+              border: '1px solid rgba(64, 224, 208, 0.1)',
+              borderRadius: 4,
               overflow: 'hidden',
-              transition: 'all 0.3s ease-in-out',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // אנימציה חלקה וקופצנית יותר
               '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 8px 25px rgba(64, 224, 208, 0.3)',
-                  borderColor: '#40e0d0'
+                  transform: 'translateY(-10px)',
+                  boxShadow: '0 15px 30px rgba(64, 224, 208, 0.2)',
+                  borderColor: 'rgba(64, 224, 208, 0.5)',
+                  background: 'rgba(255, 255, 255, 0.05)'
               }
             }}>
               
               <Box sx={{ 
                 width: '100%', 
                 height: 200, 
-                bgcolor: 'rgba(0, 0, 0, 0.3)', 
+                bgcolor: 'rgba(0, 0, 0, 0.4)', 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderBottom: '1px solid rgba(64, 224, 208, 0.2)'
+                borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
               }}>
                 <CardMedia 
                 component="img" 
@@ -130,14 +127,15 @@ const Quizzes = ({ searchTerm = "" }) => {
                   sx={{ 
                     maxHeight: '100%', 
                     maxWidth: '100%',
-                    objectFit: 'contain' 
+                    objectFit: 'contain',
+                    p: 1
                   }} 
                 />
               </Box>
 
               <CardContent sx={{ textAlign: 'right', flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Typography variant="h5" sx={{ color: '#40e0d0', fontWeight: 'bold', wordBreak: 'break-word', pr: 1 }}>
+                  <Typography variant="h5" sx={{ color: '#40e0d0', fontWeight: '800', wordBreak: 'break-word', pr: 1, letterSpacing: '0.5px' }}>
                     {quiz.title}
                   </Typography>
                   
@@ -146,14 +144,14 @@ const Quizzes = ({ searchTerm = "" }) => {
                       <IconButton 
                         size="small" 
                         onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
-                        sx={{ color: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)', '&:hover': { bgcolor: 'rgba(64, 224, 208, 0.2)' } }}
+                        sx={{ color: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)', '&:hover': { bgcolor: 'rgba(64, 224, 208, 0.3)' } }}
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton 
                         size="small" 
                         onClick={() => setDeleteDialog({ open: true, quizId: quiz._id, quizTitle: quiz.title })} 
-                        sx={{ color: '#f44336', bgcolor: 'rgba(244, 67, 54, 0.1)', '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.2)' } }}
+                        sx={{ color: '#f44336', bgcolor: 'rgba(244, 67, 54, 0.1)', '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.3)' } }}
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -162,8 +160,10 @@ const Quizzes = ({ searchTerm = "" }) => {
                 </Box>
                 
                 <Typography variant="body2" sx={{ 
-                  opacity: 0.8, 
+                  opacity: 0.7, 
                   mb: 2,
+                  fontSize: '0.95rem',
+                  lineHeight: 1.6,
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
@@ -176,22 +176,35 @@ const Quizzes = ({ searchTerm = "" }) => {
               </CardContent>
 
               <Box sx={{ p: 3, pt: 0 }}>
+                {/* כאן מתחיל הקסם! הכפתור החדש */}
                 <Button 
                   component={Link} 
                   to={`/quiz/${quiz._id}`} 
                   fullWidth 
                   variant="contained" 
-                  startIcon={<PlayArrowIcon />} 
+                  startIcon={<PlayArrowIcon sx={{ fontSize: '28px !important' }} />} 
                   sx={{ 
-                    bgcolor: '#40e0d0', 
+                    background: 'linear-gradient(45deg, #40e0d0 30%, #2bd2c2 90%)',
                     color: '#020617', 
-                    fontWeight: 'bold', 
-                    border: '2px solid rgba(255, 255, 255, 0.5)',
-                    borderRadius: 2,
-                    py: 1,
+                    fontWeight: '900', 
+                    fontSize: '1.1rem',
+                    borderRadius: '50px', // צורה עגולה לחלוטין (כמו כדור)
+                    py: 1.2,
+                    boxShadow: '0 4px 15px rgba(64, 224, 208, 0.4)',
+                    transition: 'all 0.3s ease',
+                    // אנימציית "נשימה/פעימה"
+                    animation: 'pulse 2s infinite',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(1)', boxShadow: '0 4px 10px rgba(64, 224, 208, 0.4)' },
+                      '50%': { transform: 'scale(1.03)', boxShadow: '0 0 15px rgba(73, 240, 252, 0.93)' },
+                      '100%': { transform: 'scale(1)', boxShadow: '0 4px 10px rgba(64, 224, 208, 0.4)' }
+                    },
                     '&:hover': { 
-                      bgcolor: '#33b3a6',
-                      borderColor: 'rgba(255, 255, 255, 0.9)'
+                      background: 'linear-gradient(45deg, #2bd2c2 30%, #40e0d0 90%)',
+                      transform: 'translateY(-3px) scale(1.05)',
+                      boxShadow: '0 8px 25px rgba(64, 224, 208, 0.9)',
+                      // מבטל את האנימציה כשמרחפים מעליו כדי שלא יקפוץ למשתמש מתחת לעכבר
+                      // animation: 'none' 
                     } 
                   }}
                 >
@@ -203,7 +216,6 @@ const Quizzes = ({ searchTerm = "" }) => {
         </Box>
       )}
 
-      {/* אזור "הפוך ליוצר" שמופיע רק למשתמשים מחוברים שהם לא אדמינים! */}
       {user && user.role !== 'admin' && (
         <Box sx={{ 
           mt: 10, 
@@ -215,10 +227,10 @@ const Quizzes = ({ searchTerm = "" }) => {
           boxShadow: '0 0 30px rgba(0,0,0,0.3)'
         }}>
           <AutoAwesomeIcon sx={{ fontSize: 50, color: '#bc13fe', mb: 2 }} />
-          <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+          <Typography variant="h4" sx={{ color: 'white', fontWeight: '900', mb: 2 }}>
             יש לך רעיון לחידון מנצח?
           </Typography>
-          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, maxWidth: '600px', mx: 'auto' }}>
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, maxWidth: '600px', mx: 'auto', fontSize: '1.1rem' }}>
             צוות Quiz Master מחפש יוצרי תוכן מוכשרים! אם יש לך ידע נרחב ורעיונות לשאלות מאתגרות, אולי מקומך איתנו.
           </Typography>
           <Button 
@@ -228,9 +240,11 @@ const Quizzes = ({ searchTerm = "" }) => {
             sx={{ 
               bgcolor: '#bc13fe', 
               color: 'white', 
-              fontWeight: 'bold', 
-              px: 5, py: 1.5, borderRadius: '30px',
-              '&:hover': { bgcolor: '#a00bd9', boxShadow: '0 0 20px rgba(188, 19, 254, 0.6)' } 
+              fontWeight: '800', 
+              fontSize: '1.1rem',
+              px: 5, py: 1.5, borderRadius: '50px',
+              transition: 'all 0.3s ease',
+              '&:hover': { bgcolor: '#a00bd9', transform: 'translateY(-2px)', boxShadow: '0 8px 25px rgba(188, 19, 254, 0.6)' } 
             }}
           >
             הגש בקשה להיות יוצר
@@ -238,39 +252,37 @@ const Quizzes = ({ searchTerm = "" }) => {
         </Box>
       )}
 
-      {/* חלון מחיקת חידון */}
-      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ ...deleteDialog, open: false })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} dir="rtl">
-        <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת חידון</DialogTitle>
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ ...deleteDialog, open: false })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336', borderRadius: 3 } }} dir="rtl">
+        <DialogTitle sx={{ color: '#f44336', fontWeight: '900' }}>מחיקת חידון</DialogTitle>
         <DialogContent>
-          <Typography>האם אתה בטוח שברצונך למחוק את החידון "{deleteDialog.quizTitle}" לצמיתות?</Typography>
+          <Typography sx={{ fontSize: '1.1rem' }}>האם אתה בטוח שברצונך למחוק את החידון "{deleteDialog.quizTitle}" לצמיתות?</Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setDeleteDialog({ ...deleteDialog, open: false })} sx={{ color: 'white' }}>ביטול</Button>
-          <Button onClick={confirmDelete} variant="contained" sx={{ bgcolor: '#f44336', color: 'white', '&:hover': { bgcolor: '#d32f2f' } }}>מחק עכשיו</Button>
+        <DialogActions sx={{ p: 2, pb: 3, px: 3 }}>
+          <Button onClick={() => setDeleteDialog({ ...deleteDialog, open: false })} sx={{ color: 'white', fontWeight: 'bold' }}>ביטול</Button>
+          <Button onClick={confirmDelete} variant="contained" sx={{ bgcolor: '#f44336', color: 'white', fontWeight: 'bold', borderRadius: '30px', px: 3, '&:hover': { bgcolor: '#d32f2f' } }}>מחק עכשיו</Button>
         </DialogActions>
       </Dialog>
 
-      {/* חלון בקשת יוצר תוכן */}
-      <Dialog open={creatorDialog} onClose={() => setCreatorDialog(false)} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #bc13fe', borderRadius: 3, maxWidth: '500px' } }} dir="rtl">
-        <DialogTitle sx={{ color: '#bc13fe', fontWeight: 'bold', textAlign: 'center', fontSize: '1.8rem', pt: 4 }}>
+      <Dialog open={creatorDialog} onClose={() => setCreatorDialog(false)} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #bc13fe', borderRadius: 4, maxWidth: '500px' } }} dir="rtl">
+        <DialogTitle sx={{ color: '#bc13fe', fontWeight: '900', textAlign: 'center', fontSize: '1.8rem', pt: 4 }}>
           הצטרף ליוצרי התוכן שלנו 👑
         </DialogTitle>
         <DialogContent sx={{ textAlign: 'center', pb: 4 }}>
-          <Typography sx={{ mb: 3, color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem' }}>
+          <Typography sx={{ mb: 3, color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', fontWeight: '500' }}>
             יוצרי התוכן של Quiz Master מקבלים גישה בלעדית ללוח בקרה מתקדם המאפשר:
           </Typography>
-          <Box sx={{ textAlign: 'right', bgcolor: 'rgba(255,255,255,0.05)', p: 3, borderRadius: 2, mb: 3 }}>
-            <Typography sx={{ mb: 1 }}>✨ יצירת חידונים חדשים</Typography>
-            <Typography sx={{ mb: 1 }}>📊 צפייה בסטטיסטיקות מתקדמות</Typography>
-            <Typography>🏆 ניהול ואתגר של הקהילה</Typography>
+          <Box sx={{ textAlign: 'right', bgcolor: 'rgba(255,255,255,0.05)', p: 3, borderRadius: 3, mb: 3 }}>
+            <Typography sx={{ mb: 1.5, fontWeight: '500' }}>✨ יצירת חידונים חדשים</Typography>
+            <Typography sx={{ mb: 1.5, fontWeight: '500' }}>📊 צפייה בסטטיסטיקות מתקדמות</Typography>
+            <Typography sx={{ fontWeight: '500' }}>🏆 ניהול ואתגר של הקהילה</Typography>
           </Box>
-          <Typography variant="body2" sx={{ color: '#40e0d0' }}>
-            הבקשה שלך תישלח ישירות למנהל המערכת הראשי (Super Admin) לבחינה.
+          <Typography variant="body2" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
+            הבקשה שלך תישלח ישירות למנהל המערכת הראשי לבחינה.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 3, justifyContent: 'center', gap: 2 }}>
-          <Button onClick={() => setCreatorDialog(false)} variant="outlined" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', borderRadius: '20px', px: 4 }}>ביטול</Button>
-          <Button onClick={handleApplyCreator} variant="contained" sx={{ bgcolor: '#bc13fe', color: 'white', borderRadius: '20px', px: 4, '&:hover': { bgcolor: '#a00bd9' } }}>שלח בקשה</Button>
+        <DialogActions sx={{ p: 3, justifyContent: 'center', gap: 2, pb: 4 }}>
+          <Button onClick={() => setCreatorDialog(false)} variant="outlined" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', borderRadius: '30px', px: 4, fontWeight: 'bold' }}>ביטול</Button>
+          <Button onClick={handleApplyCreator} variant="contained" sx={{ bgcolor: '#bc13fe', color: 'white', borderRadius: '30px', px: 5, fontWeight: 'bold', fontSize: '1.1rem', '&:hover': { bgcolor: '#a00bd9', transform: 'scale(1.05)' }, transition: 'all 0.2s' }}>שלח בקשה</Button>
         </DialogActions>
       </Dialog>
 
@@ -281,7 +293,7 @@ const Quizzes = ({ searchTerm = "" }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         sx={{ mb: 8 }}
       >
-        <Alert severity="success" sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0', fontSize: '1.1rem' }}>
+        <Alert severity="success" sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: 3 }}>
           {notification.message}
         </Alert>
       </Snackbar>

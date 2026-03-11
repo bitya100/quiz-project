@@ -2,42 +2,131 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Container, Typography, Box, Button, keyframes } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
-// --- אנימציות עדינות לסימני השאלה ---
+// --- אנימציות "טיול" (Float) שפועלות תמיד ---
 const float1 = keyframes`
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(10deg); }
+  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+  25% { transform: translateY(-30px) translateX(15px) rotate(10deg); }
+  50% { transform: translateY(-15px) translateX(-15px) rotate(-5deg); }
+  75% { transform: translateY(15px) translateX(20px) rotate(5deg); }
 `;
 const float2 = keyframes`
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(15px) rotate(-10deg); }
+  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+  25% { transform: translateY(30px) translateX(-15px) rotate(-10deg); }
+  50% { transform: translateY(15px) translateX(15px) rotate(5deg); }
+  75% { transform: translateY(-15px) translateX(-20px) rotate(-5deg); }
 `;
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(5px); }
 `;
 
-// --- קומפוננטה לסימני שאלה מרחפים ברקע ---
-const QuestionMarkDeco = ({ top, left, right, bottom, color, delay, size = '1.5rem' }) => (
+// --- אנימציות פיצוץ חדשות - רסיסים שעפים רחוק ומסתובבים ---
+const vanish = keyframes`
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.2); opacity: 0; }
+`;
+
+const shardFlyOut1 = keyframes`
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(-100px, -100px) rotate(-360deg) scale(0); opacity: 0; }
+`;
+const shardFlyOut2 = keyframes`
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(100px, -100px) rotate(360deg) scale(0); opacity: 0; }
+`;
+const shardFlyOut3 = keyframes`
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(-100px, 100px) rotate(-360deg) scale(0); opacity: 0; }
+`;
+const shardFlyOut4 = keyframes`
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(100px, 100px) rotate(360deg) scale(0); opacity: 0; }
+`;
+
+// --- קומפוננטה לרסיס בודד ---
+const Shard = ({ color, animation, size, isExploded }) => (
   <Box
+    component="span"
     sx={{
       position: 'absolute',
-      top, left, right, bottom,
       color: color,
       fontSize: size,
       fontWeight: 'bold',
-      opacity: 0.35, // שקיפות עדינה כדי שלא יפריע לקריאה
-      textShadow: `0 0 10px ${color}`, // הילת ניאון קטנה
-      animation: `${Number(delay) % 2 === 0 ? float1 : float2} ${4 + Number(delay)}s ease-in-out infinite`,
-      zIndex: 0,
-      pointerEvents: 'none',
-      display: { xs: 'none', sm: 'block' } // מסתיר במסכים ממש קטנים למניעת עומס
+      textShadow: `0 0 10px ${color}`,
+      opacity: 0, // מוסתר כברירת מחדל
+      // האנימציה מופעלת רק כשיש פיצוץ
+      animation: isExploded ? `${animation} 3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards` : 'none',
+      pointerEvents: 'none', 
     }}
   >
     ?
   </Box>
 );
 
-// --- קומפוננטת קסם לחשיפת תוכן בגלילה ---
+// --- קומפוננטה לסימני שאלה מרחפים ---
+const QuestionMarkDeco = ({ top, left, right, bottom, color, delay, size = '1.5rem' }) => {
+  const [isExploded, setIsExploded] = useState(false);
+
+  const handleClick = () => {
+    if (!isExploded) {
+      setIsExploded(true);
+      setTimeout(() => {
+        setIsExploded(false);
+      }, 2000);
+    }
+  };
+
+  const shardSize = `calc(${size} * 0.6)`;
+
+  return (
+    <Box
+      onClick={handleClick}
+      sx={{
+        position: 'absolute',
+        top, left, right, bottom,
+        color: color,
+        fontSize: size,
+        fontWeight: 'bold',
+        zIndex: 5,
+        cursor: 'pointer',
+        pointerEvents: 'auto',
+        display: { xs: 'none', sm: 'flex' },
+        justifyContent: 'center',
+        alignItems: 'center',
+        // האנימציה של הטיול רצה תמיד - ללא תלות בסטטוס הפיצוץ
+        animation: `${Number(delay) % 2 === 0 ? float1 : float2} ${12 + Number(delay)}s ease-in-out infinite`,
+        '&:hover span.main-quiz': {
+           textShadow: `0 0 20px ${color}, 0 0 40px ${color}`,
+           opacity: 1,
+        }
+      }}
+    >
+      {/* 1. סימן השאלה הראשי */}
+      <Box 
+        component="span" 
+        className="main-quiz"
+        sx={{
+          transition: 'all 0.2s ease',
+          textShadow: `0 0 10px ${color}`,
+          opacity: 0.8,
+          animation: isExploded ? `${vanish} 0.3s ease-out forwards` : 'none',
+        }}
+      >
+        ?
+      </Box>
+
+      {/* 2. שכבת הרסיסים (קיימת תמיד ב-DOM כדי למנוע קפיצות, מופעלת רק בפיצוץ) */}
+      <Box sx={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Shard color={color} animation={shardFlyOut1} size={shardSize} isExploded={isExploded} />
+        <Shard color={color} animation={shardFlyOut2} size={shardSize} isExploded={isExploded} />
+        <Shard color={color} animation={shardFlyOut3} size={shardSize} isExploded={isExploded} />
+        <Shard color={color} animation={shardFlyOut4} size={shardSize} isExploded={isExploded} />
+      </Box>
+    </Box>
+  );
+};
+
+// --- קומפוננטת לחשיפת תוכן בגלילה ---
 const FadeInSection = ({ children, minHeight = '70vh' }) => {
   const [isVisible, setVisible] = useState(false);
   const domRef = useRef();
@@ -69,10 +158,13 @@ const FadeInSection = ({ children, minHeight = '70vh' }) => {
         width: '100%',
         textAlign: 'center',
         position: 'relative',
-        zIndex: 1
+        zIndex: 10,
+        pointerEvents: 'none' 
       }}
     >
-      {children}
+      <Box sx={{ pointerEvents: 'auto' }}>
+        {children}
+      </Box>
     </Box>
   );
 };
@@ -88,26 +180,38 @@ const Home = () => {
   return (
     <Box sx={{ position: 'relative', overflow: 'hidden' }}>
       
-      {/* פיזור סימני השאלה ברקע */}
-      {/* צד שמאל */}
-      <QuestionMarkDeco top="10%" left="10%" color="#40e0d0" delay="0" size="1.2rem" />
-      <QuestionMarkDeco top="30%" left="5%" color="#bc13fe" delay="1" size="2.5rem" />
-      <QuestionMarkDeco top="55%" left="12%" color="#40e0d0" delay="3" size="1.8rem" />
-      <QuestionMarkDeco top="75%" left="8%" color="#bc13fe" delay="2" size="1.5rem" />
-      <QuestionMarkDeco top="20%" left="25%" color="#bc13fe" delay="4" size="1rem" />
-      <QuestionMarkDeco top="85%" left="20%" color="#40e0d0" delay="5" size="2rem" />
+      {/* --- צד שמאל --- */}
+      <QuestionMarkDeco top="5%" left="8%" color="#40e0d0" delay="0" size="1.2rem" />
+      <QuestionMarkDeco top="15%" left="22%" color="#ffffff" delay="1" size="2.5rem" />
+      <QuestionMarkDeco top="28%" left="5%" color="#000000" delay="2" size="1.8rem" /> 
+      <QuestionMarkDeco top="42%" left="18%" color="#40e0d0" delay="3" size="3.2rem" />
+      <QuestionMarkDeco top="55%" left="7%" color="#ffffff" delay="0" size="1.5rem" />
+      <QuestionMarkDeco top="68%" left="25%" color="#40e0d0" delay="4" size="2.1rem" />
+      <QuestionMarkDeco top="82%" left="12%" color="#ffffff" delay="1" size="1.9rem" />
+      <QuestionMarkDeco top="92%" left="28%" color="#000000" delay="5" size="1.4rem" />
+      
+      <QuestionMarkDeco top="10%" left="35%" color="#40e0d0" delay="3" size="0.9rem" />
+      <QuestionMarkDeco top="35%" left="38%" color="#ffffff" delay="2" size="1.1rem" />
+      <QuestionMarkDeco top="60%" left="32%" color="#40e0d0" delay="5" size="1.3rem" />
+      <QuestionMarkDeco top="88%" left="5%" color="#40e0d0" delay="2" size="2.8rem" />
 
-      {/* צד ימין */}
-      <QuestionMarkDeco top="15%" right="12%" color="#bc13fe" delay="2" size="1.5rem" />
-      <QuestionMarkDeco top="40%" right="8%" color="#40e0d0" delay="0" size="3rem" />
-      <QuestionMarkDeco top="65%" right="15%" color="#bc13fe" delay="4" size="1.3rem" />
-      <QuestionMarkDeco top="80%" right="10%" color="#40e0d0" delay="1" size="2.2rem" />
-      <QuestionMarkDeco top="25%" right="28%" color="#40e0d0" delay="3" size="1.1rem" />
-      <QuestionMarkDeco top="90%" right="25%" color="#bc13fe" delay="5" size="1.6rem" />
+      {/* --- צד ימין --- */}
+      <QuestionMarkDeco top="8%" right="15%" color="#ffffff" delay="2" size="1.5rem" />
+      <QuestionMarkDeco top="22%" right="8%" color="#40e0d0" delay="0" size="3.5rem" />
+      <QuestionMarkDeco top="35%" right="25%" color="#000000" delay="4" size="1.3rem" />
+      <QuestionMarkDeco top="48%" right="12%" color="#ffffff" delay="1" size="2.4rem" />
+      <QuestionMarkDeco top="62%" right="28%" color="#40e0d0" delay="3" size="1.7rem" />
+      <QuestionMarkDeco top="75%" right="6%" color="#ffffff" delay="5" size="2.2rem" />
+      <QuestionMarkDeco top="88%" right="18%" color="#40e0d0" delay="0" size="1.6rem" />
+      <QuestionMarkDeco top="95%" right="5%" color="#ffffff" delay="2" size="1.2rem" />
 
-      <Container maxWidth="lg" sx={{ pt: 5, pb: 10 }}>
+      <QuestionMarkDeco top="15%" right="35%" color="#40e0d0" delay="1" size="1rem" />
+      <QuestionMarkDeco top="42%" right="38%" color="#ffffff" delay="5" size="1.2rem" />
+      <QuestionMarkDeco top="70%" right="34%" color="#40e0d0" delay="2" size="0.9rem" />
+      <QuestionMarkDeco top="82%" right="32%" color="#000000" delay="4" size="1.5rem" />
+
+      <Container maxWidth="lg" sx={{ pt: 5, pb: 10, pointerEvents: 'none', position: 'relative', zIndex: 10 }}>
         
-        {/* מסך 1: כותרת בלבד */}
         <FadeInSection minHeight="85vh">
           <Typography 
             variant="h1" 
@@ -127,7 +231,6 @@ const Home = () => {
           </Typography>
         </FadeInSection>
 
-        {/* מסך 2: גוללים ומופיע ההסבר */}
         <FadeInSection minHeight="60vh">
           <Typography 
             variant="h4" 
@@ -145,7 +248,6 @@ const Home = () => {
           </Typography>
         </FadeInSection>
 
-        {/* מסך 3: גוללים עוד ומופיע הכפתור */}
         <FadeInSection minHeight="50vh">
           <Button 
             onClick={handleScrollToQuizzes}
