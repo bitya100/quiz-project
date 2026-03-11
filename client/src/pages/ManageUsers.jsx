@@ -51,7 +51,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
     }
   };
 
-  // בדיקת פלדה: האם המשתמש המחובר כרגע הוא מנהל העל? 
   const loggedInUserId = currentUser?.userId || currentUser?._id;
   const dbCurrentUser = users.find(u => u._id === loggedInUserId);
   const isSuperAdmin = dbCurrentUser?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
@@ -156,23 +155,26 @@ const ManageUsers = ({ searchTerm = "" }) => {
             boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
             borderRadius: 3, 
             color: 'white',
-            overflow: 'hidden' 
+            /* התיקון הקריטי למובייל - גלילה אופקית! */
+            overflowX: 'auto',
+            /* עיצוב פס הגלילה שיהיה ברור וגלוי */
+            '&::-webkit-scrollbar': { height: '8px' },
+            '&::-webkit-scrollbar-track': { background: 'rgba(255,255,255,0.05)', borderRadius: 3 },
+            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(64, 224, 208, 0.5)', borderRadius: 3, '&:hover': { backgroundColor: '#40e0d0' } }
           }}
         >
-          <Table dir="rtl">
+          <Table dir="rtl" sx={{ minWidth: { xs: '600px', md: '100%' } }}>
             <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
               <TableRow>
-                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>שם משתמש</TableCell>
-                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>אימייל</TableCell>
-                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>תפקיד</TableCell>
-                <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>מחיקה</TableCell>
+                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold', whiteSpace: 'nowrap' }}>שם משתמש</TableCell>
+                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold', whiteSpace: 'nowrap' }}>אימייל</TableCell>
+                <TableCell align="right" sx={{ color: '#40e0d0', fontWeight: 'bold', whiteSpace: 'nowrap' }}>תפקיד</TableCell>
+                <TableCell align="center" sx={{ color: '#40e0d0', fontWeight: 'bold', whiteSpace: 'nowrap' }}>מחיקה</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredUsers.map((user) => {
                 
-                // התיקון הקריטי להרשאות התפריט: 
-                // מותר להפוך לאדמין רק אם: אני מנהל-על, או שהמשתמש כבר אדמין, או שהוא ביקש ספציפית!
                 const isAlreadyAdmin = user.role === 'admin';
                 const hasRequested = user.requestedCreator === true;
                 const canMakeAdmin = isSuperAdmin || isAlreadyAdmin || hasRequested;
@@ -180,7 +182,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
                 return (
                   <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
                     
-                    <TableCell align="right" sx={{ color: 'white' }}>
+                    <TableCell align="right" sx={{ color: 'white', whiteSpace: 'nowrap' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography component="span">
                           {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
@@ -211,9 +213,9 @@ const ManageUsers = ({ searchTerm = "" }) => {
                       </Box>
                     </TableCell>
 
-                    <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
+                    <TableCell align="right" sx={{ color: 'white', whiteSpace: 'nowrap' }}>{user.email}</TableCell>
                     
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                       <Select
                         value={user.role}
                         onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
@@ -226,7 +228,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
                         }}
                         sx={{ 
                           color: 'white', 
-                          minWidth: '160px',
+                          minWidth: { xs: '120px', sm: '160px' },
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
                           '& .MuiSvgIcon-root': { color: 'white' },
@@ -247,7 +249,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
                       </Select>
                     </TableCell>
                     
-                    <TableCell align="center">
+                    <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
                       {isSuperAdmin ? (
                         <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
                           <span>

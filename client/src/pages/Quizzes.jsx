@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setQuizzes, setLoading, deleteQuizAction } from "../store";
 import quizService from "../services/quizService";
+import api from "../services/api"; // התיקון הגדול! מייבאים את ה-API החכם שלנו
 import { 
   Container, Card, CardContent, CardMedia, Typography, Button, 
   Box, CircularProgress, IconButton, Dialog, DialogTitle, 
@@ -12,8 +13,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchOffIcon from "@mui/icons-material/SearchOff"; 
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'; // אייקון ליוצרים
-import axios from "axios";
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const Quizzes = ({ searchTerm = "" }) => {
   const { list: quizzes, loading } = useSelector((state) => state.quizzes);
@@ -22,7 +22,7 @@ const Quizzes = ({ searchTerm = "" }) => {
   const navigate = useNavigate();
 
   const [deleteDialog, setDeleteDialog] = useState({ open: false, quizId: null, quizTitle: "" });
-  const [creatorDialog, setCreatorDialog] = useState(false); // חלון בקשת יוצר תוכן
+  const [creatorDialog, setCreatorDialog] = useState(false); 
   const [notification, setNotification] = useState({ open: false, message: "" });
 
   const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
@@ -41,10 +41,8 @@ const Quizzes = ({ searchTerm = "" }) => {
 
   const confirmDelete = async () => {
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      await axios.delete(`${serverUrl}/api/quizzes/${deleteDialog.quizId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // שימוש ב-api.js המרכזי (אין צורך להוסיף טוקן ידנית, זה קורה לבד!)
+      await api.delete(`/quizzes/${deleteDialog.quizId}`);
       
       dispatch(deleteQuizAction(deleteDialog.quizId)); 
       setNotification({ open: true, message: "החידון נמחק בהצלחה! 🗑️" });
@@ -55,10 +53,17 @@ const Quizzes = ({ searchTerm = "" }) => {
     }
   };
 
-  const handleApplyCreator = () => {
-    setCreatorDialog(false);
-    // כאן אפשר בעתיד לעשות קריאת API ששולחת אימייל או מסמנת בבסיס הנתונים
-    setNotification({ open: true, message: "בקשתך נשלחה להנהלה! במידה ותימצא מתאים, נשדרג את חשבונך בקרוב. 🚀" });
+  const handleApplyCreator = async () => {
+    try {
+      // שימוש ב-api.js המרכזי! הוא כבר יודע ללכת ל- localhost:3001/api 
+      await api.post('/users/request-creator');
+
+      setCreatorDialog(false);
+      setNotification({ open: true, message: "הבקשה נשמרה במסד הנתונים והועברה למנהל המערכת! 🚀" });
+    } catch (error) {
+      console.error(error);
+      setNotification({ open: true, message: "שגיאה בשליחת הבקשה." });
+    }
   };
 
   const filteredQuizzes = quizzes.filter((quiz) =>
