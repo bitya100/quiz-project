@@ -98,7 +98,6 @@ const getProfile = async (req, res) => {
     }
 };
 
-// הפונקציה החדשה שמקבלת את הבקשה להיות יוצר תוכן
 const requestCreator = async (req, res) => {
     try {
         const currentUserId = req.user._id || req.user.userId;
@@ -127,6 +126,11 @@ const updateUserRole = async (req, res) => {
             return res.status(403).send("גישה נדחתה: מנהלים בלבד");
         }
 
+        // התיקון: אנחנו בודקים מי המנהל שמנסה לעשות את השינוי
+        const currentUserId = req.user._id || req.user.userId;
+        const requestingUser = await User.findById(currentUserId);
+        const isSuperAdmin = requestingUser && requestingUser.email === SUPER_ADMIN_EMAIL;
+
         const userIdToUpdate = req.params.id;
         const { role } = req.body;
         const userToUpdate = await User.findById(userIdToUpdate);
@@ -137,6 +141,11 @@ const updateUserRole = async (req, res) => {
             return res.status(403).send("לא ניתן לשנות הרשאה למנהל העל");
         }
 
+        // התיקון: חוסמים שדרוג רק אם המשתמש לא ביקש *וגם* מי שמנסה לשדרג אותו הוא לא מנהל-העל
+        if (role === 'admin' && userToUpdate.role !== 'admin' && !userToUpdate.requestedCreator && !isSuperAdmin) {
+            return res.status(400).send('לא ניתן למנות למנהל משתמש שלא הגיש בקשה לכך במערכת.');
+        }
+
         if (role === 'user') {
             const adminCount = await User.countDocuments({ role: 'admin' });
             if (userToUpdate.role === 'admin' && adminCount <= 1) {
@@ -145,7 +154,6 @@ const updateUserRole = async (req, res) => {
         }
 
         userToUpdate.role = role;
-        // איפוס הבקשה! אם הוא הפך לאדמין, הוא כבר לא "מבקש"
         userToUpdate.requestedCreator = false; 
         
         await userToUpdate.save();

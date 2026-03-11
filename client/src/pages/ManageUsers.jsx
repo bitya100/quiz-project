@@ -26,7 +26,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // מותר לכל מנהל לראות את הדף
   const isAdmin = currentUser?.role === 'admin';
 
   useEffect(() => {
@@ -179,8 +178,8 @@ const ManageUsers = ({ searchTerm = "" }) => {
             </TableHead>
             <TableBody>
               {filteredUsers.map((user) => {
-                // המשתנה הזה בודק האם מותר לשנות את המשתמש הספציפי למנהל
-                const canBeAdmin = user.role === 'admin' || user.requestedCreator;
+                // התיקון הקריטי: אם אתה מנהל העל, מותר לך לשנות את כולם לאדמינים!
+                const canBeAdmin = user.role === 'admin' || user.requestedCreator || isSuperAdmin;
 
                 return (
                   <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
@@ -239,7 +238,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
                         }}
                       >
                         <MenuItem value="user">משתמש (user)</MenuItem>
-                        {/* כאן התיקון: חוסמים את אופציית המנהל למי שלא ביקש */}
                         <MenuItem 
                           value="admin" 
                           disabled={!canBeAdmin}
