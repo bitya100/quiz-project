@@ -83,7 +83,6 @@ const getProfile = async (req, res) => {
         const user = await User.findById(currentUserId).select('-password');
         if (!user) return res.status(404).send('משתמש לא נמצא');
 
-        // התיקון הקריטי: יצירת טוקן חדש ומעודכן עם התפקיד הנוכחי!
         const freshToken = jwt.sign(
             { _id: user._id, userId: user._id, role: user.role, userName: user.userName }, 
             process.env.JWT_SECRET || 'secret',
@@ -91,11 +90,22 @@ const getProfile = async (req, res) => {
         );
 
         const userResponse = user.toObject();
-        userResponse.token = freshToken; // מצרפים את הטוקן למידע שחוזר
+        userResponse.token = freshToken; 
 
         res.json(userResponse);
     } catch (ex) {
         res.status(500).send('שגיאה בטעינת הפרופיל');
+    }
+};
+
+// הפונקציה החדשה שמקבלת את הבקשה להיות יוצר תוכן
+const requestCreator = async (req, res) => {
+    try {
+        const currentUserId = req.user._id || req.user.userId;
+        await User.findByIdAndUpdate(currentUserId, { requestedCreator: true });
+        res.status(200).json({ message: "בקשתך נשלחה להנהלה!" });
+    } catch (ex) {
+        res.status(500).send('שגיאה בשליחת הבקשה');
     }
 };
 
@@ -135,6 +145,9 @@ const updateUserRole = async (req, res) => {
         }
 
         userToUpdate.role = role;
+        // איפוס הבקשה! אם הוא הפך לאדמין, הוא כבר לא "מבקש"
+        userToUpdate.requestedCreator = false; 
+        
         await userToUpdate.save();
         
         res.json({ message: `המשתמש ${userToUpdate.userName} הוא כעת ${role}`, user: userToUpdate });
@@ -166,4 +179,4 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getProfile, getAllUsers, updateUserRole, deleteUser };
+module.exports = { register, login, getProfile, requestCreator, getAllUsers, updateUserRole, deleteUser };

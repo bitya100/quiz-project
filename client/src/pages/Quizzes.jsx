@@ -3,11 +3,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { setQuizzes, setLoading, deleteQuizAction } from "../store";
 import quizService from "../services/quizService";
-import { Container, Card, CardContent, CardMedia, Typography, Button, Box, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from "@mui/material";
+import { 
+  Container, Card, CardContent, CardMedia, Typography, Button, 
+  Box, CircularProgress, IconButton, Dialog, DialogTitle, 
+  DialogContent, DialogActions, Snackbar, Alert 
+} from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchOffIcon from "@mui/icons-material/SearchOff"; 
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'; // אייקון ליוצרים
 import axios from "axios";
 
 const Quizzes = ({ searchTerm = "" }) => {
@@ -17,9 +22,9 @@ const Quizzes = ({ searchTerm = "" }) => {
   const navigate = useNavigate();
 
   const [deleteDialog, setDeleteDialog] = useState({ open: false, quizId: null, quizTitle: "" });
+  const [creatorDialog, setCreatorDialog] = useState(false); // חלון בקשת יוצר תוכן
   const [notification, setNotification] = useState({ open: false, message: "" });
 
-  // הגדרת הכתובת החכמה עבור התמונות וקריאות ישירות
   const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   useEffect(() => {
@@ -37,7 +42,6 @@ const Quizzes = ({ searchTerm = "" }) => {
   const confirmDelete = async () => {
     try {
       const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      // שימוש בכתובת החכמה
       await axios.delete(`${serverUrl}/api/quizzes/${deleteDialog.quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -51,6 +55,12 @@ const Quizzes = ({ searchTerm = "" }) => {
     }
   };
 
+  const handleApplyCreator = () => {
+    setCreatorDialog(false);
+    // כאן אפשר בעתיד לעשות קריאת API ששולחת אימייל או מסמנת בבסיס הנתונים
+    setNotification({ open: true, message: "בקשתך נשלחה להנהלה! במידה ותימצא מתאים, נשדרג את חשבונך בקרוב. 🚀" });
+  };
+
   const filteredQuizzes = quizzes.filter((quiz) =>
     quiz.title.toLowerCase().includes(searchTerm.toLowerCase().trim())
   );
@@ -58,7 +68,7 @@ const Quizzes = ({ searchTerm = "" }) => {
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
 
   return (
-    <Container sx={{ mt: 5, pb: 5 }} maxWidth="lg">
+    <Container sx={{ mt: 5, pb: 10 }} maxWidth="lg">
       <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', fontWeight: 'bold', color: '#40e0d0' }}>החידונים שלנו</Typography>
       
       {filteredQuizzes.length === 0 ? (
@@ -107,7 +117,7 @@ const Quizzes = ({ searchTerm = "" }) => {
                 image={
                   quiz.image 
                     ? quiz.image.startsWith('/uploads') 
-                      ? `${serverUrl}${quiz.image}` // שימוש בכתובת החכמה
+                      ? `${serverUrl}${quiz.image}` 
                       : quiz.image
                     : "https://placehold.co/400x200/020617/40e0d0.png?text=QUIZ"
                 }
@@ -188,6 +198,42 @@ const Quizzes = ({ searchTerm = "" }) => {
         </Box>
       )}
 
+      {/* אזור "הפוך ליוצר" שמופיע רק למשתמשים מחוברים שהם לא אדמינים! */}
+      {user && user.role !== 'admin' && (
+        <Box sx={{ 
+          mt: 10, 
+          p: 4, 
+          borderRadius: 4, 
+          background: 'linear-gradient(135deg, rgba(188, 19, 254, 0.1) 0%, rgba(64, 224, 208, 0.1) 100%)',
+          border: '1px solid rgba(188, 19, 254, 0.3)',
+          textAlign: 'center',
+          boxShadow: '0 0 30px rgba(0,0,0,0.3)'
+        }}>
+          <AutoAwesomeIcon sx={{ fontSize: 50, color: '#bc13fe', mb: 2 }} />
+          <Typography variant="h4" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+            יש לך רעיון לחידון מנצח?
+          </Typography>
+          <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.8)', mb: 4, maxWidth: '600px', mx: 'auto' }}>
+            צוות Quiz Master מחפש יוצרי תוכן מוכשרים! אם יש לך ידע נרחב ורעיונות לשאלות מאתגרות, אולי מקומך איתנו.
+          </Typography>
+          <Button 
+            variant="contained" 
+            size="large"
+            onClick={() => setCreatorDialog(true)}
+            sx={{ 
+              bgcolor: '#bc13fe', 
+              color: 'white', 
+              fontWeight: 'bold', 
+              px: 5, py: 1.5, borderRadius: '30px',
+              '&:hover': { bgcolor: '#a00bd9', boxShadow: '0 0 20px rgba(188, 19, 254, 0.6)' } 
+            }}
+          >
+            הגש בקשה להיות יוצר
+          </Button>
+        </Box>
+      )}
+
+      {/* חלון מחיקת חידון */}
       <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ ...deleteDialog, open: false })} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #f44336' } }} dir="rtl">
         <DialogTitle sx={{ color: '#f44336', fontWeight: 'bold' }}>מחיקת חידון</DialogTitle>
         <DialogContent>
@@ -199,14 +245,38 @@ const Quizzes = ({ searchTerm = "" }) => {
         </DialogActions>
       </Dialog>
 
+      {/* חלון בקשת יוצר תוכן */}
+      <Dialog open={creatorDialog} onClose={() => setCreatorDialog(false)} PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #bc13fe', borderRadius: 3, maxWidth: '500px' } }} dir="rtl">
+        <DialogTitle sx={{ color: '#bc13fe', fontWeight: 'bold', textAlign: 'center', fontSize: '1.8rem', pt: 4 }}>
+          הצטרף ליוצרי התוכן שלנו 👑
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: 'center', pb: 4 }}>
+          <Typography sx={{ mb: 3, color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem' }}>
+            יוצרי התוכן של Quiz Master מקבלים גישה בלעדית ללוח בקרה מתקדם המאפשר:
+          </Typography>
+          <Box sx={{ textAlign: 'right', bgcolor: 'rgba(255,255,255,0.05)', p: 3, borderRadius: 2, mb: 3 }}>
+            <Typography sx={{ mb: 1 }}>✨ יצירת חידונים חדשים</Typography>
+            <Typography sx={{ mb: 1 }}>📊 צפייה בסטטיסטיקות מתקדמות</Typography>
+            <Typography>🏆 ניהול ואתגר של הקהילה</Typography>
+          </Box>
+          <Typography variant="body2" sx={{ color: '#40e0d0' }}>
+            הבקשה שלך תישלח ישירות למנהל המערכת הראשי (Super Admin) לבחינה.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, justifyContent: 'center', gap: 2 }}>
+          <Button onClick={() => setCreatorDialog(false)} variant="outlined" sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)', borderRadius: '20px', px: 4 }}>ביטול</Button>
+          <Button onClick={handleApplyCreator} variant="contained" sx={{ bgcolor: '#bc13fe', color: 'white', borderRadius: '20px', px: 4, '&:hover': { bgcolor: '#a00bd9' } }}>שלח בקשה</Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar 
         open={notification.open} 
-        autoHideDuration={3000} 
+        autoHideDuration={4000} 
         onClose={() => setNotification({ open: false, message: "" })} 
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        sx={{ mt: 8 }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ mb: 8 }}
       >
-        <Alert severity="success" sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0' }}>
+        <Alert severity="success" sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0', fontSize: '1.1rem' }}>
           {notification.message}
         </Alert>
       </Snackbar>

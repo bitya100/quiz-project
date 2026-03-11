@@ -11,24 +11,21 @@ const userSchema = new mongoose.Schema({
         lowercase: true 
     },
     password: { type: String, required: true },
-    role: { type: String, default: 'user' }
+    role: { type: String, default: 'user' },
+    // הוספנו את השדה ששומר אם המשתמש ביקש להיות יוצר
+    requestedCreator: { type: Boolean, default: false }
 });
 
-// === התיקון: הורדנו את ה-next לגמרי! Mongoose מנהל את זה לבד ===
 userSchema.pre('save', async function() {
-    // אם הסיסמה לא שונתה, פשוט צא מהפונקציה
     if (!this.isModified('password')) {
         return; 
     }
-    
-    // מצפינים את הסיסמה
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
 });
 
 const User = mongoose.model('User', userSchema);
 
-// פונקציית בדיקת תקינות (וולידציה) שמאפשרת עברית
 function validateUser(user) {
     const schema = Joi.object({
         userName: Joi.string()
@@ -41,7 +38,7 @@ function validateUser(user) {
             }),
         email: Joi.string().min(5).max(255).required().email(),
         password: Joi.string().min(5).max(1024).required()
-    }).unknown(true); // מתעלם משדות אקסטרה אם יש
+    }).unknown(true);
 
     return schema.validate(user);
 }

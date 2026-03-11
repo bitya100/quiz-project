@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock"; 
-import SearchOffIcon from "@mui/icons-material/SearchOff"; // הוספנו אייקון
+import SearchOffIcon from "@mui/icons-material/SearchOff"; 
 import adminService from "../services/adminService";
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com"; 
@@ -26,6 +26,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // מותר לכל מנהל לראות את הדף
   const isAdmin = currentUser?.role === 'admin';
 
   useEffect(() => {
@@ -59,7 +60,8 @@ const ManageUsers = ({ searchTerm = "" }) => {
 
     try {
       await adminService.updateUserRole(userId, newRole);
-      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      
+      setUsers(users.map(u => u._id === userId ? { ...u, role: newRole, requestedCreator: false } : u));
       
       const currentLoggedInId = currentUser?.userId || currentUser?._id;
       
@@ -146,7 +148,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
         ניהול משתמשים במערכת
       </Typography>
 
-      {/* התיקון: בדיקה אם יש משתמשים מתאימים לחיפוש */}
       {filteredUsers.length === 0 ? (
         <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
           <SearchOffIcon sx={{ fontSize: 80, color: 'rgba(255,255,255,0.3)', mb: 2 }} />
@@ -177,61 +178,105 @@ const ManageUsers = ({ searchTerm = "" }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
-                  <TableCell align="right" sx={{ color: 'white' }}>
-                    {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
-                  </TableCell>
-                  <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
-                  
-                  <TableCell align="right">
-                    <Select
-                      value={user.role}
-                      onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
-                      size="small"
-                      disabled={user.email === SUPER_ADMIN_EMAIL}
-                      MenuProps={{
-                        PaperProps: {
-                          sx: { bgcolor: '#020617', color: 'white', border: '1px solid #40e0d0' }
-                        }
-                      }}
-                      sx={{ 
-                        color: 'white', 
-                        minWidth: '120px',
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
-                        '& .MuiSvgIcon-root': { color: 'white' },
-                        '&.Mui-disabled': { color: 'rgba(255,255,255,0.5)' }
-                      }}
-                    >
-                      <MenuItem value="user">משתמש (user)</MenuItem>
-                      <MenuItem value="admin">מנהל (admin)</MenuItem>
-                    </Select>
-                  </TableCell>
-                  
-                  <TableCell align="center">
-                    {isSuperAdmin ? (
-                      <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
-                        <span>
-                          <IconButton 
-                            onClick={() => handleDeleteClick(user)} 
-                            sx={{ color: '#f44336' }} 
-                            disabled={user.email === SUPER_ADMIN_EMAIL}
+              {filteredUsers.map((user) => {
+                // המשתנה הזה בודק האם מותר לשנות את המשתמש הספציפי למנהל
+                const canBeAdmin = user.role === 'admin' || user.requestedCreator;
+
+                return (
+                  <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+                    
+                    <TableCell align="right" sx={{ color: 'white' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography component="span">
+                          {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
+                        </Typography>
+                        
+                        {user.requestedCreator && user.role === 'user' && (
+                          <Box 
+                            sx={{ 
+                              bgcolor: '#bc13fe', 
+                              color: 'white', 
+                              px: 1.5, 
+                              py: 0.5, 
+                              borderRadius: 2, 
+                              fontSize: '0.75rem', 
+                              fontWeight: 'bold',
+                              boxShadow: '0 0 10px rgba(188, 19, 254, 0.6)',
+                              animation: 'pulse 2s infinite',
+                              '@keyframes pulse': {
+                                '0%': { opacity: 0.8 },
+                                '50%': { opacity: 1, transform: 'scale(1.05)' },
+                                '100%': { opacity: 0.8 }
+                              }
+                            }}
                           >
-                            {user.email === SUPER_ADMIN_EMAIL ? <LockIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.3)' }} /> : <DeleteIcon />}
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="מחיקה למנהל-על בלבד">
-                        <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
-                          <LockIcon fontSize="small" sx={{ color: 'white' }} />
-                        </Box>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
+                            מבקש להיות יוצר ✋
+                          </Box>
+                        )}
+                      </Box>
+                    </TableCell>
+
+                    <TableCell align="right" sx={{ color: 'white' }}>{user.email}</TableCell>
+                    
+                    <TableCell align="right">
+                      <Select
+                        value={user.role}
+                        onChange={(e) => handleRoleChange(user._id, e.target.value, user.email)}
+                        size="small"
+                        disabled={user.email === SUPER_ADMIN_EMAIL}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: { bgcolor: '#020617', color: 'white', border: '1px solid #40e0d0' }
+                          }
+                        }}
+                        sx={{ 
+                          color: 'white', 
+                          minWidth: '150px',
+                          '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
+                          '& .MuiSvgIcon-root': { color: 'white' },
+                          '&.Mui-disabled': { color: 'rgba(255,255,255,0.5)' }
+                        }}
+                      >
+                        <MenuItem value="user">משתמש (user)</MenuItem>
+                        {/* כאן התיקון: חוסמים את אופציית המנהל למי שלא ביקש */}
+                        <MenuItem 
+                          value="admin" 
+                          disabled={!canBeAdmin}
+                          sx={{ 
+                            color: canBeAdmin ? 'inherit' : 'rgba(255,255,255,0.3)',
+                            fontStyle: canBeAdmin ? 'normal' : 'italic'
+                          }}
+                        >
+                          {canBeAdmin ? 'מנהל (admin)' : 'מנהל (חסום)'}
+                        </MenuItem>
+                      </Select>
+                    </TableCell>
+                    
+                    <TableCell align="center">
+                      {isSuperAdmin ? (
+                        <Tooltip title={user.email === SUPER_ADMIN_EMAIL ? "לא ניתן למחוק מנהל-על" : "מחק משתמש"}>
+                          <span>
+                            <IconButton 
+                              onClick={() => handleDeleteClick(user)} 
+                              sx={{ color: '#f44336' }} 
+                              disabled={user.email === SUPER_ADMIN_EMAIL}
+                            >
+                              {user.email === SUPER_ADMIN_EMAIL ? <LockIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.3)' }} /> : <DeleteIcon />}
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="מחיקה למנהל-על בלבד">
+                          <Box sx={{ display: 'inline-flex', opacity: 0.5 }}>
+                            <LockIcon fontSize="small" sx={{ color: 'white' }} />
+                          </Box>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
