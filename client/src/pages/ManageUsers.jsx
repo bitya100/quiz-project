@@ -27,6 +27,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
   const navigate = useNavigate();
 
   const isAdmin = currentUser?.role === 'admin';
+  const isSuperAdmin = currentUser?.email === SUPER_ADMIN_EMAIL;
 
   useEffect(() => {
     if (isAdmin) {
@@ -41,7 +42,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
       const data = await adminService.getAllUsers();
       setUsers(data || []); 
     } catch (err) {
-      console.error("Failed to load users", err);
       if (err.response?.status === 403) {
           setNotification({ open: true, message: "גישה נדחתה. אין לך הרשאות מתאימות.", severity: "error" });
       } else if (err.response?.status !== 503) {
@@ -86,7 +86,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
 
       setNotification({ open: true, message: "הרשאת המשתמש עודכנה בהצלחה", severity: "success" });
     } catch (err) {
-      const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה";
+      const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה. המשתמש לא הגיש בקשה.";
       setNotification({ open: true, message: errorMessage, severity: "error" });
     }
   };
@@ -138,9 +138,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
            (u.email || "").toLowerCase().includes(safeSearchTerm);
   });
 
-  const currentUserData = safeUsers.find(u => u._id === currentUser?.userId || u._id === currentUser?._id);
-  const isSuperAdmin = currentUserData?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
-
   return (
     <Container maxWidth="lg" sx={{ mt: 5, pb: 5 }}>
       <Typography variant="h4" sx={{ mb: 4, textAlign: 'right', color: '#40e0d0', fontWeight: 'bold' }}>
@@ -178,8 +175,10 @@ const ManageUsers = ({ searchTerm = "" }) => {
             </TableHead>
             <TableBody>
               {filteredUsers.map((user) => {
-                // התיקון הקריטי: אם אתה מנהל העל, מותר לך לשנות את כולם לאדמינים!
-                const canBeAdmin = user.role === 'admin' || user.requestedCreator || isSuperAdmin;
+                
+                // האם המשתמש הספציפי יכול לקבל הרשאת מנהל?
+                // רק אם הוא כבר מנהל, או שביקש במפורש, או שמי שעורך אותו הוא מנהל העל.
+                const canBeAdmin = user.role === 'admin' || user.requestedCreator === true || isSuperAdmin;
 
                 return (
                   <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
@@ -190,7 +189,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
                           {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
                         </Typography>
                         
-                        {user.requestedCreator && user.role === 'user' && (
+                        {user.requestedCreator === true && user.role === 'user' && (
                           <Box 
                             sx={{ 
                               bgcolor: '#bc13fe', 
@@ -242,11 +241,11 @@ const ManageUsers = ({ searchTerm = "" }) => {
                           value="admin" 
                           disabled={!canBeAdmin}
                           sx={{ 
-                            color: canBeAdmin ? 'inherit' : 'rgba(255,255,255,0.3)',
+                            color: canBeAdmin ? 'inherit' : 'rgba(255,255,255,0.4)',
                             fontStyle: canBeAdmin ? 'normal' : 'italic'
                           }}
                         >
-                          {canBeAdmin ? 'מנהל (admin)' : 'מנהל (חסום)'}
+                          {canBeAdmin ? 'מנהל (admin)' : 'ננעל - לא הגיש בקשה'}
                         </MenuItem>
                       </Select>
                     </TableCell>
