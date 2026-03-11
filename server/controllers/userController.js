@@ -98,16 +98,30 @@ const getProfile = async (req, res) => {
     }
 };
 
-// הפונקציה שמעדכנת את הבקשה במסד הנתונים
+// הפונקציה המשופרת עם ההדפסות לטרמינל לזיהוי הבאג!
 const requestCreator = async (req, res) => {
     try {
         const currentUserId = req.user._id || req.user.userId;
+        console.log(`\n---> [בקשת יוצר] מתקבלת בקשה ממשתמש ID: ${currentUserId}`);
         
-        // התיקון: שימוש בפקודה שמעדכנת ישירות את המסד בלי לפספס שדות חדשים
-        await User.findByIdAndUpdate(currentUserId, { requestedCreator: true }, { new: true });
+        // { new: true } אומר למונגו: תחזיר לי את האובייקט *אחרי* שהשינוי בוצע
+        const updatedUser = await User.findByIdAndUpdate(
+            currentUserId, 
+            { requestedCreator: true }, 
+            { new: true }
+        );
+        
+        if (!updatedUser) {
+            console.log("---> שגיאה: המשתמש לא נמצא במסד הנתונים");
+            return res.status(404).send('משתמש לא נמצא');
+        }
+
+        // כאן נגלה את האמת: אם זה כותב undefined, זה אומר שהמודל לא נשמר
+        console.log(`---> [בקשת יוצר] הסטטוס המעודכן במונגו: requestedCreator = ${updatedUser.requestedCreator}\n`);
         
         res.status(200).json({ message: "בקשתך נשלחה להנהלה!" });
     } catch (ex) {
+        console.error("---> שגיאה בפונקציית requestCreator:", ex);
         res.status(500).send('שגיאה בשליחת הבקשה');
     }
 };
@@ -144,7 +158,6 @@ const updateUserRole = async (req, res) => {
             return res.status(403).send("לא ניתן לשנות הרשאה למנהל העל");
         }
 
-        // חסימת ברזל: אם מנהל *רגיל* מנסה למנות משתמש *שלא* ביקש - נחסם!
         if (role === 'admin' && userToUpdate.role !== 'admin' && userToUpdate.requestedCreator !== true && !isSuperAdmin) {
             return res.status(400).send('לא ניתן למנות למנהל משתמש שלא הגיש בקשה לכך במערכת.');
         }
@@ -157,7 +170,7 @@ const updateUserRole = async (req, res) => {
         }
 
         userToUpdate.role = role;
-        userToUpdate.requestedCreator = false; // מוחק את הבקשה ברגע ששינינו
+        userToUpdate.requestedCreator = false; 
         
         await userToUpdate.save();
         

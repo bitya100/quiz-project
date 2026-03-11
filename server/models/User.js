@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     },
     password: { type: String, required: true },
     role: { type: String, default: 'user' },
-    // הוספנו את השדה ששומר אם המשתמש ביקש להיות יוצר
+    // השדה הקריטי: חייב להיות פה כדי שמונגו לא ימחק אותו בשקט!
     requestedCreator: { type: Boolean, default: false }
 });
 
