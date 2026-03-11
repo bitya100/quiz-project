@@ -98,21 +98,16 @@ const getProfile = async (req, res) => {
     }
 };
 
-// התיקון: שמירה מפורשת של הבקשה במסד הנתונים
+// הפונקציה שמעדכנת את הבקשה במסד הנתונים
 const requestCreator = async (req, res) => {
     try {
         const currentUserId = req.user._id || req.user.userId;
-        const user = await User.findById(currentUserId);
         
-        if (!user) return res.status(404).send('משתמש לא נמצא');
-        
-        // מגדירים במפורש ושומרים את המודל השלם
-        user.requestedCreator = true;
-        await user.save(); 
+        // התיקון: שימוש בפקודה שמעדכנת ישירות את המסד בלי לפספס שדות חדשים
+        await User.findByIdAndUpdate(currentUserId, { requestedCreator: true }, { new: true });
         
         res.status(200).json({ message: "בקשתך נשלחה להנהלה!" });
     } catch (ex) {
-        console.error("Error in requestCreator:", ex);
         res.status(500).send('שגיאה בשליחת הבקשה');
     }
 };
@@ -131,14 +126,14 @@ const getAllUsers = async (req, res) => {
 
 const updateUserRole = async (req, res) => {
     try {
-        const currentUserId = req.user._id || req.user.userId;
-        const requestingUser = await User.findById(currentUserId);
-        
-        if (!requestingUser || requestingUser.role !== 'admin') {
+        if (req.user.role !== 'admin') {
             return res.status(403).send("גישה נדחתה: מנהלים בלבד");
         }
 
+        const currentUserId = req.user._id || req.user.userId;
+        const requestingUser = await User.findById(currentUserId);
         const isSuperAdmin = requestingUser.email === SUPER_ADMIN_EMAIL;
+
         const userIdToUpdate = req.params.id;
         const { role } = req.body;
         const userToUpdate = await User.findById(userIdToUpdate);
@@ -149,7 +144,7 @@ const updateUserRole = async (req, res) => {
             return res.status(403).send("לא ניתן לשנות הרשאה למנהל העל");
         }
 
-        // נעילת ברזל: אם אתה מנסה לתת לו אדמין, והוא לא ביקש, ואתה לא מנהל-על -> חסום!
+        // חסימת ברזל: אם מנהל *רגיל* מנסה למנות משתמש *שלא* ביקש - נחסם!
         if (role === 'admin' && userToUpdate.role !== 'admin' && userToUpdate.requestedCreator !== true && !isSuperAdmin) {
             return res.status(400).send('לא ניתן למנות למנהל משתמש שלא הגיש בקשה לכך במערכת.');
         }
@@ -162,7 +157,8 @@ const updateUserRole = async (req, res) => {
         }
 
         userToUpdate.role = role;
-        userToUpdate.requestedCreator = false; 
+        userToUpdate.requestedCreator = false; // מוחק את הבקשה ברגע ששינינו
+        
         await userToUpdate.save();
         
         res.json({ message: `המשתמש ${userToUpdate.userName} הוא כעת ${role}`, user: userToUpdate });

@@ -27,7 +27,6 @@ const ManageUsers = ({ searchTerm = "" }) => {
   const navigate = useNavigate();
 
   const isAdmin = currentUser?.role === 'admin';
-  const isSuperAdmin = currentUser?.email === SUPER_ADMIN_EMAIL;
 
   useEffect(() => {
     if (isAdmin) {
@@ -52,6 +51,11 @@ const ManageUsers = ({ searchTerm = "" }) => {
     }
   };
 
+  // בדיקת פלדה: האם המשתמש המחובר כרגע הוא מנהל העל? 
+  const loggedInUserId = currentUser?.userId || currentUser?._id;
+  const dbCurrentUser = users.find(u => u._id === loggedInUserId);
+  const isSuperAdmin = dbCurrentUser?.email === SUPER_ADMIN_EMAIL || currentUser?.email === SUPER_ADMIN_EMAIL;
+
   const handleRoleChange = async (userId, newRole, userEmail) => {
     if (userEmail === SUPER_ADMIN_EMAIL) {
       return setNotification({ open: true, message: "לא ניתן לשנות את ההרשאה של מנהל העל!", severity: "warning" });
@@ -62,22 +66,13 @@ const ManageUsers = ({ searchTerm = "" }) => {
       
       setUsers(users.map(u => u._id === userId ? { ...u, role: newRole, requestedCreator: false } : u));
       
-      const currentLoggedInId = currentUser?.userId || currentUser?._id;
-      
-      if (userId === currentLoggedInId && newRole === 'user') {
-        setNotification({ 
-          open: true, 
-          message: "שינית את ההרשאה של עצמך למשתמש רגיל! מעביר אותך כעת...", 
-          severity: "info" 
-        });
-        
+      if (userId === loggedInUserId && newRole === 'user') {
+        setNotification({ open: true, message: "שינית את ההרשאה של עצמך למשתמש רגיל! מעביר אותך כעת...", severity: "info" });
         setTimeout(() => {
           const updatedUser = { ...currentUser, role: 'user' };
           const currentToken = localStorage.getItem('token') || sessionStorage.getItem('token');
-          
           if (localStorage.getItem('user')) localStorage.setItem('user', JSON.stringify(updatedUser));
           if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(updatedUser));
-          
           dispatch(login({ user: updatedUser, token: currentToken }));
           navigate('/quizzes');
         }, 2500);
@@ -86,7 +81,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
 
       setNotification({ open: true, message: "הרשאת המשתמש עודכנה בהצלחה", severity: "success" });
     } catch (err) {
-      const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה. המשתמש לא הגיש בקשה.";
+      const errorMessage = err.response?.data || "שגיאה בעדכון הרשאה.";
       setNotification({ open: true, message: errorMessage, severity: "error" });
     }
   };
@@ -176,9 +171,11 @@ const ManageUsers = ({ searchTerm = "" }) => {
             <TableBody>
               {filteredUsers.map((user) => {
                 
-                // האם המשתמש הספציפי יכול לקבל הרשאת מנהל?
-                // רק אם הוא כבר מנהל, או שביקש במפורש, או שמי שעורך אותו הוא מנהל העל.
-                const canBeAdmin = user.role === 'admin' || user.requestedCreator === true || isSuperAdmin;
+                // התיקון הקריטי להרשאות התפריט: 
+                // מותר להפוך לאדמין רק אם: אני מנהל-על, או שהמשתמש כבר אדמין, או שהוא ביקש ספציפית!
+                const isAlreadyAdmin = user.role === 'admin';
+                const hasRequested = user.requestedCreator === true;
+                const canMakeAdmin = isSuperAdmin || isAlreadyAdmin || hasRequested;
 
                 return (
                   <TableRow key={user._id} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
@@ -189,7 +186,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
                           {user.userName} {user.email === SUPER_ADMIN_EMAIL && "👑"}
                         </Typography>
                         
-                        {user.requestedCreator === true && user.role === 'user' && (
+                        {hasRequested && !isAlreadyAdmin && (
                           <Box 
                             sx={{ 
                               bgcolor: '#bc13fe', 
@@ -229,7 +226,7 @@ const ManageUsers = ({ searchTerm = "" }) => {
                         }}
                         sx={{ 
                           color: 'white', 
-                          minWidth: '150px',
+                          minWidth: '160px',
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(64, 224, 208, 0.3)' },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#40e0d0' },
                           '& .MuiSvgIcon-root': { color: 'white' },
@@ -239,13 +236,13 @@ const ManageUsers = ({ searchTerm = "" }) => {
                         <MenuItem value="user">משתמש (user)</MenuItem>
                         <MenuItem 
                           value="admin" 
-                          disabled={!canBeAdmin}
+                          disabled={!canMakeAdmin}
                           sx={{ 
-                            color: canBeAdmin ? 'inherit' : 'rgba(255,255,255,0.4)',
-                            fontStyle: canBeAdmin ? 'normal' : 'italic'
+                            color: canMakeAdmin ? 'inherit' : 'rgba(255,255,255,0.4)',
+                            fontStyle: canMakeAdmin ? 'normal' : 'italic'
                           }}
                         >
-                          {canBeAdmin ? 'מנהל (admin)' : 'ננעל - לא הגיש בקשה'}
+                          {canMakeAdmin ? 'מנהל (admin)' : 'חסום - לא ביקש'}
                         </MenuItem>
                       </Select>
                     </TableCell>
