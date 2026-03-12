@@ -1,4 +1,4 @@
-const Quiz = require('../models/Quiz');
+const { Quiz } = require('../models/Quiz'); // התיקון כאן: הוספת סוגריים מסולסלים!
 
 // 1. קבלת כל החידונים - פתוח לכולם
 exports.getAllQuizzes = async (req, res) => {
@@ -20,6 +20,7 @@ exports.getQuizById = async (req, res) => {
         res.status(500).json({ message: "שגיאה בטעינת החידון" });
     }
 };
+
 // 3. יצירת חידון חדש - מנהל בלבד
 exports.createQuiz = async (req, res) => {
     if (req.user.role !== 'admin') {
@@ -44,8 +45,6 @@ exports.createQuiz = async (req, res) => {
         res.status(400).json({ message: "שגיאה ביצירת החידון: " + err.message });
     }
 };
-
-
 
 // 4. עדכון חידון קיים - מנהל בלבד
 exports.updateQuiz = async (req, res) => {
