@@ -40,7 +40,7 @@ const ScrollToTop = () => {
             position: 'fixed',
             bottom: 30,
             left: 30,
-            zIndex: 99999,
+            zIndex: 1000, // התיקון: הורדנו מ-99999 כדי שהתפריט יוכל להסתיר אותו
             bgcolor: 'rgba(2, 6, 23, 0.7)',
             color: '#40e0d0',
             border: '1px solid rgba(64, 224, 208, 0.5)',
