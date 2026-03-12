@@ -9,7 +9,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import SaveIcon from "@mui/icons-material/Save";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import axios from "axios";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import api from "../services/api"; // שימוש ב-API החכם שלך במקום ב-axios נקי
 
 const CreateQuiz = () => {
   const { id } = useParams(); 
@@ -18,9 +19,6 @@ const CreateQuiz = () => {
   const [isSubmitted, setIsSubmitted] = useState(false); 
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
   const isEditMode = !!id;
-
-  // הכתובת החכמה!
-  const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   const { register, control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
@@ -37,10 +35,7 @@ const CreateQuiz = () => {
     if (isEditMode) {
       const fetchQuiz = async () => {
         try {
-          const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-          const res = await axios.get(`${serverUrl}/api/quizzes/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const res = await api.get(`/quizzes/${id}`);
           reset(res.data);
         } catch (err) {
           setNotification({ open: true, message: "שגיאה בטעינת החידון", severity: "error" });
@@ -48,7 +43,7 @@ const CreateQuiz = () => {
       };
       fetchQuiz();
     }
-  }, [id, isEditMode, reset, serverUrl]);
+  }, [id, isEditMode, reset]);
 
   const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -58,12 +53,12 @@ const CreateQuiz = () => {
     formData.append('image', file);
 
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const res = await axios.post(`${serverUrl}/api/upload`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      // ה-api מצרף את כתובת השרת והטוקן באופן אוטומטי
+      const res = await api.post(`/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setValue('image', res.data.imageUrl);
-      setNotification({ open: true, message: " התמונה הועלתה בהצלחה ", severity: "success" });
+      setNotification({ open: true, message: "התמונה הועלתה בהצלחה", severity: "success" });
     } catch (err) {
       setNotification({ open: true, message: "שגיאה בהעלאת התמונה", severity: "error" });
     }
@@ -77,9 +72,8 @@ const CreateQuiz = () => {
     formData.append('image', file);
 
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const res = await axios.post(`${serverUrl}/api/upload`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      const res = await api.post(`/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setValue(`questions.${index}.image`, res.data.imageUrl);
       setNotification({ open: true, message: "תמונת השאלה הועלתה", severity: "success" });
@@ -94,11 +88,10 @@ const CreateQuiz = () => {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-      const url = isEditMode ? `${serverUrl}/api/quizzes/${id}` : `${serverUrl}/api/quizzes`;
+      const url = isEditMode ? `/quizzes/${id}` : `/quizzes`;
       const method = isEditMode ? "put" : "post";
 
-      await axios[method](url, data, { headers: { Authorization: `Bearer ${token}` } });
+      await api[method](url, data);
 
       setIsSubmitted(true); 
       setNotification({ open: true, message: isEditMode ? "החידון עודכן בהצלחה! 🚀" : "החידון נוצר בהצלחה! 🎉", severity: "success" });
@@ -245,17 +238,14 @@ const CreateQuiz = () => {
             הוספת שאלה
           </Button>
 
-          {/* התיקון: שורה עם שני כפתורים - שמירה וביטול */}
           <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            
-            {/* כפתור ביטול */}
             <Button
               variant="outlined"
               size="large"
               onClick={() => navigate('/quizzes')}
               disabled={loading || isSubmitted}
               sx={{
-                flex: 1, // תופס חצי מהרוחב
+                flex: 1,
                 color: '#f44336',
                 borderColor: 'rgba(244, 67, 54, 0.5)',
                 fontWeight: 'bold',
@@ -269,14 +259,13 @@ const CreateQuiz = () => {
               ביטול
             </Button>
 
-            {/* כפתור שמירה */}
             <Button 
               type="submit" 
               size="large" 
               disabled={loading || isSubmitted} 
               startIcon={loading ? <CircularProgress size={20} color="inherit" /> : (isSubmitted ? <CheckCircleIcon /> : <SaveIcon />)} 
               sx={{ 
-                flex: 1, // תופס חצי מהרוחב
+                flex: 1, 
                 bgcolor: isSubmitted ? "#2cd8bbd6" : "#40e0d0", 
                 color: isSubmitted ? "white" : "#020617", 
                 fontWeight: "bold", 
@@ -292,9 +281,7 @@ const CreateQuiz = () => {
                 ? (isEditMode ? "עודכן בהצלחה!" : "החידון נוצר בהצלחה!") 
                 : (loading ? "שומר נתונים..." : (isEditMode ? "עדכן חידון" : "צור חידון"))}
             </Button>
-
           </Box>
-
         </form>
       </Paper>
 

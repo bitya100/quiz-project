@@ -16,15 +16,12 @@ const authSlice = createSlice({
   initialState: getInitialAuth(),
   reducers: {
     login: (state, action) => {
-      // כאן אנחנו מעדכנים רק את ה-State של Redux.
-      // השמירה הפיזית ב-LocalStorage או ב-SessionStorage מתבצעת כבר ב-Login.jsx
       state.user = action.payload.user;
       state.token = action.payload.token;
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
-      // ניקוי יסודי של כל סוגי האחסון
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.removeItem('token');
@@ -39,7 +36,7 @@ const quizSlice = createSlice({
   reducers: {
     setQuizzes: (state, action) => { state.list = action.payload; },
     setLoading: (state, action) => { state.loading = action.payload; },
-    addQuiz: (state, action) => { state.list.push(action.payload); },
+    addQuizAction: (state, action) => { state.list.push(action.payload); },
     updateQuiz: (state, action) => {
       const index = state.list.findIndex(q => q._id === action.payload._id);
       if (index !== -1) state.list[index] = action.payload;
@@ -51,7 +48,7 @@ const quizSlice = createSlice({
 });
 
 export const { login, logout } = authSlice.actions;
-export const { setQuizzes, setLoading, addQuiz, updateQuiz, deleteQuizAction } = quizSlice.actions;
+export const { setQuizzes, setLoading, addQuizAction, updateQuiz, deleteQuizAction } = quizSlice.actions;
 
 export const store = configureStore({
   reducer: { auth: authSlice.reducer, quizzes: quizSlice.reducer },
