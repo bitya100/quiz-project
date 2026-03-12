@@ -2,48 +2,46 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Container, Typography, Box, Button, keyframes } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
-// --- אנימציות "טיול" (Float) שפועלות תמיד ---
+// --- אנימציות מותאמות GPU (שימוש ב-translate3d) ---
 const float1 = keyframes`
-  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  25% { transform: translateY(-30px) translateX(15px) rotate(10deg); }
-  50% { transform: translateY(-15px) translateX(-15px) rotate(-5deg); }
-  75% { transform: translateY(15px) translateX(20px) rotate(5deg); }
+  0%, 100% { transform: translate3d(0px, 0px, 0) rotate(0deg); }
+  25% { transform: translate3d(15px, -30px, 0) rotate(10deg); }
+  50% { transform: translate3d(-15px, -15px, 0) rotate(-5deg); }
+  75% { transform: translate3d(20px, 15px, 0) rotate(5deg); }
 `;
 const float2 = keyframes`
-  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  25% { transform: translateY(30px) translateX(-15px) rotate(-10deg); }
-  50% { transform: translateY(15px) translateX(15px) rotate(5deg); }
-  75% { transform: translateY(-15px) translateX(-20px) rotate(-5deg); }
+  0%, 100% { transform: translate3d(0px, 0px, 0) rotate(0deg); }
+  25% { transform: translate3d(-15px, 30px, 0) rotate(-10deg); }
+  50% { transform: translate3d(15px, 15px, 0) rotate(5deg); }
+  75% { transform: translate3d(-20px, -15px, 0) rotate(-5deg); }
 `;
 const bounce = keyframes`
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, 5px, 0); }
 `;
 
-// --- אנימציות פיצוץ חדשות - רסיסים שעפים רחוק ומסתובבים ---
 const vanish = keyframes`
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0.2); opacity: 0; }
+  0% { transform: translate3d(0,0,0) scale(1); opacity: 1; }
+  100% { transform: translate3d(0,0,0) scale(0.2); opacity: 0; }
 `;
 
 const shardFlyOut1 = keyframes`
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translate(-100px, -100px) rotate(-360deg) scale(0); opacity: 0; }
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate3d(-100px, -100px, 0) rotate(-360deg) scale(0); opacity: 0; }
 `;
 const shardFlyOut2 = keyframes`
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translate(100px, -100px) rotate(360deg) scale(0); opacity: 0; }
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate3d(100px, -100px, 0) rotate(360deg) scale(0); opacity: 0; }
 `;
 const shardFlyOut3 = keyframes`
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translate(-100px, 100px) rotate(-360deg) scale(0); opacity: 0; }
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate3d(-100px, 100px, 0) rotate(-360deg) scale(0); opacity: 0; }
 `;
 const shardFlyOut4 = keyframes`
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-  100% { transform: translate(100px, 100px) rotate(360deg) scale(0); opacity: 0; }
+  0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate3d(100px, 100px, 0) rotate(360deg) scale(0); opacity: 0; }
 `;
 
-// --- קומפוננטה לרסיס בודד ---
 const Shard = ({ color, animation, size, isExploded }) => (
   <Box
     component="span"
@@ -53,17 +51,17 @@ const Shard = ({ color, animation, size, isExploded }) => (
       fontSize: size,
       fontWeight: 'bold',
       textShadow: `0 0 10px ${color}`,
-      opacity: 0, // מוסתר כברירת מחדל
-      // האנימציה מופעלת רק כשיש פיצוץ
-      animation: isExploded ? `${animation} 3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards` : 'none',
-      pointerEvents: 'none', 
+      opacity: 0, 
+      animation: isExploded ? `${animation} 0.8s cubic-bezier(0.1, 0.9, 0.2, 1) forwards` : 'none',
+      pointerEvents: 'none',
+      willChange: 'transform, opacity', // האצת חומרה
+      backfaceVisibility: 'hidden', // מונע ריצודים
     }}
   >
     ?
   </Box>
 );
 
-// --- קומפוננטה לסימני שאלה מרחפים ---
 const QuestionMarkDeco = ({ top, left, right, bottom, color, delay, size = '1.5rem' }) => {
   const [isExploded, setIsExploded] = useState(false);
 
@@ -93,15 +91,15 @@ const QuestionMarkDeco = ({ top, left, right, bottom, color, delay, size = '1.5r
         display: { xs: 'none', sm: 'flex' },
         justifyContent: 'center',
         alignItems: 'center',
-        // האנימציה של הטיול רצה תמיד - ללא תלות בסטטוס הפיצוץ
         animation: `${Number(delay) % 2 === 0 ? float1 : float2} ${12 + Number(delay)}s ease-in-out infinite`,
+        willChange: 'transform', // התיקון החשוב ביותר!
+        backfaceVisibility: 'hidden', // מכריח שכבת GPU נפרדת
         '&:hover span.main-quiz': {
            textShadow: `0 0 20px ${color}, 0 0 40px ${color}`,
            opacity: 1,
         }
       }}
     >
-      {/* 1. סימן השאלה הראשי */}
       <Box 
         component="span" 
         className="main-quiz"
@@ -110,23 +108,26 @@ const QuestionMarkDeco = ({ top, left, right, bottom, color, delay, size = '1.5r
           textShadow: `0 0 10px ${color}`,
           opacity: 0.8,
           animation: isExploded ? `${vanish} 0.3s ease-out forwards` : 'none',
+          willChange: 'transform, opacity, text-shadow',
+          backfaceVisibility: 'hidden',
+          display: 'inline-block'
         }}
       >
         ?
       </Box>
 
-      {/* 2. שכבת הרסיסים (קיימת תמיד ב-DOM כדי למנוע קפיצות, מופעלת רק בפיצוץ) */}
-      <Box sx={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <Shard color={color} animation={shardFlyOut1} size={shardSize} isExploded={isExploded} />
-        <Shard color={color} animation={shardFlyOut2} size={shardSize} isExploded={isExploded} />
-        <Shard color={color} animation={shardFlyOut3} size={shardSize} isExploded={isExploded} />
-        <Shard color={color} animation={shardFlyOut4} size={shardSize} isExploded={isExploded} />
-      </Box>
+      {isExploded && (
+        <Box sx={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Shard color={color} animation={shardFlyOut1} size={shardSize} isExploded={isExploded} />
+          <Shard color={color} animation={shardFlyOut2} size={shardSize} isExploded={isExploded} />
+          <Shard color={color} animation={shardFlyOut3} size={shardSize} isExploded={isExploded} />
+          <Shard color={color} animation={shardFlyOut4} size={shardSize} isExploded={isExploded} />
+        </Box>
+      )}
     </Box>
   );
 };
 
-// --- קומפוננטת לחשיפת תוכן בגלילה ---
 const FadeInSection = ({ children, minHeight = '70vh' }) => {
   const [isVisible, setVisible] = useState(false);
   const domRef = useRef();
@@ -136,7 +137,7 @@ const FadeInSection = ({ children, minHeight = '70vh' }) => {
       if (entries[0].isIntersecting) {
         setVisible(true);
       }
-    }, { threshold: 0.4 });
+    }, { threshold: 0.2 }); // הורדתי את הרגישות ל-0.2 כדי שזה ייטען מהר יותר
 
     if (domRef.current) observer.observe(domRef.current);
     return () => {
@@ -149,7 +150,7 @@ const FadeInSection = ({ children, minHeight = '70vh' }) => {
       ref={domRef}
       sx={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+        transform: isVisible ? 'translate3d(0, 0, 0)' : 'translate3d(0, 40px, 0)',
         transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
         minHeight: minHeight,
         display: 'flex',
@@ -159,7 +160,9 @@ const FadeInSection = ({ children, minHeight = '70vh' }) => {
         textAlign: 'center',
         position: 'relative',
         zIndex: 10,
-        pointerEvents: 'none' 
+        pointerEvents: 'none',
+        willChange: 'transform, opacity', // מונע תקיעות בגלילה של הטקסט
+        backfaceVisibility: 'hidden',
       }}
     >
       <Box sx={{ pointerEvents: 'auto' }}>
@@ -180,7 +183,7 @@ const Home = () => {
   return (
     <Box sx={{ position: 'relative', overflow: 'hidden' }}>
       
-      {/* --- צד שמאל --- */}
+      {/* צד שמאל */}
       <QuestionMarkDeco top="5%" left="8%" color="#40e0d0" delay="0" size="1.2rem" />
       <QuestionMarkDeco top="15%" left="22%" color="#ffffff" delay="1" size="2.5rem" />
       <QuestionMarkDeco top="28%" left="5%" color="#000000" delay="2" size="1.8rem" /> 
@@ -195,7 +198,7 @@ const Home = () => {
       <QuestionMarkDeco top="60%" left="32%" color="#40e0d0" delay="5" size="1.3rem" />
       <QuestionMarkDeco top="88%" left="5%" color="#40e0d0" delay="2" size="2.8rem" />
 
-      {/* --- צד ימין --- */}
+      {/* צד ימין */}
       <QuestionMarkDeco top="8%" right="15%" color="#ffffff" delay="2" size="1.5rem" />
       <QuestionMarkDeco top="22%" right="8%" color="#40e0d0" delay="0" size="3.5rem" />
       <QuestionMarkDeco top="35%" right="25%" color="#000000" delay="4" size="1.3rem" />
@@ -265,9 +268,10 @@ const Home = () => {
               border: '2px solid transparent',
               boxShadow: '0 0 20px rgba(188, 19, 254, 0.5)',
               transition: 'all 0.3s ease',
+              willChange: 'transform, box-shadow', // שומר על אנימציית הכפתור חלקה
               '&:hover': { 
                 bgcolor: '#a00bd9',
-                transform: 'translateY(-3px)',
+                transform: 'translate3d(0, -3px, 0)',
                 boxShadow: '0 5px 30px rgba(188, 19, 254, 0.8)',
                 borderColor: 'rgba(255, 255, 255, 0.5)'
               } 
