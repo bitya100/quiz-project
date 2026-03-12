@@ -17,6 +17,7 @@ import AllScores from "./pages/AllScores";
 import ManageUsers from "./pages/ManageUsers"; 
 import ShabbatPage from "./pages/ShabbatPage"; 
 import ScrollToTopBtn from "./components/ScrollToTop"; 
+import Footer from "./components/Footer";
 
 const checkShabbat = () => {
   const now = new Date();
@@ -33,27 +34,6 @@ const ScrollToTopOnNavigate = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
-};
-
-const Footer = () => {
-  const currentYear = new Date().getFullYear();
-  return (
-    <footer style={{ 
-      width: '100%',
-      padding: '20px 0',
-      textAlign: 'center',
-      background: 'rgba(2, 6, 23, 0.9)', 
-      borderTop: '1px solid rgba(64, 224, 208, 0.2)',
-      color: '#40e0d0',
-      position: 'relative',
-      zIndex: 10,
-      marginTop: 'auto' 
-    }}>
-      <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>
-        ביתיה. כל הזכויות שמורות &copy; {currentYear}
-      </p>
-    </footer>
-  );
 };
 
 function App() {
