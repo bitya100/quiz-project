@@ -79,7 +79,7 @@ const Footer = () => {
               transition: '0.2s', '&:hover': { color: '#bc13fe', textShadow: '0 0 8px #bc13fe' }
             }}
           >
-            ביתיה
+            ביתיה.
           </Box>
         </p>
       </footer>
