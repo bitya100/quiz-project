@@ -112,7 +112,11 @@ const Register = () => {
       }, 1500);
 
     } catch (err) {
-      setError(err.response?.data || "שגיאה ברישום.");
+      // התיקון כאן: חילוץ בטוח של הודעת השגיאה כדי למנוע קריסה של ריאקט
+      const errorData = err.response?.data;
+      const errorMessage = errorData?.message || (typeof errorData === 'string' ? errorData : "שגיאה ברישום.");
+      
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -130,6 +134,7 @@ const Register = () => {
       <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 10 }}>
         <Paper elevation={10} sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(64, 224, 208, 0.2)' }}>
           <Typography variant="h4" align="center" sx={{ mb: 3, color: '#40e0d0', fontWeight: 'bold' }}>הרשמה</Typography>
+          
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           
           <Box component="form" onSubmit={handleSubmit} dir="rtl">
