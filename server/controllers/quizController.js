@@ -33,9 +33,10 @@ exports.createQuiz = async (req, res) => {
     }
 
     try {
+        const userId = req.user._id || req.user.userId;
         const newQuiz = new Quiz({
             ...req.body,
-            creator: req.user._id 
+            creator: userId 
         });
 
         const savedQuiz = await newQuiz.save();
@@ -46,7 +47,7 @@ exports.createQuiz = async (req, res) => {
     }
 };
 
-// 4. עדכון חידון קיים - מנהל בלבד
+// 4. עדכון חידון קיים - מנהל בלבד + הגבלת יוצר
 exports.updateQuiz = async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: "גישה נדחתה: מנהלים בלבד" });
@@ -58,15 +59,27 @@ exports.updateQuiz = async (req, res) => {
     }
 
     try {
+        // שלב א': מציאת החידון כדי לבדוק מי יצר אותו
+        const quiz = await Quiz.findById(req.params.id);
+        if (!quiz) {
+            return res.status(404).json({ message: "החידון לא נמצא" });
+        }
+
+        // שלב ב': בדיקת הרשאות - האם זה מנהל העל או היוצר של החידון?
+        const userId = req.user._id || req.user.userId;
+        const isSuperAdmin = req.user.userName && req.user.userName.toLowerCase().includes('admin10');
+        const isCreator = quiz.creator && quiz.creator.toString() === userId.toString();
+
+        if (!isCreator && !isSuperAdmin) {
+            return res.status(403).json({ message: "פעולה נדחתה: אתה מורשה לערוך רק חידונים שאתה יצרת." });
+        }
+
+        // שלב ג': ביצוע העדכון בפועל
         const updatedQuiz = await Quiz.findByIdAndUpdate(
             req.params.id,
             req.body,
             { new: true }
         );
-
-        if (!updatedQuiz) {
-            return res.status(404).json({ message: "החידון לא נמצא" });
-        }
 
         res.json(updatedQuiz);
 
@@ -75,15 +88,32 @@ exports.updateQuiz = async (req, res) => {
     }
 };
 
-// 5. מחיקת חידון - מנהל בלבד
+// 5. מחיקת חידון - מנהל בלבד + הגבלת יוצר
 exports.deleteQuiz = async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: "גישה נדחתה: מנהלים בלבד" });
     }
+    
     try {
-        const deletedQuiz = await Quiz.findByIdAndDelete(req.params.id);
-        if (!deletedQuiz) return res.status(404).json({ message: "החידון לא נמצא" });
+        // שלב א': מציאת החידון כדי לבדוק מי יצר אותו
+        const quiz = await Quiz.findById(req.params.id);
+        if (!quiz) {
+            return res.status(404).json({ message: "החידון לא נמצא" });
+        }
+
+        // שלב ב': בדיקת הרשאות - האם זה מנהל העל או היוצר של החידון?
+        const userId = req.user._id || req.user.userId;
+        const isSuperAdmin = req.user.userName && req.user.userName.toLowerCase().includes('admin10');
+        const isCreator = quiz.creator && quiz.creator.toString() === userId.toString();
+
+        if (!isCreator && !isSuperAdmin) {
+            return res.status(403).json({ message: "פעולה נדחתה: אתה מורשה למחוק רק חידונים שאתה יצרת." });
+        }
+
+        // שלב ג': ביצוע המחיקה בפועל
+        await Quiz.findByIdAndDelete(req.params.id);
         res.json({ message: "החידון נמחק בהצלחה" });
+
     } catch (err) {
         res.status(500).json({ message: "שגיאה במחיקה" });
     }

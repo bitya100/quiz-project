@@ -15,6 +15,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import SearchOffIcon from "@mui/icons-material/SearchOff"; 
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
+// הגדרת מנהל העל לפי אימייל מדויק (כמו בשרת)
+const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
+
 const Quizzes = ({ searchTerm = "" }) => {
   const { list: quizzes, loading } = useSelector((state) => state.quizzes);
   const { user } = useSelector((state) => state.auth);
@@ -26,6 +29,9 @@ const Quizzes = ({ searchTerm = "" }) => {
   const [notification, setNotification] = useState({ open: false, message: "" });
 
   const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+
+  // זיהוי קפדני של מנהל העל
+  const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -45,7 +51,7 @@ const Quizzes = ({ searchTerm = "" }) => {
       dispatch(deleteQuizAction(deleteDialog.quizId)); 
       setNotification({ open: true, message: "החידון נמחק בהצלחה! 🗑️" });
     } catch (err) { 
-      setNotification({ open: true, message: "שגיאה במחיקת החידון" });
+      setNotification({ open: true, message: err.response?.data?.message || "שגיאה במחיקת החידון" });
     } finally {
       setDeleteDialog({ open: false, quizId: null, quizTitle: "" });
     }
@@ -86,7 +92,19 @@ const Quizzes = ({ searchTerm = "" }) => {
           gap: 4,
           dir: 'rtl'
         }}>
-          {filteredQuizzes.map((quiz) => (
+          {filteredQuizzes.map((quiz) => {
+            
+            // בדיקת הרשאות פנימית לכל חידון
+            const creatorId = typeof quiz.creator === 'object' ? quiz.creator?._id : quiz.creator;
+            const isCreator = user && (creatorId === user._id || creatorId === user.userId);
+            
+            // האם יש לו סמכות לבצע פעולות על החידון הספציפי הזה?
+            const isAuthorized = isSuperAdmin || isCreator;
+
+            // האם להציג את הכפתורים בכלל? (כן, לכל המנהלים)
+            const showButtons = user?.role === 'admin';
+
+            return (
             <Card key={quiz._id} sx={{ 
               height: '100%', 
               display: 'flex', 
@@ -96,7 +114,7 @@ const Quizzes = ({ searchTerm = "" }) => {
               border: '1px solid rgba(64, 224, 208, 0.1)',
               borderRadius: 4,
               overflow: 'hidden',
-              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', // אנימציה חלקה וקופצנית יותר
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
               '&:hover': {
                   transform: 'translateY(-10px)',
                   boxShadow: '0 15px 30px rgba(64, 224, 208, 0.2)',
@@ -139,18 +157,31 @@ const Quizzes = ({ searchTerm = "" }) => {
                     {quiz.title}
                   </Typography>
                   
-                  {user?.role === 'admin' && (
+                  {/* מציג את הכפתורים לכל אדמין, אבל מטפל בלחיצה בצורה חכמה */}
+                  {showButtons && (
                     <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
                       <IconButton 
                         size="small" 
-                        onClick={() => navigate(`/edit-quiz/${quiz._id}`)} 
+                        onClick={() => {
+                          if (isAuthorized) {
+                            navigate(`/edit-quiz/${quiz._id}`);
+                          } else {
+                            setNotification({ open: true, message: "פעולה נדחתה: אתה מורשה לערוך רק חידונים שאתה יצרת." });
+                          }
+                        }} 
                         sx={{ color: '#40e0d0', bgcolor: 'rgba(64, 224, 208, 0.1)', '&:hover': { bgcolor: 'rgba(64, 224, 208, 0.3)' } }}
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton 
                         size="small" 
-                        onClick={() => setDeleteDialog({ open: true, quizId: quiz._id, quizTitle: quiz.title })} 
+                        onClick={() => {
+                          if (isAuthorized) {
+                            setDeleteDialog({ open: true, quizId: quiz._id, quizTitle: quiz.title });
+                          } else {
+                            setNotification({ open: true, message: "פעולה נדחתה: אתה מורשה למחוק רק חידונים שאתה יצרת." });
+                          }
+                        }} 
                         sx={{ color: '#f44336', bgcolor: 'rgba(244, 67, 54, 0.1)', '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.3)' } }}
                       >
                         <DeleteIcon fontSize="small" />
@@ -176,7 +207,6 @@ const Quizzes = ({ searchTerm = "" }) => {
               </CardContent>
 
               <Box sx={{ p: 3, pt: 0 }}>
-                {/* כאן מתחיל הקסם! הכפתור החדש */}
                 <Button 
                   component={Link} 
                   to={`/quiz/${quiz._id}`} 
@@ -188,11 +218,10 @@ const Quizzes = ({ searchTerm = "" }) => {
                     color: '#020617', 
                     fontWeight: '900', 
                     fontSize: '1.1rem',
-                    borderRadius: '50px', // צורה עגולה לחלוטין (כמו כדור)
+                    borderRadius: '50px',
                     py: 1.2,
                     boxShadow: '0 4px 15px rgba(64, 224, 208, 0.4)',
                     transition: 'all 0.3s ease',
-                    // אנימציית "נשימה/פעימה"
                     animation: 'pulse 2s infinite',
                     '@keyframes pulse': {
                       '0%': { transform: 'scale(1)', boxShadow: '0 4px 10px rgba(64, 224, 208, 0.4)' },
@@ -202,9 +231,7 @@ const Quizzes = ({ searchTerm = "" }) => {
                     '&:hover': { 
                       background: 'linear-gradient(45deg, #2bd2c2 30%, #40e0d0 90%)',
                       transform: 'translateY(-3px) scale(1.05)',
-                      boxShadow: '0 8px 25px rgba(64, 224, 208, 0.9)',
-                      // מבטל את האנימציה כשמרחפים מעליו כדי שלא יקפוץ למשתמש מתחת לעכבר
-                      // animation: 'none' 
+                      boxShadow: '0 8px 25px rgba(64, 224, 208, 0.9)'
                     } 
                   }}
                 >
@@ -212,7 +239,7 @@ const Quizzes = ({ searchTerm = "" }) => {
                 </Button>
               </Box>
             </Card>
-          ))}
+          )})}
         </Box>
       )}
 
@@ -293,7 +320,7 @@ const Quizzes = ({ searchTerm = "" }) => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         sx={{ mb: 8 }}
       >
-        <Alert severity="success" sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: 3 }}>
+        <Alert severity={notification.message.includes("שגיאה") || notification.message.includes("נדחתה") ? "error" : "success"} sx={{ width: '100%', bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0', fontSize: '1.1rem', fontWeight: 'bold', borderRadius: 3 }}>
           {notification.message}
         </Alert>
       </Snackbar>

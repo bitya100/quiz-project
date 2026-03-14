@@ -15,18 +15,21 @@ const userSchema = new mongoose.Schema({
     requestedCreator: { type: Boolean, default: false }
 });
 
-userSchema.pre('save', async function(next) {
+// התיקון הסופי: פונקציה אסינכרונית מודרנית ללא next!
+userSchema.pre('save', async function () {
+    // אם הסיסמה לא שונתה, פשוט יוצאים (return) ומונגו ימשיך לבד
     if (!this.isModified('password')) {
-        return next(); 
+        return; 
     }
+    
+    // בגלל שזה async, מונגו ממתין אוטומטית עד שההצפנה תסתיים
+    // וגם יתפוס שגיאות אוטומטית אם יהיו כאלו
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
 const User = mongoose.model('User', userSchema);
 
-// התיקון: מייצאים את הסכמה עצמה כדי שה-Middleware יוכל להשתמש בה
 const userValidationSchema = Joi.object({
     userName: Joi.string()
         .pattern(/^[a-zA-Z0-9א-ת\s\-_]+$/) 

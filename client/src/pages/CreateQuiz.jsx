@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
+import { useSelector } from "react-redux"; // הוספנו את זה כדי לדעת מי המשתמש
 import { 
   Container, Typography, TextField, Button, Box, Paper, 
   IconButton, Grid, Card, MenuItem, Divider, CircularProgress, Snackbar, Alert 
@@ -10,11 +11,15 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import SaveIcon from "@mui/icons-material/Save";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import api from "../services/api"; // שימוש ב-API החכם שלך במקום ב-axios נקי
+import api from "../services/api"; 
+
+const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
 const CreateQuiz = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth); // משיכת המשתמש המחובר
+
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false); 
   const [notification, setNotification] = useState({ open: false, message: "", severity: "success" });
@@ -36,14 +41,29 @@ const CreateQuiz = () => {
       const fetchQuiz = async () => {
         try {
           const res = await api.get(`/quizzes/${id}`);
-          reset(res.data);
+          const quiz = res.data;
+
+          // --- התיקון: בדיקת הרשאות בצד הלקוח לפני הצגת הטופס ---
+          const creatorId = typeof quiz.creator === 'object' ? quiz.creator?._id : quiz.creator;
+          const isCreator = user && (creatorId === user._id || creatorId === user.userId);
+          const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL || user?.userName?.toLowerCase().includes("admin10");
+
+          if (!isCreator && !isSuperAdmin) {
+             setNotification({ open: true, message: "פעולה נדחתה: אין לך הרשאה לערוך חידון זה.", severity: "error" });
+             // זורק את המשתמש החוצה אחרי שניה וחצי
+             setTimeout(() => navigate("/quizzes"), 1500);
+             return; // עוצר את הפונקציה ולא ממלא את הטופס!
+          }
+
+          reset(quiz);
         } catch (err) {
           setNotification({ open: true, message: "שגיאה בטעינת החידון", severity: "error" });
+          setTimeout(() => navigate("/quizzes"), 1500);
         }
       };
       fetchQuiz();
     }
-  }, [id, isEditMode, reset]);
+  }, [id, isEditMode, reset, user, navigate]);
 
   const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -53,7 +73,6 @@ const CreateQuiz = () => {
     formData.append('image', file);
 
     try {
-      // ה-api מצרף את כתובת השרת והטוקן באופן אוטומטי
       const res = await api.post(`/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
