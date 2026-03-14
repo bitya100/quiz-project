@@ -112,7 +112,6 @@ const Register = () => {
       }, 1500);
 
     } catch (err) {
-      // התיקון כאן: חילוץ בטוח של הודעת השגיאה כדי למנוע קריסה של ריאקט
       const errorData = err.response?.data;
       const errorMessage = errorData?.message || (typeof errorData === 'string' ? errorData : "שגיאה ברישום.");
       
@@ -122,7 +121,8 @@ const Register = () => {
   };
 
   return (
-    <Box sx={{ position: 'relative', overflow: 'hidden', minHeight: '85vh', display: 'flex', alignItems: 'center', py: 5 }}>
+    // התיקון לגובה כדי למנוע גלילה מיותרת
+    <Box sx={{ position: 'relative', overflow: 'hidden', minHeight: 'calc(100vh - 180px)', display: 'flex', alignItems: 'center', py: 5 }}>
       {/* רקע סימני שאלה */}
       <QuestionMarkDeco top="12%" left="18%" color="#40e0d0" delay="0" size="2rem" />
       <QuestionMarkDeco top="55%" left="10%" color="#ffffff" delay="2" size="1.6rem" />
@@ -138,9 +138,46 @@ const Register = () => {
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           
           <Box component="form" onSubmit={handleSubmit} dir="rtl">
-            <TextField fullWidth name="userName" label="שם משתמש" variant="outlined" margin="normal" value={formData.userName} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
-            <TextField fullWidth name="email" label="אימייל" variant="outlined" margin="normal" value={formData.email} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
-            <TextField fullWidth name="password" label="סיסמה" type="password" variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' } }} />
+            <TextField 
+              fullWidth 
+              name="userName" 
+              label="שם משתמש" 
+              variant="outlined" 
+              margin="normal" 
+              value={formData.userName} 
+              onChange={handleChange} 
+              required 
+              autoComplete="username"
+              InputLabelProps={{ style: { color: '#40e0d0' } }} 
+              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
+            />
+            <TextField 
+              fullWidth 
+              name="email" 
+              label="אימייל" 
+              variant="outlined" 
+              margin="normal" 
+              value={formData.email} 
+              onChange={handleChange} 
+              required 
+              autoComplete="email"
+              InputLabelProps={{ style: { color: '#40e0d0' } }} 
+              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
+            />
+            <TextField 
+              fullWidth 
+              name="password" 
+              label="סיסמה" 
+              type="password" 
+              variant="outlined" 
+              margin="normal" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+              autoComplete="new-password"
+              InputLabelProps={{ style: { color: '#40e0d0' } }} 
+              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
+            />
             
             <Button 
               type="submit" 

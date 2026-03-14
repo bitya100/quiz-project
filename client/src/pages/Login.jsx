@@ -134,7 +134,8 @@ const Login = () => {
   };
 
   return (
-    <Box sx={{ position: 'relative', overflow: 'hidden', minHeight: '85vh', display: 'flex', alignItems: 'center', py: 5 }}>
+    // התיקון לגובה כדי למנוע גלילה מיותרת
+    <Box sx={{ position: 'relative', overflow: 'hidden', minHeight: 'calc(100vh - 180px)', display: 'flex', alignItems: 'center', py: 5 }}>
       {/* רקע סימני שאלה */}
       <QuestionMarkDeco top="15%" left="15%" color="#40e0d0" delay="0" size="2rem" />
       <QuestionMarkDeco top="50%" left="8%" color="#ffffff" delay="2" size="1.5rem" />
@@ -152,8 +153,33 @@ const Login = () => {
           {error && <Alert severity="error" sx={{ mb: 2, bgcolor: 'rgba(211, 47, 47, 0.2)', color: '#ff8a80' }}>{error}</Alert>}
           
           <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'right' }}>
-            <TextField fullWidth name="email" label="אימייל" variant="outlined" margin="normal" value={formData.email} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
-            <TextField fullWidth name="password" label="סיסמה" type="password" variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
+            <TextField 
+              fullWidth 
+              name="email" 
+              label="אימייל" 
+              variant="outlined" 
+              margin="normal" 
+              value={formData.email} 
+              onChange={handleChange} 
+              required 
+              autoComplete="email" 
+              InputLabelProps={{ style: { color: '#40e0d0' } }} 
+              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
+            />
+            <TextField 
+              fullWidth 
+              name="password" 
+              label="סיסמה" 
+              type="password" 
+              variant="outlined" 
+              margin="normal" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+              autoComplete="current-password" 
+              InputLabelProps={{ style: { color: '#40e0d0' } }} 
+              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
+            />
             
             <FormControlLabel
               control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} sx={{ color: '#40e0d0', '&.Mui-checked': { color: '#40e0d0' } }} />}
