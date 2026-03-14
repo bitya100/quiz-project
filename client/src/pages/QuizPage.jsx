@@ -44,7 +44,6 @@ const QuizPage = () => {
   const timerRef = useRef(null);
   const delayRef = useRef(null);
 
-  // הכתובת החכמה
   const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
 
   useEffect(() => {
@@ -166,7 +165,18 @@ const QuizPage = () => {
   const isPerfectScore = score === quiz.questions.length;
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8, textAlign: 'center', pb: 5 }}>
+    <Container 
+      maxWidth="sm" 
+      sx={{ 
+        // התיקון כאן: הפיכת המיכל ל-Flex שמתפרס על המסך וממרכז את התוכן אנכית
+        minHeight: { xs: '85vh', md: '80vh' }, 
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        textAlign: 'center', 
+        py: 4 
+      }}
+    >
       
       {showScore && isPerfectScore && (
         <Confetti 
@@ -272,7 +282,7 @@ const QuizPage = () => {
                 component="img" 
                 image={
                   quiz.questions[currentQuestion].image.startsWith('/uploads') 
-                    ? `${serverUrl}${quiz.questions[currentQuestion].image}` // שימוש בכתובת החכמה
+                    ? `${serverUrl}${quiz.questions[currentQuestion].image}` 
                     : quiz.questions[currentQuestion].image
                 } 
                 sx={{ borderRadius: 2, mb: 3, maxHeight: 250, objectFit: 'contain' }} 
