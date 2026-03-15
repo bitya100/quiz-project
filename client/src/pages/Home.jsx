@@ -66,6 +66,7 @@ const Home = () => {
             border: '2px solid transparent',
             boxShadow: '0 0 20px rgba(125, 19, 254, 0.5)',
             transition: 'all 0.3s ease',
+            
             '&:hover': { 
               bgcolor: '#0b9bd9',
               transform: 'translateY(-3px)',
