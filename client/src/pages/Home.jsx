@@ -56,7 +56,7 @@ const Home = () => {
           size="large"
           endIcon={<KeyboardArrowLeftIcon sx={{ ml: 1, fontSize: '2rem !important', animation: `${bounceHorizontal} 1.5s infinite` }} />} 
           sx={{ 
-            bgcolor: '#bc13fe', 
+            bgcolor: '#0334575e', 
             color: 'white', 
             fontSize: '1.6rem',
             fontWeight: 'bold', 
@@ -64,12 +64,12 @@ const Home = () => {
             py: 2,
             borderRadius: '50px',
             border: '2px solid transparent',
-            boxShadow: '0 0 20px rgba(188, 19, 254, 0.5)',
+            boxShadow: '0 0 20px rgba(125, 19, 254, 0.5)',
             transition: 'all 0.3s ease',
             '&:hover': { 
-              bgcolor: '#a00bd9',
+              bgcolor: '#0b9bd9',
               transform: 'translateY(-3px)',
-              boxShadow: '0 5px 30px rgba(188, 19, 254, 0.8)',
+              boxShadow: '0 5px 30px rgba(125, 19, 254, 0.8)',
               borderColor: 'rgba(255, 255, 255, 0.5)'
             } 
           }}

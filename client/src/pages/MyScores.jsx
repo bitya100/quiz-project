@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import api from "../services/api"; // התיקון הקריטי: משתמשים ב-api שלנו ולא ב-axios נקי
+import api from "../services/api"; 
 import {
   Container, Typography, Box, Paper, Button, CircularProgress,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel
@@ -17,7 +17,6 @@ const MyScores = () => {
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        // התיקון: api.get מצרף את הטוקן אוטומטית מאיפה שהוא לא נמצא (local או session)
         const res = await api.get('/results/my-scores');
         
         const processedData = res.data.map(item => ({
@@ -59,11 +58,11 @@ const MyScores = () => {
     return 0;
   });
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress color="inherit" /></Box>;
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10, minHeight: '60vh' }}><CircularProgress color="inherit" /></Box>;
 
   if (scores.length === 0) {
     return (
-      <Container maxWidth="sm" sx={{ mt: 10, textAlign: 'center' }}>
+      <Container maxWidth="sm" sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', mt: 5 }}>
         <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'white', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)' }}>
           <QuizIcon sx={{ fontSize: 70, color: '#40e0d0', mb: 2 }} />
           <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>עוד לא פתרת כלום!</Typography>
@@ -79,11 +78,23 @@ const MyScores = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 5, pb: 5 }}>
+    <Container maxWidth="md" sx={{ minHeight: '75vh', pt: 5, pb: 5 }}>
       <Typography variant="h3" sx={{ mb: 4, textAlign: 'center', color: '#40e0d0', fontWeight: 'bold' }}>הציונים שלי</Typography>
-      <TableContainer component={Paper} sx={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(64, 224, 208, 0.2)', borderRadius: 3 }}>
+      
+      <TableContainer 
+        component={Paper} 
+        sx={{ 
+          background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)', 
+          backdropFilter: 'blur(15px)', 
+          border: '1px solid rgba(255, 255, 255, 0.1)', 
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+          borderRadius: 3, 
+          color: 'white',
+          overflow: 'hidden' 
+        }}
+      >
         <Table sx={{ minWidth: 650 }} dir="rtl">
-          <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.5)' }}>
+          <TableHead sx={{ bgcolor: 'rgba(64, 224, 208, 0.08)', borderBottom: '2px solid rgba(64, 224, 208, 0.3)' }}>
             <TableRow>
               <TableCell align="right">
                 <TableSortLabel
