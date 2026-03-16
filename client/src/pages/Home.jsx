@@ -30,7 +30,7 @@ const Home = () => {
         animation: `${fadeIn} 1s ease-out forwards` // אנימציית כניסה חלקה
       }}
     >
-      <Container maxWidth="lg" sx={{ textAlign: 'center', position: 'relative', zIndex: 10 }}>
+      <Container maxWidth="lg" sx={{ textAlign: 'center', position: 'relative', zIndex: 10  }}>
         
         <Typography 
           variant="h1" 
@@ -54,7 +54,7 @@ const Home = () => {
           onClick={() => navigate('/quizzes')}
           variant="contained" 
           size="large"
-          endIcon={<KeyboardArrowLeftIcon sx={{ ml: 1, fontSize: '2rem !important', animation: `${bounceHorizontal} 1.5s infinite` }} />} 
+          endIcon={<KeyboardArrowLeftIcon sx={{ ml: 1, fontSize: '3rem !important', animation: `${bounceHorizontal} 1.5s infinite` }} />} 
           sx={{ 
             bgcolor: '#0334575e', 
             color: 'white', 
@@ -68,7 +68,7 @@ const Home = () => {
             transition: 'all 0.3s ease',
             
             '&:hover': { 
-              bgcolor: '#0b9bd9',
+              bgcolor: '#3353999b',
               transform: 'translateY(-3px)',
               boxShadow: '0 5px 30px rgba(125, 19, 254, 0.8)',
               borderColor: 'rgba(255, 255, 255, 0.5)'
