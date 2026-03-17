@@ -260,4 +260,5 @@ const AllScores = ({ searchTerm = "" }) => {
   );
 };
 
+
 export default AllScores;
