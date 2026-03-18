@@ -8,9 +8,16 @@ import Confetti from "react-confetti";
 import quizService from "../services/quizService";
 import resultService from "../services/resultService";
 
-const audioCorrect = new Audio('/music/correct.mp3');
-const audioWrong = new Audio('/music/false.mp3');
-const audioVictory = new Audio('/music/applause.mp3');
+// הייבוא החדש של צלילי ה-Base64 מהקובץ שיצרת (שימי לב שהנתיב תקין לפי מיקום הקובץ שלך)
+// מייבאים ישירות את קבצי השמע מתיקיית music שהעברנו לתוך src
+import correctSound from "../music/correct.mp3";
+import wrongSound from "../music/false.mp3";
+import applauseSound from "../music/applause.mp3";
+
+// שימוש במשתני הטקסט במקום בקישורים שנטפרי חוסם!
+const audioCorrect = new Audio(correctSound);
+const audioWrong = new Audio(wrongSound);
+const audioVictory = new Audio(applauseSound);
 
 const playSound = (type) => {
   try {
@@ -168,7 +175,6 @@ const QuizPage = () => {
     <Container 
       maxWidth="sm" 
       sx={{ 
-        // התיקון כאן: הפיכת המיכל ל-Flex שמתפרס על המסך וממרכז את התוכן אנכית
         minHeight: { xs: '85vh', md: '80vh' }, 
         display: 'flex',
         flexDirection: 'column',
