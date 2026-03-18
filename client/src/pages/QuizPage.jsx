@@ -51,7 +51,6 @@ const QuizPage = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false); 
   
   const [shuffledOptions, setShuffledOptions] = useState([]);
   const [correctAnswerText, setCorrectAnswerText] = useState("");
@@ -62,7 +61,7 @@ const QuizPage = () => {
   const timerRef = useRef(null);
   const delayRef = useRef(null);
   
-  // הנה שומר הסף שלנו!
+  // שומר הסף של הטיימר המלחיץ
   const timerSoundRef = useRef(false);
 
   const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
@@ -84,7 +83,7 @@ const QuizPage = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!quiz || showScore || !hasStarted) return; 
+    if (!quiz || showScore) return; 
 
     if (timerRef.current) clearInterval(timerRef.current);
     if (delayRef.current) clearTimeout(delayRef.current);
@@ -107,11 +106,11 @@ const QuizPage = () => {
       setTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
 
-  }, [quiz, currentQuestion, showScore, hasStarted]);
+  }, [quiz, currentQuestion, showScore]);
 
   useEffect(() => {
     // הפעלת הטיימר בעזרת שומר הסף - יקרה בדיוק פעם אחת!
-    if (hasStarted && timeLeft <= 5 && timeLeft > 0 && selectedAnswer === null && !showScore) {
+    if (timeLeft <= 5 && timeLeft > 0 && selectedAnswer === null && !showScore) {
       if (!timerSoundRef.current) {
         timerSoundRef.current = true; // נועלים את הדלת
         console.log("⏰ מפעיל טיימר מלחיץ!");
@@ -119,10 +118,10 @@ const QuizPage = () => {
       }
     }
 
-    if (hasStarted && timeLeft === 0 && selectedAnswer === null && !showScore) {
+    if (timeLeft === 0 && selectedAnswer === null && !showScore) {
       handleTimeOut();
     }
-  }, [timeLeft, selectedAnswer, showScore, hasStarted]);
+  }, [timeLeft, selectedAnswer, showScore]);
 
   const handleTimeOut = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -197,38 +196,9 @@ const QuizPage = () => {
     setCurrentQuestion(0);
     setScore(0);
     setShowScore(false);
-    setHasStarted(false); 
   };
 
   if (!quiz) return <LinearProgress sx={{ color: '#40e0d0', mt: 10 }} />;
-
-  if (!hasStarted) {
-    return (
-      <Container maxWidth="sm" sx={{ minHeight: { xs: '85vh', md: '80vh' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center', py: 4 }}>
-        <Zoom in={true}>
-          <Paper elevation={10} sx={{ p: 5, borderRadius: 4, background: 'rgba(255,255,255,0.05)', color: 'white', backdropFilter: 'blur(10px)' }} dir="rtl">
-            <Typography variant="h3" gutterBottom sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
-              מוכנים לחידון?
-            </Typography>
-            <Typography variant="h6" sx={{ mb: 4, color: 'rgba(255,255,255,0.8)' }}>
-              יש לכם 20 שניות בלבד לכל שאלה. שימו לב לטיימר!
-            </Typography>
-            <Button 
-              variant="contained" 
-              size="large"
-              onClick={() => setHasStarted(true)} 
-              sx={{ 
-                bgcolor: '#bc13fe', color: 'white', fontWeight: 'bold', fontSize: '1.2rem', borderRadius: '25px', px: 6, py: 1.5, 
-                '&:hover': { bgcolor: '#a00be0', boxShadow: '0 0 20px #bc13fe' } 
-              }}
-            >
-              התחילו עכשיו!
-            </Button>
-          </Paper>
-        </Zoom>
-      </Container>
-    );
-  }
 
   const isPerfectScore = score === quiz.questions.length;
 
