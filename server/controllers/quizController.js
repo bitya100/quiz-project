@@ -1,4 +1,4 @@
-const { Quiz } = require('../models/Quiz'); // התיקון כאן: הוספת סוגריים מסולסלים!
+const { Quiz } = require('../models/Quiz'); 
 
 // 1. קבלת כל החידונים - פתוח לכולם
 exports.getAllQuizzes = async (req, res) => {
@@ -65,9 +65,12 @@ exports.updateQuiz = async (req, res) => {
             return res.status(404).json({ message: "החידון לא נמצא" });
         }
 
-        // שלב ב': בדיקת הרשאות - האם זה מנהל העל או היוצר של החידון?
+        // שלב ב': בדיקת הרשאות - מנהל על (לפי אימייל או שם משתמש) או יוצר החידון
         const userId = req.user._id || req.user.userId;
-        const isSuperAdmin = req.user.userName && req.user.userName.toLowerCase().includes('admin10');
+        const isSuperAdmin = 
+            (req.user.email && req.user.email.toLowerCase() === 'admin10@gmail.com') || 
+            (req.user.userName && req.user.userName.toLowerCase().includes('admin10'));
+            
         const isCreator = quiz.creator && quiz.creator.toString() === userId.toString();
 
         if (!isCreator && !isSuperAdmin) {
@@ -101,9 +104,12 @@ exports.deleteQuiz = async (req, res) => {
             return res.status(404).json({ message: "החידון לא נמצא" });
         }
 
-        // שלב ב': בדיקת הרשאות - האם זה מנהל העל או היוצר של החידון?
+        // שלב ב': בדיקת הרשאות - מנהל על (לפי אימייל או שם משתמש) או יוצר החידון
         const userId = req.user._id || req.user.userId;
-        const isSuperAdmin = req.user.userName && req.user.userName.toLowerCase().includes('admin10');
+        const isSuperAdmin = 
+            (req.user.email && req.user.email.toLowerCase() === 'admin10@gmail.com') || 
+            (req.user.userName && req.user.userName.toLowerCase().includes('admin10'));
+
         const isCreator = quiz.creator && quiz.creator.toString() === userId.toString();
 
         if (!isCreator && !isSuperAdmin) {
