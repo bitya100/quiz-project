@@ -1,4 +1,4 @@
-const { Quiz } = require('../models/Quiz'); 
+const { Quiz } = require('../models/Quiz');
 
 // 1. קבלת כל החידונים - פתוח לכולם
 exports.getAllQuizzes = async (req, res) => {
@@ -65,12 +65,14 @@ exports.updateQuiz = async (req, res) => {
             return res.status(404).json({ message: "החידון לא נמצא" });
         }
 
-        // שלב ב': בדיקת הרשאות - מנהל על (לפי אימייל או שם משתמש) או יוצר החידון
+        // שלב ב': בדיקת הרשאות - האם זה מנהל העל או היוצר של החידון?
         const userId = req.user._id || req.user.userId;
-        const isSuperAdmin = 
-            (req.user.email && req.user.email.toLowerCase() === 'admin10@gmail.com') || 
-            (req.user.userName && req.user.userName.toLowerCase().includes('admin10'));
-            
+        
+        // התיקון: שליפת שם המשתמש בצורה בטוחה יותר כדי למנוע שגיאות Undefined
+        const usernameFromToken = req.user.username || req.user.userName || "";
+        
+        // בדיקה האם המשתמש הוא מנהל על (מכיל admin10 בשמו)
+        const isSuperAdmin = usernameFromToken.toLowerCase().includes('admin10');
         const isCreator = quiz.creator && quiz.creator.toString() === userId.toString();
 
         if (!isCreator && !isSuperAdmin) {
@@ -104,12 +106,14 @@ exports.deleteQuiz = async (req, res) => {
             return res.status(404).json({ message: "החידון לא נמצא" });
         }
 
-        // שלב ב': בדיקת הרשאות - מנהל על (לפי אימייל או שם משתמש) או יוצר החידון
+        // שלב ב': בדיקת הרשאות - האם זה מנהל העל או היוצר של החידון?
         const userId = req.user._id || req.user.userId;
-        const isSuperAdmin = 
-            (req.user.email && req.user.email.toLowerCase() === 'admin10@gmail.com') || 
-            (req.user.userName && req.user.userName.toLowerCase().includes('admin10'));
-
+        
+        // התיקון: שליפת שם המשתמש בצורה בטוחה
+        const usernameFromToken = req.user.username || req.user.userName || "";
+        
+        // בדיקה האם המשתמש הוא מנהל על
+        const isSuperAdmin = usernameFromToken.toLowerCase().includes('admin10');
         const isCreator = quiz.creator && quiz.creator.toString() === userId.toString();
 
         if (!isCreator && !isSuperAdmin) {
