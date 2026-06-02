@@ -44,4 +44,5 @@ const uploadImageToCloudinary = async (file) => {
   }
 };
 
+
 export default { getAllQuizzes, getQuizById, deleteQuiz, uploadImageToCloudinary };
