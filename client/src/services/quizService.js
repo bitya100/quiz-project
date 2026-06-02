@@ -17,7 +17,8 @@ const deleteQuiz = async (id) => {
 
 // פונקציה חדשה להעלאת תמונה ישירות לקלאודינארי מהדפדפן
 const uploadImageToCloudinary = async (file) => {
-  const CLOUD_NAME = "YOUR_CLOUD_NAME"; // <-- להחליף בשם הענן שלך
+  // הכנסנו את שם הענן שלך בדיוק כאן, בתוך גרשיים
+  const CLOUD_NAME = "dtxm5hz1m"; 
   const UPLOAD_PRESET = "quiz_preset";   // שם ה-Preset ה-Unsigned שיצרת
 
   const formData = new FormData();
@@ -25,7 +26,8 @@ const uploadImageToCloudinary = async (file) => {
   formData.append("upload_preset", UPLOAD_PRESET);
 
   try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${dtxm5hz1m}/image/upload`, {
+    // הקישור עכשיו משתמש במשתנה בצורה תקינה
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
       method: "POST",
       body: formData,
     });
