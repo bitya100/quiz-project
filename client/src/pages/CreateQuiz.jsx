@@ -12,6 +12,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import api from "../services/api"; 
+import quizService from "../services/quizService"; // ייבוא שירות החידונים המעודכן
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
@@ -65,39 +66,43 @@ const CreateQuiz = () => {
     }
   }, [id, isEditMode, reset, user, navigate]);
 
+  // עדכון העלאת תמונת נושא ראשית ישירות לקלאודינארי
   const handleMainImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
-      const res = await api.post(`/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setValue('image', res.data.imageUrl);
-      setNotification({ open: true, message: "התמונה הועלתה בהצלחה", severity: "success" });
+      setLoading(true);
+      setNotification({ open: true, message: "מעלה תמונת נושא לקלאודינארי...", severity: "info" });
+      
+      const uploadedUrl = await quizService.uploadImageToCloudinary(file);
+      
+      setValue('image', uploadedUrl, { shouldValidate: true, shouldDirty: true });
+      setNotification({ open: true, message: "תמונת הנושא הועלתה בהצלחה לשרת הענן! 🖼️", severity: "success" });
     } catch (err) {
-      setNotification({ open: true, message: "שגיאה בהעלאת התמונה", severity: "error" });
+      setNotification({ open: true, message: "שגיאה בהעלאת התמונה לענן", severity: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
+  // עדכון העלאת תמונת שאלה ישירות לקלאודינארי
   const handleQuestionImageUpload = async (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
-      const res = await api.post(`/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setValue(`questions.${index}.image`, res.data.imageUrl);
-      setNotification({ open: true, message: "תמונת השאלה הועלתה", severity: "success" });
+      setLoading(true);
+      setNotification({ open: true, message: `מעלה תמונה לשאלה ${index + 1}...`, severity: "info" });
+      
+      const uploadedUrl = await quizService.uploadImageToCloudinary(file);
+      
+      setValue(`questions.${index}.image`, uploadedUrl, { shouldValidate: true, shouldDirty: true });
+      setNotification({ open: true, message: `תמונת שאלה ${index + 1} הועלתה בהצלחה! ⚡`, severity: "success" });
     } catch (err) {
-      setNotification({ open: true, message: "שגיאה בהעלאת התמונה", severity: "error" });
+      setNotification({ open: true, message: "שגיאה בהעלאת תמונת השאלה", severity: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,7 +149,7 @@ const CreateQuiz = () => {
             <Grid item xs={12} md={6}>
               <Box sx={{ display: 'flex', gap: 1, height: '100%', alignItems: 'center' }}>
                 <Button variant="outlined" component="label" fullWidth disabled={loading || isSubmitted} sx={{ height: '100%', minHeight: '56px', color: "#40e0d0", borderColor: "rgba(255,255,255,0.3)" }}>
-                  {watch('image') ? '✅ תמונת נושא הועלתה' : '🖼️ העלאת תמונת נושא לחידון'}
+                  {watch('image') ? '✅ תמונת נושא בענן' : '🖼️ העלאת תמונת נושא לחידון'}
                   <input type="file" hidden accept="image/*" onChange={handleMainImageUpload} />
                 </Button>
                 {watch('image') && (
@@ -221,7 +226,7 @@ const CreateQuiz = () => {
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />} disabled={loading || isSubmitted} sx={{ color: "#40e0d0", borderColor: "#40e0d0", height: '56px' }}>
-                    תמונה לשאלה
+                    {watch(`questions.${index}.image`) ? '✅ תמונה בענן' : 'תמונה לשאלה'}
                     <input type="file" hidden accept="image/*" onChange={(e) => handleQuestionImageUpload(e, index)} />
                   </Button>
                   
