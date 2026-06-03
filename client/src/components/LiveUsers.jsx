@@ -24,9 +24,12 @@ const LiveUsers = () => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#40e0d0', opacity: 0.7 }}>
       <PeopleIcon fontSize="small" />
-      <Typography variant="caption">
-        {isMobile ? count : `${count} משתמשים כרגע באתר`}
-      </Typography>
+      <Typography 
+  variant="caption" 
+  sx={{ display: { xs: 'none', sm: 'block' } }}
+>
+  {count} משתמשים כרגע באתר
+</Typography>
     </Box>
   );
 };
