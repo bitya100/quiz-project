@@ -4,7 +4,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import io from 'socket.io-client';
 
 // התחברות לשרת (שני את הכתובת אם השרת שלך לא ב-3001)
-const socket = io(' https://quiz-project-server.onrender.com', {
+const socket = io('https://quiz-project-server.onrender.com', {
   transports: ['websocket'], // מוודא שזה יעבוד בצורה יציבה
   secure: true
 });
