@@ -4,9 +4,11 @@ import { useDispatch } from "react-redux";
 import { login as loginAction } from "../store";
 import authService from "../services/authService";
 import resultService from "../services/resultService";
-import { Container, Paper, Typography, TextField, Button, Box, Alert, keyframes } from "@mui/material";
+import { Container, Paper, Typography, TextField, Button, Box, Alert, keyframes, InputAdornment, IconButton } from "@mui/material";
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-// --- אנימציות סימני השאלה (מותאם לביצועים) ---
+// --- אנימציות סימני השאלה ---
 const float1 = keyframes`
   0%, 100% { transform: translate3d(0px, 0px, 0) rotate(0deg); }
   25% { transform: translate3d(10px, -20px, 0) rotate(5deg); }
@@ -47,10 +49,10 @@ const QuestionMarkDeco = ({ top, left, right, bottom, color, delay, size = '1.5r
     </Box>
   );
 };
-// --- סוף אנימציות ---
 
 const Register = () => {
   const [formData, setFormData] = useState({ userName: "", email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState(""); 
@@ -70,60 +72,39 @@ const Register = () => {
 
     try {
       const data = await authService.register(formData);
-      
       sessionStorage.setItem("token", data.token);
-      sessionStorage.setItem("user", JSON.stringify({ 
-        userId: data.userId, userName: data.userName, email: data.email, role: data.role 
-      }));
-
+      sessionStorage.setItem("user", JSON.stringify({ userId: data.userId, userName: data.userName, email: data.email, role: data.role }));
       setLoading(false);
 
       const pendingResultStr = sessionStorage.getItem('pendingResult');
-      
       if (pendingResultStr) {
         try {
           const pendingResult = JSON.parse(pendingResultStr);
           await resultService.saveResult(pendingResult);
           sessionStorage.removeItem('pendingResult');
-          
           setSuccessMsg("נרשמת בהצלחה! שומר את הציון שלך...");
-          
           setTimeout(() => {
-            dispatch(loginAction({
-              user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
-              token: data.token
-            }));
+            dispatch(loginAction({ user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role }, token: data.token }));
             navigate("/my-scores");
           }, 1500);
           return;
-        } catch (err) {
-          console.error("Failed to save pending result", err);
-        }
+        } catch (err) { console.error("Failed to save pending result", err); }
       }
 
       setSuccessMsg("נרשמת בהצלחה! רק רגע...");
-
       setTimeout(() => {
-        dispatch(loginAction({
-          user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role },
-          token: data.token
-        }));
+        dispatch(loginAction({ user: { userId: data.userId, userName: data.userName, email: data.email, role: data.role }, token: data.token }));
         navigate("/quizzes");
       }, 1500);
-
     } catch (err) {
       const errorData = err.response?.data;
-      const errorMessage = errorData?.message || (typeof errorData === 'string' ? errorData : "שגיאה ברישום.");
-      
-      setError(errorMessage);
+      setError(errorData?.message || (typeof errorData === 'string' ? errorData : "שגיאה ברישום."));
       setLoading(false);
     }
   };
 
   return (
-    // התיקון לגובה כדי למנוע גלילה מיותרת
     <Box sx={{ position: 'relative', overflow: 'hidden', minHeight: 'calc(100vh - 180px)', display: 'flex', alignItems: 'center', py: 5 }}>
-      {/* רקע סימני שאלה */}
       <QuestionMarkDeco top="12%" left="18%" color="#40e0d0" delay="0" size="2rem" />
       <QuestionMarkDeco top="55%" left="10%" color="#ffffff" delay="2" size="1.6rem" />
       <QuestionMarkDeco top="82%" left="22%" color="#bc13fe" delay="4" size="2.4rem" />
@@ -134,72 +115,31 @@ const Register = () => {
       <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 10 }}>
         <Paper elevation={10} sx={{ p: 4, borderRadius: 3, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', color: 'white', border: '1px solid rgba(64, 224, 208, 0.2)' }}>
           <Typography variant="h4" align="center" sx={{ mb: 3, color: '#40e0d0', fontWeight: 'bold' }}>הרשמה</Typography>
-          
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
           
           <Box component="form" onSubmit={handleSubmit} dir="rtl">
+            <TextField fullWidth name="userName" label="שם משתמש" variant="outlined" margin="normal" value={formData.userName} onChange={handleChange} required autoComplete="username" InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
+            <TextField fullWidth name="email" label="אימייל" variant="outlined" margin="normal" value={formData.email} onChange={handleChange} required autoComplete="email" InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
             <TextField 
-              fullWidth 
-              name="userName" 
-              label="שם משתמש" 
-              variant="outlined" 
-              margin="normal" 
-              value={formData.userName} 
-              onChange={handleChange} 
-              required 
-              autoComplete="username"
+              fullWidth name="password" label="סיסמה" type={showPassword ? "text" : "password"} variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required autoComplete="new-password"
               InputLabelProps={{ style: { color: '#40e0d0' } }} 
-              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
-            />
-            <TextField 
-              fullWidth 
-              name="email" 
-              label="אימייל" 
-              variant="outlined" 
-              margin="normal" 
-              value={formData.email} 
-              onChange={handleChange} 
-              required 
-              autoComplete="email"
-              InputLabelProps={{ style: { color: '#40e0d0' } }} 
-              sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
-            />
-            <TextField 
-              fullWidth 
-              name="password" 
-              label="סיסמה" 
-              type="password" 
-              variant="outlined" 
-              margin="normal" 
-              value={formData.password} 
-              onChange={handleChange} 
-              required 
-              autoComplete="new-password"
-              InputLabelProps={{ style: { color: '#40e0d0' } }} 
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#40e0d0' }}>
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
             />
             
-            <Button 
-              type="submit" 
-              fullWidth 
-              variant="contained" 
-              disabled={loading || !!successMsg} 
-              sx={{ 
-                mt: 3, 
-                mb: 2, 
-                bgcolor: successMsg ? '#2cd8bbd6' : '#40e0d0', 
-                color: successMsg ? 'white' : '#020617', 
-                fontWeight: 'bold', 
-                py: 1.5,
-                '&:disabled': { bgcolor: successMsg ? '#2cd8bbd6' : 'rgba(64, 224, 208, 0.3)', color: successMsg ? 'white' : '' }
-              }}
-            >
+            <Button type="submit" fullWidth variant="contained" disabled={loading || !!successMsg} sx={{ mt: 3, mb: 2, bgcolor: successMsg ? '#2cd8bbd6' : '#40e0d0', color: successMsg ? 'white' : '#020617', fontWeight: 'bold', py: 1.5, '&:disabled': { bgcolor: successMsg ? '#2cd8bbd6' : 'rgba(64, 224, 208, 0.3)', color: successMsg ? 'white' : '' } }}>
               {successMsg ? successMsg : (loading ? "מעבד נתונים..." : "הרשמה")}
             </Button>
           </Box>
-          <Typography align="center">
-            כבר יש לך חשבון? <Link to="/login" style={{ color: '#40e0d0', textDecoration: 'none' }}>התחבר כאן</Link>
-          </Typography>
+          <Typography align="center">כבר יש לך חשבון? <Link to="/login" style={{ color: '#40e0d0', textDecoration: 'none' }}>התחבר כאן</Link></Typography>
         </Paper>
       </Container>
     </Box>
