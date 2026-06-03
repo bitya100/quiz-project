@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-// אם את משתמשת ב-socket.io:
-// import socket from '../services/socket'; 
+import io from 'socket.io-client';
+
+// התחברות לשרת (שני את הכתובת אם השרת שלך לא ב-3001)
+const socket = io('http://localhost:3001');
 
 const LiveUsers = () => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    // כאן מתחברים לאירוע מהשרת
-    // socket.on('updateUserCount', (newCount) => setCount(newCount));
-    
-    // סימולציה למקרה שאין לך עדיין סוקטים:
-    setCount(Math.floor(Math.random() * 50) + 10); 
+    socket.on('updateUserCount', (newCount) => {
+      setCount(newCount);
+    });
+
+    return () => socket.off('updateUserCount');
   }, []);
 
   return (
