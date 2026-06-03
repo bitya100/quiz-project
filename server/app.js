@@ -1,11 +1,11 @@
-require('dotenv').config(); // חייב להיות ראשון!
+require('dotenv').config(); 
 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const http = require('http'); // נוסף עבור Socket.io
-const { Server } = require('socket.io'); // נוסף עבור Socket.io
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 
 // ייבוא נתיבים
 const quizRoutes = require('./routes/quizRoutes');
@@ -15,23 +15,39 @@ const resultRoutes = require('./routes/resultRoutes');
 const shabbatBlock = require('./middleware/shabbatBlock');
 
 const app = express();
-const server = http.createServer(app); // יצירת שרת http שמשתמש ב-express
-const io = new Server(server, { cors: { origin: "*" } }); // הגדרת סוקט עם תמיכת CORS
+const server = http.createServer(app); 
+
+// הגדרת האתר המורשה שלך
+const allowedOrigin = "https://pro-bitya-reactnode.netlify.app";
+
+// הגדרת CORS עבור Express
+app.use(cors({
+    origin: allowedOrigin,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
+
+// הגדרת CORS עבור Socket.io
+const io = new Server(server, { 
+    cors: { 
+        origin: allowedOrigin,
+        methods: ["GET", "POST"]
+    } 
+});
 
 // מונה משתמשים בזמן אמת
 let activeUsers = 0;
 io.on('connection', (socket) => {
     activeUsers++;
-    io.emit('updateUserCount', activeUsers); // שליחת עדכון לכולם
+    io.emit('updateUserCount', activeUsers); 
 
     socket.on('disconnect', () => {
         activeUsers--;
-        io.emit('updateUserCount', activeUsers); // עדכון כשמישהו מתנתק
+        io.emit('updateUserCount', activeUsers); 
     });
 });
 
 // Middleware בסיסיים
-app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
