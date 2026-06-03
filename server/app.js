@@ -40,10 +40,12 @@ app.use(cors({
 }));
 
 // הגדרת CORS עבור Socket.io שתומכת במערך הכתובות
+// 🔥 התיקון כאן: הוספנו credentials לשרת הסוקטים כדי לאפשר לפולינג לעבור בבטחה
 const io = new Server(server, { 
     cors: { 
         origin: allowedOrigins,
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true
     } 
 });
 

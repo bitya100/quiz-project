@@ -9,8 +9,10 @@ const socketUrl = isLocalhost
   ? 'http://localhost:3001'
   : 'https://quiz-project-server.onrender.com';
 
+// 🔥 התיקון כאן: שינוי הסדר לפולינג קודם + הוספת תמיכת credentials לחציית שרתים
 const socket = io(socketUrl, {
-  transports: ['websocket', 'polling'],
+  transports: ['polling', 'websocket'],
+  withCredentials: true
 });
 
 // ========================================================
