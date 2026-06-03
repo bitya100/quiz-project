@@ -112,13 +112,13 @@ const Login = () => {
               fullWidth name="password" label="סיסמה" type={showPassword ? "text" : "password"} variant="outlined" margin="normal" value={formData.password} onChange={handleChange} required autoComplete="current-password" 
               InputLabelProps={{ style: { color: '#40e0d0' } }} 
               InputProps={{
-                endAdornment: (
+                endAdornment: formData.password.length > 0 ? (
                   <InputAdornment position="end">
                     <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: '#40e0d0' }}>
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
-                ),
+                ) : null,
               }}
               sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
             />
