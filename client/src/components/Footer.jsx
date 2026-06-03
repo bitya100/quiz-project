@@ -5,6 +5,8 @@ import {
   Button, TextField, Typography, Box, CircularProgress, 
   Snackbar, Alert 
 } from '@mui/material';
+// מייבאים את הקומפוננטה שיצרנו
+import LiveUsers from '../components/LiveUsers'; 
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -21,25 +23,20 @@ const Footer = () => {
     e.preventDefault();
     setLoading(true);
 
-    // בונים את אובייקט הנתונים הבסיסי
     const formData = {
       name: user ? user.userName : guestName, 
       message: message,
       userRole: user ? user.role : 'אורח לא רשום'
     };
 
-    // התיקון הקריטי לשגיאת 422:
-    // מוסיפים את שדה ה-email *רק* אם באמת יש כתובת אימייל חוקית
     const actualEmail = user ? user.email : guestEmail;
     if (actualEmail) {
         formData.email = actualEmail;
     } else {
-        // אם אין אימייל, נשלח את ההודעה בשדה עם שם אחר כדי לא לעצבן את הוולידציה של Formspree
         formData.contact_info = 'המשתמש בחר לא להשאיר כתובת אימייל';
     }
 
     try {
-      // ⚠️ להדביק פה את הכתובת האמיתית שלך מ-Formspree! ⚠️
       const response = await fetch("https://formspree.io/f/mgonypvo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,8 +64,10 @@ const Footer = () => {
       <footer style={{ 
         width: '100%', padding: '20px 0', textAlign: 'center',
         background: 'rgba(2, 6, 23, 0.9)', borderTop: '1px solid rgba(64, 224, 208, 0.2)',
-        color: '#40e0d0', position: 'relative', zIndex: 10, marginTop: 'auto' 
+        color: '#40e0d0', position: 'relative', zIndex: 10, marginTop: 'auto',
+        display: 'flex', justifyContent: 'center', alignItems: 'center'
       }}>
+        {/* מרכז הפוטר */}
         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>
           כל הזכויות שמורות &copy; {currentYear} 
           <Box 
@@ -82,8 +81,14 @@ const Footer = () => {
             ביתיה.
           </Box>
         </p>
+
+        {/* מונה משתמשים בצד ימין למטה */}
+        <Box sx={{ position: 'absolute', right: 20 }}>
+          <LiveUsers />
+        </Box>
       </footer>
 
+      {/* הדיאלוג וה-Snackbar נשארים ללא שינוי כפי שהיו */}
       <Dialog 
         open={open} 
         onClose={() => setOpen(false)} 
