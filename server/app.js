@@ -39,14 +39,16 @@ app.use(cors({
     credentials: true
 }));
 
-// הגדרת CORS עבור Socket.io שתומכת במערך הכתובות
-// 🔥 התיקון כאן: הוספנו credentials לשרת הסוקטים כדי לאפשר לפולינג לעבור בבטחה
+// הגדרת CORS עבור Socket.io עם טריק ה-Ping של רנדר
+// 🔥 התיקון כאן: הוספנו pingInterval ו-pingTimeout קצרים במיוחד כדי למנוע מ-Render לנתק את הוובסוקט
 const io = new Server(server, { 
     cors: { 
         origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true
-    } 
+    },
+    pingInterval: 5000,  // 🔥 שולח אות חיים מהשרת לדפדפן כל 5 שניות
+    pingTimeout: 3000    // 🔥 אם אין תגובה תוך 3 שניות, החיבור מתרענן
 });
 
 // מונה משתמשים בזמן אמת
