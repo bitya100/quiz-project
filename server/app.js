@@ -17,20 +17,32 @@ const shabbatBlock = require('./middleware/shabbatBlock');
 const app = express();
 const server = http.createServer(app); 
 
-// הגדרת האתר המורשה שלך
-const allowedOrigin = "https://pro-bitya-reactnode.netlify.app";
+// הגדרת רשימת האתרים המורשים (הן השרת המקומי והן האתר באוויר)
+const allowedOrigins = [
+    "https://pro-bitya-reactnode.netlify.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+];
 
-// הגדרת CORS עבור Express
+// הגדרת CORS עבור Express שתומכת במערך כתובות
 app.use(cors({
-    origin: allowedOrigin,
+    origin: function (origin, callback) {
+        // מאפשר בקשות ללא origin (כמו בדיקות ב-Postman או קבצים פנימיים)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
 
-// הגדרת CORS עבור Socket.io
+// הגדרת CORS עבור Socket.io שתומכת במערך הכתובות
 const io = new Server(server, { 
     cors: { 
-        origin: allowedOrigin,
+        origin: allowedOrigins,
         methods: ["GET", "POST"]
     } 
 });

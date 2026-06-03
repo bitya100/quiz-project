@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { login, logout } from "../store"; 
 import api from "../services/api"; 
+import LiveUsers from '../components/LiveUsers'; // הייבוא התווסף כאן
 import { 
   AppBar, Toolbar, Typography, Button, InputBase, Box, 
   IconButton, useMediaQuery, useTheme, Drawer, List, ListItem, ListItemText, Divider,
@@ -120,10 +121,8 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
           if (dbUser && dbUser.role && dbUser.role !== user.role) {
             
             const updatedUser = { ...user, role: dbUser.role };
-            // התיקון: אנחנו לוקחים את הטוקן החדש והמרענן מהשרת!
             const newToken = dbUser.token || localStorage.getItem('token') || sessionStorage.getItem('token');
             
-            // מעדכנים את האחסון המקומי כדי שהבקשות הבאות יצאו עם ההרשאה הנכונה
             if (localStorage.getItem('user')) {
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 localStorage.setItem('token', newToken);
@@ -133,13 +132,12 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                 sessionStorage.setItem('token', newToken);
             }
             
-            // מעדכנים את ה-Redux
             dispatch(login({ user: updatedUser, token: newToken }));
 
             if (dbUser.role === 'admin') {
               setRoleUpdateMsg({ open: true, text: "🎉 ברכות! קודמת לתפקיד מנהל במערכת!" });
             } else {
-              setRoleUpdateMsg({ open: true, text: "ההרשאות שלך עודכנו על ידי מנהל המערכת לתפקיד משתמש רגיל." });
+              setRoleUpdateMsg({ open: true, text: "ההרשאות שלך עודכנו לתפקיד משתמש רגיל." });
             }
           }
         } catch (err) {
@@ -209,8 +207,12 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                   }
                 }}
               >
-                <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <IconButton onClick={toggleDrawer(false)} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                {/* ראש הטאב - עודכן למירכוס הכותרת וכפתור סגירה אבסולוטי */}
+                <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+                  <IconButton 
+                    onClick={toggleDrawer(false)} 
+                    sx={{ color: 'rgba(255,255,255,0.7)', position: 'absolute', right: 16 }}
+                  >
                     <CloseIcon />
                   </IconButton>
                   <Typography variant="h6" sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
@@ -218,6 +220,11 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
                   </Typography>
                 </Box>
                 
+                {/* רכיב המשתמשים המחוברים התווסף כאן */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+                  <LiveUsers showFullText={true} />
+                </Box>
+
                 <Divider sx={{ mb: 2, bgcolor: 'rgba(64, 224, 208, 0.2)' }} />
                 
                 <List dir="rtl" sx={{ flexGrow: 1 }}>

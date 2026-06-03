@@ -5,7 +5,6 @@ import {
   Button, TextField, Typography, Box, CircularProgress, 
   Snackbar, Alert 
 } from '@mui/material';
-// מייבאים את הקומפוננטה שיצרנו
 import LiveUsers from '../components/LiveUsers'; 
 
 const Footer = () => {
@@ -67,7 +66,7 @@ const Footer = () => {
         color: '#40e0d0', position: 'relative', zIndex: 10, marginTop: 'auto',
         display: 'flex', justifyContent: 'center', alignItems: 'center'
       }}>
-        {/* מרכז הפוטר */}
+        {/* מרכז הפוטר - יישאר ממורכז פיקס בשני המצבים */}
         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>
           כל הזכויות שמורות &copy; {currentYear} 
           <Box 
@@ -82,84 +81,42 @@ const Footer = () => {
           </Box>
         </p>
 
-        {/* מונה משתמשים בצד ימין למטה */}
-        <Box sx={{ position: 'absolute', right: 20 }}>
-          <LiveUsers />
+        {/* מונה משתמשים - מציג טקסט מלא רק במסכים גדולים (md) ומוסתר לחלוטין במסכים קטנים (xs) */}
+        <Box sx={{ position: 'absolute', right: 20, display: { xs: 'none', md: 'block' } }}>
+          <LiveUsers showFullText={true} />
         </Box>
       </footer>
 
-      {/* הדיאלוג וה-Snackbar נשארים ללא שינוי כפי שהיו */}
+      {/* הדיאלוג וה-Snackbar נשארים ללא שינוי */}
       <Dialog 
         open={open} 
         onClose={() => setOpen(false)} 
         dir="rtl"
         PaperProps={{ sx: { bgcolor: '#020617', color: 'white', border: '1px solid #40e0d0', borderRadius: 3, minWidth: { xs: '90vw', sm: '400px' } } }}
       >
-        <DialogTitle sx={{ color: '#40e0d0', fontWeight: 'bold' }}>
-          רוצים לדבר איתי? 👋
-        </DialogTitle>
+        <DialogTitle sx={{ color: '#40e0d0', fontWeight: 'bold' }}>רוצים לדבר איתי? 👋</DialogTitle>
         <DialogContent>
-          <Typography sx={{ mb: 3, opacity: 0.8 }}>
-            אשמח לשמוע מה דעתכם על האתר, הצעות לשיפור או סתם לומר שלום!
-          </Typography>
-          
+          <Typography sx={{ mb: 3, opacity: 0.8 }}>אשמח לשמוע מה דעתכם על האתר, הצעות לשיפור או סתם לומר שלום!</Typography>
           <form id="contact-form" onSubmit={handleSubmit}>
             {!user && (
               <>
-                <TextField
-                  fullWidth
-                  label="איך קוראים לכם?"
-                  required 
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  InputLabelProps={{ style: { color: '#40e0d0' } }}
-                  sx={{ mb: 3, mt: 1, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }}
-                />
-                <TextField
-                  fullWidth
-                  label="אימייל (אופציונלי - כדי שאוכל לחזור אליכם)"
-                  type="email"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  InputLabelProps={{ style: { color: '#40e0d0' } }}
-                  sx={{ mb: 3, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }}
-                />
+                <TextField fullWidth label="איך קוראים לכם?" required value={guestName} onChange={(e) => setGuestName(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mb: 3, mt: 1, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
+                <TextField fullWidth label="אימייל (אופציונלי)" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mb: 3, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
               </>
             )}
-            
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label="ההודעה שלכם..."
-              required
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              InputLabelProps={{ style: { color: '#40e0d0' } }}
-              sx={{ mt: user ? 1 : 0, textarea: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }}
-            />
+            <TextField fullWidth multiline rows={4} label="ההודעה שלכם..." required value={message} onChange={(e) => setMessage(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mt: user ? 1 : 0, textarea: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
           </form>
         </DialogContent>
         <DialogActions sx={{ p: 2, px: 3 }}>
-          <Button onClick={() => setOpen(false)} sx={{ color: 'white' }}>
-            ביטול
-          </Button>
-          <Button 
-            type="submit" 
-            form="contact-form" 
-            variant="contained" 
-            disabled={loading}
-            sx={{ bgcolor: '#bc13fe', fontWeight: 'bold', borderRadius: '20px', '&:hover': { bgcolor: '#a00bd9' } }}
-          >
+          <Button onClick={() => setOpen(false)} sx={{ color: 'white' }}>ביטול</Button>
+          <Button type="submit" form="contact-form" variant="contained" disabled={loading} sx={{ bgcolor: '#bc13fe', fontWeight: 'bold', borderRadius: '20px', '&:hover': { bgcolor: '#a00bd9' } }}>
             {loading ? <CircularProgress size={24} color="inherit" /> : 'שליחה'}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Snackbar open={notification.open} autoHideDuration={5000} onClose={() => setNotification({ ...notification, open: false })} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity={notification.severity} sx={{ bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0' }}>
-          {notification.msg}
-        </Alert>
+        <Alert severity={notification.severity} sx={{ bgcolor: '#020617', color: '#40e0d0', border: '1px solid #40e0d0' }}>{notification.msg}</Alert>
       </Snackbar>
     </>
   );
