@@ -5,12 +5,9 @@ import io from 'socket.io-client';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-// const socketUrl = isLocalhost
-//   ? 'http://localhost:3001'
-//   : 'https://quiz-project-server.onrender.com';
 const socketUrl = isLocalhost
   ? 'http://localhost:3001'
-  : 'https://quiz-project-t7g7.onrender.com';
+  : 'https://quiz-project-server.onrender.com';
   
 // 🔥 התיקון כאן: מאפשרים לו לנסות לשדרג לוובסוקט, עכשיו כשהשרת שומר עליו ערני
 const socket = io(socketUrl, {
