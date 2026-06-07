@@ -17,9 +17,10 @@ const shabbatBlock = require('./middleware/shabbatBlock');
 const app = express();
 const server = http.createServer(app); 
 
-// הגדרת רשימת האתרים המורשים (הן השרת המקומי והן האתר באוויר)
+// הגדרת רשימת האתרים המורשים (כולל נטליפיי וגם ורסל החדש)
 const allowedOrigins = [
-    "https://pro-bitya-reactnode.netlify.app",
+    "https://pro-bitya-reactnode.netlify.app", // האתר בנטליפיי
+    "https://quiz-project-ashy-pi.vercel.app",   // האתר החדש בורסל
     "http://localhost:5173",
     "http://localhost:3000"
 ];
@@ -40,15 +41,14 @@ app.use(cors({
 }));
 
 // הגדרת CORS עבור Socket.io עם טריק ה-Ping של רנדר
-// 🔥 התיקון כאן: הוספנו pingInterval ו-pingTimeout קצרים במיוחד כדי למנוע מ-Render לנתק את הוובסוקט
 const io = new Server(server, { 
     cors: { 
         origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true
     },
-    pingInterval: 5000,  // 🔥 שולח אות חיים מהשרת לדפדפן כל 5 שניות
-    pingTimeout: 3000    // 🔥 אם אין תגובה תוך 3 שניות, החיבור מתרענן
+    pingInterval: 5000,  // שולח אות חיים מהשרת לדפדפן כל 5 שניות
+    pingTimeout: 3000    // אם אין תגובה תוך 3 שניות, החיבור מתרענן
 });
 
 // מונה משתמשים בזמן אמת
