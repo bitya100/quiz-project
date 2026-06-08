@@ -123,7 +123,18 @@ const Login = () => {
               sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
             />
             
-            <FormControlLabel control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} sx={{ color: '#40e0d0', '&.Mui-checked': { color: '#40e0d0' } }} />} label="זכור אותי במכשיר זה" sx={{ color: 'white', mt: 1, mb: 1 }} />
+            {/* מיקום משודרג: הוספת "שכחת סיסמה" בשורה אחת יחד עם התיבה "זכור אותי" */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 1, flexWrap: 'wrap' }}>
+              <FormControlLabel 
+                control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} sx={{ color: '#40e0d0', '&.Mui-checked': { color: '#40e0d0' } }} />} 
+                label="זכור אותי במכשיר זה" 
+                sx={{ color: 'white' }} 
+              />
+              <Link to="/forgot-password" style={{ color: '#40e0d0', textDecoration: 'none', fontSize: '0.875rem', fontWeight: '500', transition: '0.2s' }} onMouseEnter={(e) => e.target.style.textDecoration = 'underline'} onMouseLeave={(e) => e.target.style.textDecoration = 'none'}>
+                שכחת סיסמה?
+              </Link>
+            </Box>
+
             <Button type="submit" fullWidth variant="contained" disabled={loading || !!successMsg} sx={{ mt: 2, mb: 2, bgcolor: successMsg ? '#2cd8bbd6' : '#40e0d0', color: successMsg ? 'white' : '#020617', fontWeight: 'bold', py: 1.5, '&:hover': { bgcolor: successMsg ? '#2cd8bbd6' : '#00c1ab' }, '&:disabled': { bgcolor: successMsg ? '#2cd8bbd6' : 'rgba(64, 224, 208, 0.3)', color: successMsg ? 'white' : '' } }}>
               {successMsg ? successMsg : (loading ? "בודק נתונים..." : "כניסה")}
             </Button>

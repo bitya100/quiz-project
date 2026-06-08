@@ -12,6 +12,8 @@ import QuizPage from "./pages/QuizPage";
 import CreateQuiz from "./pages/CreateQuiz";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword"; // תוספת: ייבוא עמוד שכחתי סיסמה
+import ResetPassword from "./pages/ResetPassword"; // תוספת: ייבוא עמוד איפוס סיסמה
 import MyScores from "./pages/MyScores";
 import AllScores from "./pages/AllScores"; 
 import ManageUsers from "./pages/ManageUsers"; 
@@ -115,6 +117,8 @@ function App() {
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} /> {/* תוספת: ראוט לעמוד בקשת שחזור */}
+            <Route path="/reset-password/:token" element={<ResetPassword />} /> {/* תוספת: ראוט לעמוד האיפוס עם השרשרת הדינמית של הטוקן */}
             <Route path="/quiz/:id" element={<QuizPage />} />
             <Route path="/my-scores" element={<MyScores searchTerm={searchTerm} />} />
             <Route path="/create-quiz" element={<CreateQuiz />} />

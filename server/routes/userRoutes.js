@@ -5,9 +5,13 @@ const validate = require('../middleware/validator'); // ייבוא ה-Middleware
 const { userValidationSchema } = require('../models/User'); // ייבוא הסכמה
 const userController = require('../controllers/userController');
 
-// הרשמה (כאן אנחנו עושים שימוש מושלם בוולידציה לפני שניגשים לקונטרולר!)
+// הרשמה והתחברות
 router.post('/register', validate(userValidationSchema), userController.register);
 router.post('/login', userController.login);
+
+// 🔥 ראוטים חדשים לשחזור ואיפוס סיסמה
+router.post('/forgot-password', userController.forgotPassword);
+router.post('/reset-password', userController.resetPassword);
 
 // קבלת הפרופיל האישי של המשתמש 
 router.get('/profile', auth, userController.getProfile);

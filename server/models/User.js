@@ -12,7 +12,10 @@ const userSchema = new mongoose.Schema({
     },
     password: { type: String, required: true },
     role: { type: String, default: 'user' },
-    requestedCreator: { type: Boolean, default: false }
+    requestedCreator: { type: Boolean, default: false },
+    // 🔥 שדות חדשים עבור מנגנון שכחתי סיסמה:
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null }
 });
 
 // התיקון הסופי: פונקציה אסינכרונית מודרנית ללא next!
