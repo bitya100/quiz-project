@@ -201,16 +201,40 @@ const forgotPassword = async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: user.email,
-            subject: 'איפוס סיסמה - אתר החידונים',
+            subject: 'איפוס סיסמה - QUIZ MASTER',
             html: `
-                <div style="direction: rtl; text-align: right; font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #333;">שלום ${user.userName},</h2>
-                    <p>קיבלנו בקשה לאיפוס הסיסמה לחשבונך באתר החידונים.</p>
-                    <p>כדי לבחור סיסמה חדשה, לחצי על הכפתור הבא (הקישור יהיה בתוקף למשך שעה אחת):</p>
-                    <div style="margin: 25px 0;">
-                        <a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;">לחצי כאן לאיפוס הסיסמה</a>
-                    </div>
-                    <p style="color: #777; font-size: 12px;">אם לא ביקשת לאפס את הסיסמה, אל דאגה - אפשר פשוט להתעלם מהמייל הזה.</p>
+                <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; padding: 40px; text-align: center; color: #ffffff;">
+                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #151f32; border-radius: 16px; border: 1px solid rgba(64, 224, 208, 0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.4); overflow: hidden;">
+                        
+                        <tr>
+                            <td style="padding: 30px 20px 10px 20px; text-align: center;">
+                                <h1 style="color: #40e0d0; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">QUIZ MASTER</h1>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="padding: 20px 40px 30px 40px; text-align: right;">
+                                <h2 style="color: #ffffff; font-size: 20px; margin-top: 0;">שלום ${user.userName},</h2>
+                                <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                                    קיבלנו בקשה לאיפוס הסיסמה לחשבונך באתר החידונים שלנו.<br>
+                                    כדי לבחור סיסמה חדשה, לחצי על הכפתור למטה. הקישור יהיה בתוקף למשך שעה אחת בלבד.
+                                </p>
+                                
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="${resetUrl}" style="background-color: #40e0d0; color: #0b0f19; font-weight: bold; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(64, 224, 208, 0.4);">
+                                        לחצי כאן לאיפוס הסיסמה
+                                    </a>
+                                </div>
+
+                                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0;">
+                                
+                                <p style="color: #64748b; font-size: 13px; text-align: center; margin: 0;">
+                                    אם לא ביקשת לאפס את הסיסמה, אל דאגה - אפשר פשוט להתעלם מהמייל הזה.
+                                </p>
+                            </td>
+                        </tr>
+                        
+                    </table>
                 </div>
             `
         };
@@ -224,7 +248,6 @@ const forgotPassword = async (req, res) => {
     }
 };
 
-// 🔥 הפונקציה המעודכנת עם התחברות אוטומטית מלאה!
 const resetPassword = async (req, res) => {
     try {
         const { token, password } = req.body;
@@ -251,7 +274,6 @@ const resetPassword = async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        // מחזיר את האובייקט המלא בדיוק בפורמט של Login/Register הקיים שלך
         res.json({ 
             message: 'הסיסמה שלך עודכנה בהצלחה! מתחבר אוטומטית...',
             token: jwtToken,
