@@ -183,7 +183,8 @@ const forgotPassword = async (req, res) => {
         await user.save(); 
 
         const transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
+            // מעקף לבעיית IPv6 ברשת של Render על ידי אילוץ כתובת ה-IPv4 הישירה של גוגל
+            host: '64.233.166.108', 
             port: 587,
             secure: false, 
             auth: {
