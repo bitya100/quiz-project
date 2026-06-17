@@ -182,11 +182,12 @@ const forgotPassword = async (req, res) => {
         user.resetPasswordExpires = Date.now() + 3600000;
         await user.save(); 
 
+        // הטרנספורטר המעודכן והיציב עבור Render
         const transporter = nodemailer.createTransport({
-            // מעקף לבעיית IPv6 ברשת של Render על ידי אילוץ כתובת ה-IPv4 הישירה של גוגל
-            host: '64.233.166.108', 
-            port: 587,
-            secure: false, 
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, 
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
