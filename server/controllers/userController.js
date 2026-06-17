@@ -214,9 +214,9 @@ const forgotPassword = async (req, res) => {
 
                         <tr>
                             <td style="padding: 20px 40px 30px 40px; text-align: right;">
-                                <h2 style="color: #ffffff; font-size: 20px; margin-top: 0;">שלום ${user.userName},</h2>
+                                <h2 style="color: #ffffff; font-size: 20px; margin-top: 0;">שלום ${user.userName}, זו אני</h2>
                                 <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                    קיבלנו בקשה לאיפוס הסיסמה לחשבונך באתר החידונים שלנו.<br>
+                                    קיבלתי בקשה לאיפוס הסיסמה לחשבונך באתר החידונים שלי.<br>
                                     כדי לבחור סיסמה חדשה, לחצי על הכפתור למטה. הקישור יהיה בתוקף למשך שעה אחת בלבד.
                                 </p>
                                 
