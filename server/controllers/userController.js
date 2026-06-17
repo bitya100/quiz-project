@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, // שימוש ב-SSL מאובטח
+    family: 4,    // 🔥 מכריח שימוש ב-IPv4 ופותח את החסימה של שגיאת ENETUNREACH ברנדר
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS

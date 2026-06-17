@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// משתנה חכם: ימשוך את הכתובת מנטליפי, ואם אין (במחשב המקומי) ישתמש בכתובת המקומית מה-.env
+// משתנה חכם: ימשוך את הכתובת מנטליפי/ורסל, ואם אין (במחשב המקומי) ישתמש בכתובת המקומית
 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
