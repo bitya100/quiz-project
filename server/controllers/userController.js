@@ -18,16 +18,18 @@ oauth2Client.setCredentials({
     refresh_token: process.env.OAUTH_REFRESH_TOKEN
 });
 
-// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי ועוקפת חסימות שרת ברנדר
+// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי ועוקפת חסימות IPv6 ברנדר
 const createTransporter = async () => {
     try {
         const accessToken = await oauth2Client.getAccessToken();
         
         return nodemailer.createTransport({
-            host: 'smtp.gmail.com', // 🚀 מכריח חיבור ישיר לשרת ה-SMTP
-            port: 587,              // 🚀 פורט מאובטח שפתוח ברנדר
-            secure: false,          // חייב להיות false עבור פורט 587
-            family: 4,              // 🚀 מכריח IPv4 (מונע שגיאות CONN ו-ETIMEDOUT ברנדר)
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            // 🚀 התיקון המרכזי: מכריח את Node לפנות לגוגל אך ורק ב-IPv4 ועוקף את שגיאת ה-ENETUNREACH ברנדר
+            family: 4, 
+            connectionTimeout: 10000, // גבול של 10 שניות לניסיון החיבור כדי למנוע המתנה אינסופית
             auth: {
                 type: 'OAuth2',
                 user: process.env.EMAIL_USER,
