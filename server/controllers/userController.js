@@ -2,51 +2,58 @@ const { User } = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); // ספרייה מובנית ב-Node ליצירת טוקנים אקראיים
-const nodemailer = require('nodemailer'); // ספרייה לשליחת מיילים
-const { google } = require('googleapis'); // 🚀 הספרייה הרשמית של גוגל לניהול ה-OAuth2
-const dns = require('dns'); // 🚀 מודול ה-DNS המובנה של Node
-
-// 🔥 התיקון המוחץ: מכריח את כל האפליקציה (ברמת הליבה) להעדיף IPv4 על פני IPv6 בכל פתרון דומיין
-dns.setDefaultResultOrder('ipv4first');
+const { google } = require('googleapis'); // 🚀 שימוש מלא בספרייה של גוגל במקום nodemailer
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
-// 🚀 הגדרת לקוח ה-OAuth2 של גוגל לעקיפת חסימות הענן
+// 🚀 הגדרת לקוח ה-OAuth2 של גוגל
 const oauth2Client = new google.auth.OAuth2(
     process.env.OAUTH_CLIENT_ID,
     process.env.OAUTH_CLIENT_SECRET,
-    "https://developers.google.com/oauthplayground" // ה-Redirect URI המדויק ששימש לקבלת הטוקן
+    "https://developers.google.com/oauthplayground"
 );
 
 oauth2Client.setCredentials({
     refresh_token: process.env.OAUTH_REFRESH_TOKEN
 });
 
-// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי
-const createTransporter = async () => {
+// 🚀 פונקציה לשליחת מייל באמצעות ה-API הרשמי של גוגל (HTTP) במקום SMTP חסום
+const sendGmailViaAPI = async (mailOptions) => {
     try {
-        const accessToken = await oauth2Client.getAccessToken();
-        
-        return nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true, // חובה כשמשתמשים בפורט 465
-            connectionTimeout: 15000,
-            auth: {
-                type: 'OAuth2',
-                user: process.env.EMAIL_USER,
-                clientId: process.env.OAUTH_CLIENT_ID,
-                clientSecret: process.env.OAUTH_CLIENT_SECRET,
-                refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-                accessToken: accessToken.token
-            },
-            tls: {
-                rejectUnauthorized: false, // מונע בעיות תעודת אבטחה בענן
-                minVersion: 'TLSv1.2'
+        // מייצרים לקוח Gmail API מורשה
+        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+        // ה-API של גוגל דורש שהמייל יהיה במבנה RFC 2822 מקודד ב-Base64 בטוח לכתובות URL
+        const utf8Subject = `=?utf-8?B?${Buffer.from(mailOptions.subject).toString('base64')}?=`;
+        const messageParts = [
+            `From: QUIZ MASTER <${process.env.EMAIL_USER}>`,
+            `To: ${mailOptions.to}`,
+            'Content-Type: text/html; charset=utf-8',
+            'MIME-Version: 1.0',
+            `Subject: ${utf8Subject}`,
+            '',
+            mailOptions.html
+        ];
+        const message = messageParts.join('\n');
+
+        // קידוד ל-Base64 בטוח
+        const encodedMessage = Buffer.from(message)
+            .toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+
+        // שליחה פיזית דרך בקשת HTTP רגילה לגוגל
+        await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: {
+                raw: encodedMessage
             }
         });
+
+        console.log("🚀 Mail sent successfully via Gmail API!");
     } catch (error) {
-        console.error("🔥 Failed to create OAuth transporter:", error);
+        console.error("🔥 Failed to send mail via Gmail API:", error);
         throw error;
     }
 };
@@ -231,7 +238,6 @@ const forgotPassword = async (req, res) => {
         const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
         const mailOptions = {
-            from: `QUIZ MASTER <${process.env.EMAIL_USER}>`, 
             to: user.email,
             subject: 'איפוס סיסמה - QUIZ MASTER',
             html: `
@@ -271,8 +277,8 @@ const forgotPassword = async (req, res) => {
             `
         };
 
-        const transporter = await createTransporter();
-        await transporter.sendMail(mailOptions);
+        // 🚀 קריאה לפונקציית ה-API החדשה במקום Nodemailer
+        await sendGmailViaAPI(mailOptions);
         
         return res.json({ message: 'מייל לאיפוס סיסמה נשלח בהצלחה!' });
 
