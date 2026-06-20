@@ -24,11 +24,10 @@ const createTransporter = async () => {
         const accessToken = await oauth2Client.getAccessToken();
         
         return nodemailer.createTransport({
-            host: 'smtp.gmail.com',
+            // 🚀 הפתרון הסופי: שימוש ב-IP ישיר של גוגל (IPv4) כדי למנוע מרנדר לנסות IPv6 בכלל
+            host: '142.250.141.108', 
             port: 587,
             secure: false,
-            // 🚀 התיקון המרכזי: מכריח את Node לפנות לגוגל אך ורק ב-IPv4 ועוקף את שגיאת ה-ENETUNREACH ברנדר
-            family: 4, 
             connectionTimeout: 10000, // גבול של 10 שניות לניסיון החיבור כדי למנוע המתנה אינסופית
             auth: {
                 type: 'OAuth2',
@@ -40,7 +39,9 @@ const createTransporter = async () => {
             },
             tls: {
                 rejectUnauthorized: false, // מונע חסימות תעודת אבטחה בענן
-                minVersion: 'TLSv1.2'
+                minVersion: 'TLSv1.2',
+                // 🚀 חובה כשמשתמשים ב-IP: מוודא שאימות ה-SSL מתבצע מול הדומיין המקורי של גוגל
+                servername: 'smtp.gmail.com' 
             }
         });
     } catch (error) {
