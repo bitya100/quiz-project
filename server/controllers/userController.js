@@ -24,11 +24,11 @@ const createTransporter = async () => {
         const accessToken = await oauth2Client.getAccessToken();
         
         return nodemailer.createTransport({
-            // 🚀 הפתרון הסופי: שימוש ב-IP ישיר של גוגל (IPv4) כדי למנוע מרנדר לנסות IPv6 בכלל
-            host: '142.250.141.108', 
-            port: 587,
-            secure: false,
-            connectionTimeout: 10000, // גבול של 10 שניות לניסיון החיבור כדי למנוע המתנה אינסופית
+            // 🚀 הפתרון העוקף חסימות פיירוול: פורט 465 המוצפן ישירות (SSL/TLS מהרגע הראשון)
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true, // חובה כשמשתמשים בפורט 465
+            connectionTimeout: 15000, // הגדלנו ל-15 שניות ליתר ביטחון
             auth: {
                 type: 'OAuth2',
                 user: process.env.EMAIL_USER,
@@ -38,10 +38,8 @@ const createTransporter = async () => {
                 accessToken: accessToken.token
             },
             tls: {
-                rejectUnauthorized: false, // מונע חסימות תעודת אבטחה בענן
-                minVersion: 'TLSv1.2',
-                // 🚀 חובה כשמשתמשים ב-IP: מוודא שאימות ה-SSL מתבצע מול הדומיין המקורי של גוגל
-                servername: 'smtp.gmail.com' 
+                rejectUnauthorized: false, // מונע בעיות תעודת אבטחה בענן
+                minVersion: 'TLSv1.2'
             }
         });
     } catch (error) {
@@ -230,7 +228,7 @@ const forgotPassword = async (req, res) => {
         const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
         const mailOptions = {
-            from: `QUIZ MASTER <${process.env.EMAIL_USER}>`, // 🚀 שולח מזהה מעוצב מהאימייל המורשה שלך
+            from: `QUIZ MASTER <${process.env.EMAIL_USER}>`, 
             to: user.email,
             subject: 'איפוס סיסמה - QUIZ MASTER',
             html: `
