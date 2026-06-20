@@ -11,7 +11,7 @@ const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 const oauth2Client = new google.auth.OAuth2(
     process.env.OAUTH_CLIENT_ID,
     process.env.OAUTH_CLIENT_SECRET,
-    "https://developers.google.com/oauthplayground"
+    "https://developers.google.com/oauthplayground" // ה-Redirect URI המדויק ששימש לקבלת הטוקן
 );
 
 oauth2Client.setCredentials({
