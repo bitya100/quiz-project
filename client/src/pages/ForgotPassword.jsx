@@ -83,7 +83,7 @@ const ForgotPassword = () => {
               {!emailSent ? (
                 <>
                   <Typography variant="body2" align="center" sx={{ color: 'rgba(255,255,255,0.85)', mb: 3, lineHeight: 1.6 }}>
-                    הזיני את כתובת האימייל איתה נרשמת למערכת, ונשלח אלייך קישור מאובטח לאיפוס הסיסמה.
+                    הזיני את כתובת האימייל איתה נרשמת למערכת, תריצי מקומי ונשלח אלייך קישור מאובטח לאיפוס הסיסמה.
                   </Typography>
 
                   {error && (
