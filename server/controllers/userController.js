@@ -4,6 +4,10 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); // ספרייה מובנית ב-Node ליצירת טוקנים אקראיים
 const nodemailer = require('nodemailer'); // ספרייה לשליחת מיילים
 const { google } = require('googleapis'); // 🚀 הספרייה הרשמית של גוגל לניהול ה-OAuth2
+const dns = require('dns'); // 🚀 מודול ה-DNS המובנה של Node
+
+// 🔥 התיקון המוחץ: מכריח את כל האפליקציה (ברמת הליבה) להעדיף IPv4 על פני IPv6 בכל פתרון דומיין
+dns.setDefaultResultOrder('ipv4first');
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
@@ -18,17 +22,16 @@ oauth2Client.setCredentials({
     refresh_token: process.env.OAUTH_REFRESH_TOKEN
 });
 
-// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי ועוקפת חסימות IPv6 ברנדר
+// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי
 const createTransporter = async () => {
     try {
         const accessToken = await oauth2Client.getAccessToken();
         
         return nodemailer.createTransport({
-            // 🚀 הפתרון העוקף חסימות פיירוול: פורט 465 המוצפן ישירות (SSL/TLS מהרגע הראשון)
             host: 'smtp.gmail.com',
             port: 465,
             secure: true, // חובה כשמשתמשים בפורט 465
-            connectionTimeout: 15000, // הגדלנו ל-15 שניות ליתר ביטחון
+            connectionTimeout: 15000,
             auth: {
                 type: 'OAuth2',
                 user: process.env.EMAIL_USER,
@@ -268,7 +271,6 @@ const forgotPassword = async (req, res) => {
             `
         };
 
-        // 🚀 יצירת הטרנספורטר המאובטח בזמן אמת ושליחת המייל
         const transporter = await createTransporter();
         await transporter.sendMail(mailOptions);
         
