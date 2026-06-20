@@ -3,24 +3,42 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto'); // ספרייה מובנית ב-Node ליצירת טוקנים אקראיים
 const nodemailer = require('nodemailer'); // ספרייה לשליחת מיילים
+const { google } = require('googleapis'); // 🚀 הספרייה הרשמית של גוגל לניהול ה-OAuth2
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
-// 🔥 אופציה 2: הגדרה מנצחת לשרתי ענן (פורט 587 + כפיית IPv4) - עוקף את החסימות של רנדר
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // חייב להיות false עבור פורט 587
-    family: 4,     // מכריח שימוש ב-IPv4 כדי למנוע את שגיאת ENETUNREACH
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false,
-        minVersion: 'TLSv1.2'
-    }
+// 🚀 הגדרת לקוח ה-OAuth2 של גוגל לעקיפת חסימות הענן
+const oauth2Client = new google.auth.OAuth2(
+    process.env.OAUTH_CLIENT_ID,
+    process.env.OAUTH_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+);
+
+oauth2Client.setCredentials({
+    refresh_token: process.env.OAUTH_REFRESH_TOKEN
 });
+
+// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי (מתחדש אוטומטית)
+const createTransporter = async () => {
+    try {
+        const accessToken = await oauth2Client.getAccessToken();
+        
+        return nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                type: 'OAuth2',
+                user: process.env.EMAIL_USER,
+                clientId: process.env.OAUTH_CLIENT_ID,
+                clientSecret: process.env.OAUTH_CLIENT_SECRET,
+                refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+                accessToken: accessToken.token
+            }
+        });
+    } catch (error) {
+        console.error("🔥 Failed to create OAuth transporter:", error);
+        throw error;
+    }
+};
 
 const register = async (req, res) => {
     try {
@@ -202,7 +220,7 @@ const forgotPassword = async (req, res) => {
         const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: `QUIZ MASTER <${process.env.EMAIL_USER}>`, // 🚀 שולח מזהה מעוצב מהאימייל המורשה שלך
             to: user.email,
             subject: 'איפוס סיסמה - QUIZ MASTER',
             html: `
@@ -242,7 +260,10 @@ const forgotPassword = async (req, res) => {
             `
         };
 
+        // 🚀 יצירת הטרנספורטר המאובטח בזמן אמת ושליחת המייל
+        const transporter = await createTransporter();
         await transporter.sendMail(mailOptions);
+        
         return res.json({ message: 'מייל לאיפוס סיסמה נשלח בהצלחה!' });
 
     } catch (ex) {
