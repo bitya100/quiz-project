@@ -388,7 +388,7 @@ const Navbar = ({ searchTerm, setSearchTerm }) => {
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ textAlign: 'center', fontSize: '1.1rem', mb: 1 }}>
-            הירשם עכשיו בחינם ותוכל לעקוב אחר ההתקדמות שלך, לראות את היסטוריית החידונים האישית שלך ולהשוות ציונים!
+            הירשמי עכשיו בחינם ותוכל לעקוב אחר ההתקדמות שלך, לראות את היסטוריית החידונים האישית שלך ולהשוות ציונים!
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center', pb: 3, gap: 2 }}>

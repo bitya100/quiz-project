@@ -139,7 +139,7 @@ const Register = () => {
               {successMsg ? successMsg : (loading ? "מעבד נתונים..." : "הרשמה")}
             </Button>
           </Box>
-          <Typography align="center">כבר יש לך חשבון? <Link to="/login" style={{ color: '#40e0d0', textDecoration: 'none' }}>התחבר כאן</Link></Typography>
+          <Typography align="center">כבר יש לך חשבון? <Link to="/login" style={{ color: '#40e0d0', textDecoration: 'none' }}>התחברי כאן</Link></Typography>
         </Paper>
       </Container>
     </Box>
