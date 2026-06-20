@@ -1,62 +1,13 @@
 const { User } = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto'); // ספרייה מובנית ב-Node ליצירת טוקנים אקראיים
-const { google } = require('googleapis'); // 🚀 שימוש מלא בספרייה של גוגל במקום nodemailer
+const crypto = require('crypto');
+const { Resend } = require('resend'); // 🚀 הספרייה החדשה והיציבה
 
 const SUPER_ADMIN_EMAIL = "admin10@gmail.com";
 
-// 🚀 הגדרת לקוח ה-OAuth2 של גוגל
-const oauth2Client = new google.auth.OAuth2(
-    process.env.OAUTH_CLIENT_ID,
-    process.env.OAUTH_CLIENT_SECRET,
-    "https://developers.google.com/oauthplayground"
-);
-
-oauth2Client.setCredentials({
-    refresh_token: process.env.OAUTH_REFRESH_TOKEN
-});
-
-// 🚀 פונקציה לשליחת מייל באמצעות ה-API הרשמי של גוגל (HTTP) במקום SMTP חסום
-const sendGmailViaAPI = async (mailOptions) => {
-    try {
-        // מייצרים לקוח Gmail API מורשה
-        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-
-        // ה-API של גוגל דורש שהמייל יהיה במבנה RFC 2822 מקודד ב-Base64 בטוח לכתובות URL
-        const utf8Subject = `=?utf-8?B?${Buffer.from(mailOptions.subject).toString('base64')}?=`;
-        const messageParts = [
-            `From: QUIZ MASTER <${process.env.EMAIL_USER}>`,
-            `To: ${mailOptions.to}`,
-            'Content-Type: text/html; charset=utf-8',
-            'MIME-Version: 1.0',
-            `Subject: ${utf8Subject}`,
-            '',
-            mailOptions.html
-        ];
-        const message = messageParts.join('\n');
-
-        // קידוד ל-Base64 בטוח
-        const encodedMessage = Buffer.from(message)
-            .toString('base64')
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
-
-        // שליחה פיזית דרך בקשת HTTP רגילה לגוגל
-        await gmail.users.messages.send({
-            userId: 'me',
-            requestBody: {
-                raw: encodedMessage
-            }
-        });
-
-        console.log("🚀 Mail sent successfully via Gmail API!");
-    } catch (error) {
-        console.error("🔥 Failed to send mail via Gmail API:", error);
-        throw error;
-    }
-};
+// 🚀 אתחול פשוט של Resend באמצעות מפתח האבטחה
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const register = async (req, res) => {
     try {
@@ -103,7 +54,6 @@ const login = async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(400).send('אימייל או סיסמה שגויים');
 
-        // קידום אוטומטי של מנהל העל
         if (user.email === SUPER_ADMIN_EMAIL && user.role !== 'admin') {
             await User.updateOne({ _id: user._id }, { role: 'admin' });
             user.role = 'admin';
@@ -237,53 +187,48 @@ const forgotPassword = async (req, res) => {
         const clientUrl = req.headers.origin || 'http://localhost:5173';
         const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
-        const mailOptions = {
+        const htmlContent = `
+            <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; padding: 40px; text-align: center; color: #ffffff;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #151f32; border-radius: 16px; border: 1px solid rgba(64, 224, 208, 0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.4); overflow: hidden;">
+                    <tr>
+                        <td style="padding: 30px 20px 10px 20px; text-align: center;">
+                            <h1 style="color: #40e0d0; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">QUIZ MASTER</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px 40px 30px 40px; text-align: right;">
+                            <h2 style="color: #ffffff; font-size: 20px; margin-top: 0;">שלום ${user.userName},</h2>
+                            <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                                קיבלת בקשה לאיפוס הסיסמה לחשבונך באתר החידונים שלי.<br>
+                                כדי לבחור סיסמה חדשה, לחץ על הכפתור למטה. הקישור יהיה בתוקף למשך שעה אחת בלבד.
+                            </p>
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="${resetUrl}" style="background-color: #40e0d0; color: #0b0f19; font-weight: bold; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(64, 224, 208, 0.4);">
+                                    לחץ כאן לאיפוס הסיסמה
+                                </a>
+                            </div>
+                            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0;">
+                            <p style="color: #64748b; font-size: 13px; text-align: center; margin: 0;">
+                                אם לא ביקשת לאפס את הסיסמה, אל דאגה - אפשר פשוט להתעלם מהמייל הזה.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        `;
+
+        // 🚀 שליחה חלקה באמצעות השירות הציבורי של Resend לכתובות בדיקה
+        await resend.emails.send({
+            from: 'onboarding@resend.dev', // כתובת ברירת המחדל החינמית לבדיקות שלהם
             to: user.email,
             subject: 'איפוס סיסמה - QUIZ MASTER',
-            html: `
-                <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0f19; padding: 40px; text-align: center; color: #ffffff;">
-                    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 550px; background-color: #151f32; border-radius: 16px; border: 1px solid rgba(64, 224, 208, 0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.4); overflow: hidden;">
-                        
-                        <tr>
-                            <td style="padding: 30px 20px 10px 20px; text-align: center;">
-                                <h1 style="color: #40e0d0; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 1px;">QUIZ MASTER</h1>
-                            </td>
-                        </tr>
+            html: htmlContent,
+        });
 
-                        <tr>
-                            <td style="padding: 20px 40px 30px 40px; text-align: right;">
-                                <h2 style="color: #ffffff; font-size: 20px; margin-top: 0;">שלום ${user.userName},</h2>
-                                <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                    קיבלת בקשה לאיפוס הסיסמה לחשבונך באתר החידונים שלי.<br>
-                                    כדי לבחור סיסמה חדשה, לחץ על הכפתור למטה. הקישור יהיה בתוקף למשך שעה אחת בלבד.
-                                </p>
-                                
-                                <div style="text-align: center; margin: 30px 0;">
-                                    <a href="${resetUrl}" style="background-color: #40e0d0; color: #0b0f19; font-weight: bold; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(64, 224, 208, 0.4);">
-                                        לחץ כאן לאיפוס הסיסמה
-                                    </a>
-                                </div>
-
-                                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0;">
-                                
-                                <p style="color: #64748b; font-size: 13px; text-align: center; margin: 0;">
-                                    אם לא ביקשת לאפס את הסיסמה, אל דאגה - אפשר פשוט להתעלם מהמייל הזה.
-                                </p>
-                            </td>
-                        </tr>
-                        
-                    </table>
-                </div>
-            `
-        };
-
-        // 🚀 קריאה לפונקציית ה-API החדשה במקום Nodemailer
-        await sendGmailViaAPI(mailOptions);
-        
         return res.json({ message: 'מייל לאיפוס סיסמה נשלח בהצלחה!' });
 
     } catch (ex) {
-        console.error("🔥 Detailed Forgot Password Error:", ex);
+        console.error("🔥 Detailed Resend Error:", ex);
         return res.status(500).send('שגיאה בתהליך שליחת המייל. נסי שנית מאוחר יותר.');
     }
 };
@@ -301,10 +246,8 @@ const resetPassword = async (req, res) => {
         if (!user) return res.status(400).send('הקישור אינו תקף או שפג תוקפו. אנא בקשי שחזור חדש.');
 
         user.password = password;
-        
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
-        
         await user.save();
 
         const jwtToken = jwt.sign(
