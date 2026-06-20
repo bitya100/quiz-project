@@ -18,13 +18,16 @@ oauth2Client.setCredentials({
     refresh_token: process.env.OAUTH_REFRESH_TOKEN
 });
 
-// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי (מתחדש אוטומטית)
+// פונקציה אסינכרונית המייצרת טרנספורטר עם אסימון גישה דינמי ועוקפת חסימות שרת ברנדר
 const createTransporter = async () => {
     try {
         const accessToken = await oauth2Client.getAccessToken();
         
         return nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com', // 🚀 מכריח חיבור ישיר לשרת ה-SMTP
+            port: 587,              // 🚀 פורט מאובטח שפתוח ברנדר
+            secure: false,          // חייב להיות false עבור פורט 587
+            family: 4,              // 🚀 מכריח IPv4 (מונע שגיאות CONN ו-ETIMEDOUT ברנדר)
             auth: {
                 type: 'OAuth2',
                 user: process.env.EMAIL_USER,
@@ -32,6 +35,10 @@ const createTransporter = async () => {
                 clientSecret: process.env.OAUTH_CLIENT_SECRET,
                 refreshToken: process.env.OAUTH_REFRESH_TOKEN,
                 accessToken: accessToken.token
+            },
+            tls: {
+                rejectUnauthorized: false, // מונע חסימות תעודת אבטחה בענן
+                minVersion: 'TLSv1.2'
             }
         });
     } catch (error) {
