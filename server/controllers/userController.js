@@ -199,8 +199,9 @@ const forgotPassword = async (req, res) => {
                         <td style="padding: 20px 40px 30px 40px; text-align: right;">
                             <h2 style="color: #ffffff; font-size: 20px; margin-top: 0;">שלום ${user.userName},</h2>
                             <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                                זו בִּתְיָה. הגשת בקשה לאיפוס הסיסמה לחשבונך באתר החידונים שלי.<br>
-                                כדי לבחור סיסמה חדשה, יש ללחוץ על הכפתור למטה. הקישור יהיה בתוקף למשך שעה אחת בלבד.
+                                זו בִּתְיָה. הגשת בקשה לאיפוס הסיסמה לחשבונך באתר החידונים.
+                                כדי לבחור סיסמה חדשה, יש ללחוץ על הכפתור למטה.<br> 
+                                הקישור יהיה בתוקף למשך שעה אחת בלבד.
                             </p>
                             <div style="text-align: center; margin: 30px 0;">
                                 <a href="${resetUrl}" style="background-color: #40e0d0; color: #0b0f19; font-weight: bold; text-decoration: none; padding: 14px 35px; border-radius: 50px; font-size: 16px; display: inline-block; box-shadow: 0 4px 15px rgba(64, 224, 208, 0.4);">
