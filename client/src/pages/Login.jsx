@@ -123,7 +123,6 @@ const Login = () => {
               sx={{ input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} 
             />
             
-            {/* מיקום משודרג: הוספת "שכחת סיסמה" בשורה אחת יחד עם התיבה "זכור אותי" */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1, mb: 1, flexWrap: 'wrap' }}>
               <FormControlLabel 
                 control={<Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} sx={{ color: '#40e0d0', '&.Mui-checked': { color: '#40e0d0' } }} />} 

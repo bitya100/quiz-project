@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Particles from "react-tsparticles"; 
 import { loadSlim } from "tsparticles-slim"; 
-import { Box } from "@mui/material"; // ייבוא Box
+import { Box } from "@mui/material"; 
 
 // ייבוא קומפוננטות 
 import Navbar from "./components/Navbar";
@@ -12,14 +12,15 @@ import QuizPage from "./pages/QuizPage";
 import CreateQuiz from "./pages/CreateQuiz";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword"; // תוספת: ייבוא עמוד שכחתי סיסמה
-import ResetPassword from "./pages/ResetPassword"; // תוספת: ייבוא עמוד איפוס סיסמה
+import ForgotPassword from "./pages/ForgotPassword"; 
+import ResetPassword from "./pages/ResetPassword"; 
 import MyScores from "./pages/MyScores";
 import AllScores from "./pages/AllScores"; 
 import ManageUsers from "./pages/ManageUsers"; 
 import ShabbatPage from "./pages/ShabbatPage"; 
 import ScrollToTopBtn from "./components/ScrollToTop"; 
 import Footer from "./components/Footer";
+import NotFound from "./pages/NotFound"; // ייבוא עמוד 404
 
 const checkShabbat = () => {
   const now = new Date();
@@ -85,8 +86,8 @@ function App() {
     <Router>
       <ScrollToTopOnNavigate />
       <Particles id="tsparticles" init={particlesInit} options={particlesOptions} />
-      <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       
+      {/* ה-Wrapper העוטף כולל עכשיו את ה-Navbar בפנים */}
       <div className="app-content-wrapper" style={{ 
         minHeight: '100vh', 
         display: 'flex',
@@ -95,20 +96,21 @@ function App() {
         position: 'relative',
         zIndex: 1
       }}>
-        <div style={{ flexGrow: 1, paddingBottom: '40px' }}>
+        
+        <Navbar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        
+        {/* הגדרת flexGrow שמותחת את אזור התוכן ללא פאדינג מיותר */}
+        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <Routes>
-            {/* ראוט השער הראשי: כולל את סיפור הגלילה ולמטה את החידונים */}
             <Route path="/" element={
               <Box>
                 <Home />
-                {/* כאן הכפתור נוחת עם גלילה חלקה */}
                 <Box id="quizzes-section" sx={{ pt: 8, pb: 10 }}>
                   <Quizzes searchTerm={searchTerm} />
                 </Box>
               </Box>
             } />
             
-            {/* ראוט התפריט: מציג ישירות את החידונים למי שלוחץ "חידונים" למעלה */}
             <Route path="/quizzes" element={
               <Box sx={{ pt: 5 }}>
                 <Quizzes searchTerm={searchTerm} />
@@ -117,8 +119,8 @@ function App() {
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} /> {/* תוספת: ראוט לעמוד בקשת שחזור */}
-            <Route path="/reset-password/:token" element={<ResetPassword />} /> {/* תוספת: ראוט לעמוד האיפוס עם השרשרת הדינמית של הטוקן */}
+            <Route path="/forgot-password" element={<ForgotPassword />} /> 
+            <Route path="/reset-password/:token" element={<ResetPassword />} /> 
             <Route path="/quiz/:id" element={<QuizPage />} />
             <Route path="/my-scores" element={<MyScores searchTerm={searchTerm} />} />
             <Route path="/create-quiz" element={<CreateQuiz />} />
@@ -126,13 +128,11 @@ function App() {
             <Route path="/admin/all-scores" element={<AllScores searchTerm={searchTerm} />} /> 
             <Route path="/admin/users" element={<ManageUsers searchTerm={searchTerm} />} />
             <Route path="/shabbat" element={<ShabbatPage />} />
-            <Route path="*" element={
-              <h1 style={{ textAlign: 'center', marginTop: '100px', color: '#00c1ab' }}>
-                404 - דף לא נמצא
-              </h1>
-            } />
+            
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
+        
         <Footer />
       </div>
 
