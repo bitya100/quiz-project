@@ -96,7 +96,7 @@ const Footer = () => {
       >
         <DialogTitle sx={{ color: '#40e0d0', fontWeight: 'bold' }}>רוצים לדבר איתי? 👋</DialogTitle>
         <DialogContent>
-          <Typography sx={{ mb: 3, opacity: 0.8 }}>אשמח לשמוע מה דעתכם על האתר, הצעות לשיפור או סתם לומר שלום!</Typography>
+          <Typography sx={{ mb: 3, opacity: 0.8 }}>אשמח לשמוע הצעות לשיפור האתר או סתם לקבל ד"ש, אל תהיו נעכסים!</Typography>
           <form id="contact-form" onSubmit={handleSubmit}>
             {!user && (
               <>
