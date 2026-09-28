@@ -101,7 +101,7 @@ const Footer = () => {
             {!user && (
               <>
                 <TextField fullWidth label="איך קוראים לך?" required value={guestName} onChange={(e) => setGuestName(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mb: 3, mt: 1, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
-                <TextField fullWidth label="אימייל (אם בא לך תשובה)" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mb: 3, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
+                <TextField fullWidth label="אימייל (אם בא לך לקבל תשובה)" type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mb: 3, input: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
               </>
             )}
             <TextField fullWidth multiline rows={4} label="ההודעה שלך..." required value={message} onChange={(e) => setMessage(e.target.value)} InputLabelProps={{ style: { color: '#40e0d0' } }} sx={{ mt: user ? 1 : 0, textarea: { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(64, 224, 208, 0.5)' }, '&:hover fieldset': { borderColor: '#40e0d0' } } }} />
